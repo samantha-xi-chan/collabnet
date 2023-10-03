@@ -1,12 +1,12 @@
 package statemachine
 
-import "fmt"
+import (
+	"fmt"
+	"log"
+)
 
-// Event 表示状态机的事件
-type Event string
-
-// State 表示状态机的状态
-type State string
+type Event int
+type State int
 
 // Transition 表示状态转移规则
 type Transition struct {
@@ -33,9 +33,16 @@ func NewStateMachine(transitions []Transition, initialState State) *StateMachine
 func (sm *StateMachine) HandleEvent(event Event) error {
 	for _, transition := range sm.Transitions {
 		if transition.CurrentState == sm.CurrentState && transition.Event == event {
+			backup := transition.CurrentState
 			sm.CurrentState = transition.NextState
+
+			if backup != sm.CurrentState {
+				log.Printf("[FSM] Change from %d to %d ( by evt %d ) \n", backup, sm.CurrentState, event)
+			}
+
 			return nil
 		}
 	}
-	return fmt.Errorf("Invalid transition for event %s in state %s", event, sm.CurrentState)
+
+	return fmt.Errorf("invalid transition for event %d in state %d", event, sm.CurrentState)
 }

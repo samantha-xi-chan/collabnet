@@ -1,42 +1,31 @@
 package main
 
 import (
-	"collab-net-v2/internal/config"
+	"collab-net-v2/link"
 	"log"
-	"net/http"
-
-	"github.com/gorilla/websocket"
+	"time"
 )
 
-var upGrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
-}
-
-func handleWebSocket(w http.ResponseWriter, r *http.Request) {
-	conn, err := upGrader.Upgrade(w, r, nil)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	defer conn.Close()
-
-	for {
-		messageType, p, err := conn.ReadMessage()
-		if err != nil {
-			log.Println(err)
-			return
-		}
-
-		log.Println("string(p): ", string(p))
-		if err := conn.WriteMessage(messageType, p); err != nil {
-			log.Println(err)
-			return
-		}
-	}
+func init() {
+	log.Println("init: ")
 }
 
 func main() {
-	http.HandleFunc("/", handleWebSocket)
-	log.Fatal(http.ListenAndServe(config.SCHEDULER_LISTEN_PORT, nil))
+	go link.NewServer()
+
+	for true {
+		time.Sleep(time.Second * 10)
+		link.SendDataToEndpoint(
+			"M1",
+			link.GetPackageBytes(time.Now().UnixMilli(),
+				"v1.0",
+				link.PACKAGE_TYPE_BIZ,
+				link.BizData{
+					Code: 0,
+					Msg:  "start a docker",
+				}))
+	}
+
+	log.Println("waiting in select")
+	select {}
 }
