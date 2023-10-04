@@ -47,9 +47,17 @@ func OnNewConn(conn *websocket.Conn) {
 	mapConn2ChanRead[conn] = make(chan []byte)
 }
 
-func OnConnDelete(conn *websocket.Conn) {
-	delete(mapConn2ChanWrite, conn)
-	delete(mapConn2ChanRead, conn)
+func OnConnLost(endpoint string) { // todo: mem leak ,chan leak ?
+	conn := mapEndpoint2Conn[endpoint]
+	if conn != nil {
+		delete(mapConn2ChanWrite, conn)
+		delete(mapConn2ChanRead, conn)
+
+		delete(mapConn2Endpoint, conn)
+
+		conn.Close()
+	}
+	delete(mapEndpoint2Conn, endpoint)
 }
 
 const (
@@ -74,7 +82,7 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) { // it is stateles
 
 	defer func() {
 		conn.Close()
-		OnConnDelete(conn)
+		//OnConnLost(conn)
 		log.Println("[handleWebSocket] function defer ....")
 	}()
 
@@ -141,6 +149,12 @@ const (
 	LINK_EVT_BYE          = 1099
 )
 
+//func OnConnLost(conn *websocket.Conn) {
+//	delete(mapConn2ChanWrite, conn)
+//	delete(mapConn2ChanRead, conn)
+//	delete(mapConn2ChanRead, conn)
+//}
+
 func OnMessageOfRegisterChan(endpoint string, bytesPack []byte) ([]byte, int, error) { // it is stateless
 
 	var pack Package
@@ -156,11 +170,12 @@ func OnMessageOfRegisterChan(endpoint string, bytesPack []byte) ([]byte, int, er
 		return nil, LINK_EVT_HANDSHAKE_OK, nil
 	} else if pack.Type == PACKAGE_TYPE_GOODBYE {
 		log.Println("[OnMessage] body : ", "PACKAGE_TYPE_GOODBYE")
+
 		callbackFuncConnChange(endpoint, LINK_EVT_BYE)
+		OnConnLost(endpoint)
 		return nil, LINK_EVT_BYE, nil
 	} else if pack.Type == PACKAGE_TYPE_BIZ {
 		bytes, _ := json.Marshal(pack.Body)
-		//OnBizDataFromRegisterEndpoint(endpoint, bytes)
 		callbackFuncBizData(endpoint, bytes)
 
 		return nil, LINK_EVT_NONE, nil

@@ -22,13 +22,13 @@ func (Time) TableName() string {
 }
 
 type Time struct {
-	ID       string `json:"id" gorm:"primaryKey"`
+	Id       string `json:"id" gorm:"primaryKey"`
 	Type     int    `json:"type"`
 	Holder   string `json:"holder"`
 	Desc     string `json:"desc"`
 	Status   int    `json:"status"`
 	CreateAt int64  `json:"create_at"`
-	IdOnce   string `json:"id_once"`
+	IdOnce   string `json:"id_once"  gorm:"index:idx_id_once"  `
 	CreateBy int64  `json:"create_by"`
 	Timeout  int    `json:"timeout"`
 }
@@ -41,20 +41,20 @@ func (ctl *TimeCtl) CreateItem(item Time) (err error) {
 	return nil
 }
 
-func (ctl *TimeCtl) UpdateItemByID(id string, fieldsToUpdate map[string]interface{}) (e error) {
+func (ctl *TimeCtl) UpdateItemById(id string, fieldsToUpdate map[string]interface{}) (e error) {
 
 	result := db.Model(&Time{}).Where("id = ?", id).Updates(fieldsToUpdate)
 	if result.Error != nil {
-		log.Println("UpdateItemByID e: ", e)
+		log.Println("UpdateItemById e: ", e)
 	}
 
 	return nil
 }
 
-func (ctl *TimeCtl) DeleteItemByID(id string) (err error) {
+func (ctl *TimeCtl) DeleteItemById(id string) (err error) {
 	result := db.Where("id = ?", id).Delete(&Time{})
 	if result.Error != nil {
-		return errors.Wrap(result.Error, "TimeCtl.DeleteItemByID: ")
+		return errors.Wrap(result.Error, "TimeCtl.DeleteItemById: ")
 	}
 
 	return nil

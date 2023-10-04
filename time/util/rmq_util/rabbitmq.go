@@ -101,7 +101,7 @@ func declareConsumer(rmq *RabbitMQ, shouldAck func([]byte) bool) error {
 
 	// Set our quality of service.  Since we're sharing 3 consumers on the same
 	// channel, we want at least 2 messages in flight.
-	err = rmq.Chann.Qos(2, 0, false)
+	err = rmq.Chann.Qos(1, 0, false)
 	if err != nil {
 		return err
 	}
@@ -134,12 +134,13 @@ func consume(ds <-chan amqp.Delivery, shouldAck func([]byte) bool) {
 			}
 			//log.Infof("consume: %s", string(d.Body))
 
+			tick := time.Now().UnixMilli()
 			if shouldAck(d.Body) {
 				d.Ack(false)
 			} else {
 				d.Nack(true, false)
 			}
-
+			log.Println("#### shouldAck: time=", time.Now().UnixMilli()-tick)
 		}
 	}
 }

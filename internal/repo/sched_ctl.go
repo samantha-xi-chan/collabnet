@@ -22,20 +22,24 @@ func (Sched) TableName() string {
 }
 
 type Sched struct {
-	ID         string `json:"id" gorm:"primaryKey"`
-	Desc       string `json:"desc"`
-	Status     int    `json:"status"`
-	Code       int    `json:"code"`
-	Endpoint   string `json:"endpoint"`
-	CreateAt   int64  `json:"create_at"`
-	ActiveAt   int64  `json:"active_at"`
-	Enabled    int    `json:"enabled"`
-	PreTimeout int    `json:"pre_timeout"` /* second */
-	RunTimeout int    `json:"run_timeout"` /* second */
-	PreTimer   string `json:"pre_timer"`
-	RunTimer   string `json:"run_timer"`
+	Id       string `json:"id" gorm:"primaryKey"`
+	Desc     string `json:"desc"`
+	Status   int    `json:"status"`
+	Code     int    `json:"code"`
+	Endpoint string `json:"endpoint"`
+	CreateAt int64  `json:"create_at"`
+	FinishAt int64  `json:"finish_at"`
+	ActiveAt int64  `json:"active_at"`
+	Enabled  int    `json:"enabled"`
 
-	HbTimer string `json:"hb_timer"`
+	PreTimeout int `json:"pre_timeout"` /* second */
+	HbTimeout  int `json:"hb_timeout"`  /* second */
+	RunTimeout int `json:"run_timeout"` /* second */
+
+	CmdackTimer string `json:"cmdack_timer"`
+	PreTimer    string `json:"pre_timer"`
+	HbTimer     string `json:"hb_timer"`
+	RunTimer    string `json:"run_timer"`
 }
 
 func (ctl *SchedCtl) CreateItem(item Sched) (err error) {
@@ -46,20 +50,20 @@ func (ctl *SchedCtl) CreateItem(item Sched) (err error) {
 	return nil
 }
 
-func (ctl *SchedCtl) UpdateItemByID(id string, fieldsToUpdate map[string]interface{}) (e error) {
+func (ctl *SchedCtl) UpdateItemById(id string, fieldsToUpdate map[string]interface{}) (e error) {
 
 	result := db.Model(&Sched{}).Where("id = ?", id).Updates(fieldsToUpdate)
 	if result.Error != nil {
-		log.Println("UpdateItemByID e: ", e)
+		log.Println("UpdateItemById e: ", e)
 	}
 
 	return nil
 }
 
-func (ctl *SchedCtl) DeleteItemByID(id string) (err error) {
+func (ctl *SchedCtl) DeleteItemById(id string) (err error) {
 	result := db.Where("id = ?", id).Delete(&Sched{})
 	if result.Error != nil {
-		return errors.Wrap(result.Error, "SchedCtl.DeleteItemByID: ")
+		return errors.Wrap(result.Error, "SchedCtl.DeleteItemById: ")
 	}
 
 	return nil

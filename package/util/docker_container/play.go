@@ -131,7 +131,7 @@ func StartContainer(ctx context.Context,
 		return "", err
 	}
 
-	containerId := resp.ID
+	containerId := resp.Id
 	log.Print("ContainerCreate resp: ", resp)
 
 	err = cli.ContainerStart(
@@ -147,7 +147,7 @@ func StartContainer(ctx context.Context,
 	return containerId, nil
 }
 
-func IsContainerRunning(containerNameOrID string) (bRunning bool, e error) {
+func IsContainerRunning(containerNameOrId string) (bRunning bool, e error) {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		return false, errors.Wrap(err, "client.NewClientWithOpts: ")
@@ -159,7 +159,7 @@ func IsContainerRunning(containerNameOrID string) (bRunning bool, e error) {
 	}
 
 	for _, container := range containers {
-		if container.Names[0] == "/"+containerNameOrID || container.ID == containerNameOrID {
+		if container.Names[0] == "/"+containerNameOrId || container.Id == containerNameOrId {
 			log.Println("container running ")
 			return true, nil
 		}
@@ -201,7 +201,7 @@ func ListContainer(ctx context.Context) (x []types.Container, e error) {
 
 	// 打印容器信息
 	for _, container := range containers {
-		//fmt.Printf("容器ID：%s\n", container.ID)
+		//fmt.Printf("容器Id：%s\n", container.Id)
 		fmt.Printf("containerName：%s\n", container.Names)
 		//fmt.Printf("镜像：%s\n", container.Image)
 		//fmt.Printf("状态：%s\n", container.State)

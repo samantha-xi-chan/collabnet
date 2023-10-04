@@ -63,7 +63,7 @@ func getProcByPid(pid int32) (x *process.Process, err error) {
 }
 
 //func Run(cmd string) {
-//	//cmd := fmt.Sprintf("docker logs --follow %s", containerID)
+//	//cmd := fmt.Sprintf("docker logs --follow %s", containerId)
 //	logrus.Debug("cmd : ", cmd)
 //	strArr := strings.Fields(strings.TrimSpace(cmd))
 //	process, err := os.StartProcess(GetDockerBin(), strArr, procAttr)
@@ -122,7 +122,7 @@ func StartProcBloRt(stdOut chan string, stdErr chan string, cb Callback, trackLo
 			return FUNC_ERROR_CODE_UNKNOW, 0, nil
 		}
 		pid := cmd.Process.Pid
-		fmt.Println("Process ID:", pid)
+		fmt.Println("Process Id:", pid)
 		cb(pid)
 		go func() {
 			wg.Add(1)
@@ -172,7 +172,7 @@ func StartProcBloRt(stdOut chan string, stdErr chan string, cb Callback, trackLo
 			return FUNC_ERROR_CODE_UNKNOW, 0, nil
 		}
 		pid := cmd.Process.Pid
-		fmt.Println("Process ID:", pid)
+		fmt.Println("Process Id:", pid)
 		cb(pid)
 	}
 

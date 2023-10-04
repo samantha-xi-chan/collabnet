@@ -35,7 +35,6 @@ func OnNewBizData(bytes []byte) {
 
 	log.Println("[OnNewBizData]  idSched = ", idSched)
 
-	time.Sleep(time.Second * 1)
 	SendBizData(link.GetPackageBytes(
 		time.Now().UnixMilli(),
 		"1.0",
@@ -48,7 +47,7 @@ func OnNewBizData(bytes []byte) {
 	))
 	log.Println(" STATUS_SCHED_CMD_ACKED [OnNewBizData]  idSched = ", idSched)
 
-	time.Sleep(time.Second * 1)
+	time.Sleep(time.Second * config.TEST_TIME_PREPARE)
 	SendBizData(link.GetPackageBytes(
 		time.Now().UnixMilli(),
 		"1.0",
@@ -61,8 +60,8 @@ func OnNewBizData(bytes []byte) {
 	))
 	log.Println(" STATUS_SCHED_PRE_ACKED [OnNewBizData]  idSched = ", idSched)
 
-	for i := 0; i < 4; i++ {
-		time.Sleep(time.Second * config.SCHED_HEARTBEAT_INTERVAL / 2)
+	for i := 0; i < config.TEST_TIME_RUN/config.SCHED_HEARTBEAT_INTERVAL; i++ {
+		time.Sleep(time.Second * time.Duration(body.HbInterval))
 		SendBizData(link.GetPackageBytes(
 			time.Now().UnixMilli(),
 			"1.0",
@@ -73,10 +72,10 @@ func OnNewBizData(bytes []byte) {
 				Msg:  "STATUS_SCHED_HEARTBEAT",
 			},
 		))
-		log.Println("task start ok, HeartBeat [OnNewBizData]  idSched = ", idSched)
+		log.Println(" HeartBeat [OnNewBizData]  idSched = ", idSched)
 	}
 
-	time.Sleep(time.Second * 1)
+	time.Sleep(time.Millisecond * 100)
 	SendBizData(link.GetPackageBytes(
 		time.Now().UnixMilli(),
 		"1.0",
@@ -87,7 +86,7 @@ func OnNewBizData(bytes []byte) {
 			Msg:  "STATUS_SCHED_END",
 		},
 	))
-	log.Println("task start ok, Finished [OnNewBizData]  idSched = ", idSched)
+	log.Println(" Finished [OnNewBizData]  idSched = ", idSched)
 }
 
 func SendBizData(bytes []byte) {
@@ -137,8 +136,7 @@ func main() {
 	case <-sigint:
 		log.Println("Interrupted by user")
 		//writeChan <- service.GetPackageBytes(time.Now().UnixMilli(), "v1.1", service.PACKAGE_TYPE_GOODBYE, nil)
-		time.Sleep(time.Millisecond * 200)
-		log.Println("Interrupted by user sleep")
+		time.Sleep(time.Millisecond * 20)
 	case <-done:
 		log.Println(" chan done")
 	}

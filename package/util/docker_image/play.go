@@ -83,7 +83,7 @@ func RemoveImage(ctx context.Context, imageName string) (err error) {
 	}
 
 	// Delete the image
-	_, err = cli.ImageRemove(context.Background(), imageInspect.ID, types.ImageRemoveOptions{})
+	_, err = cli.ImageRemove(context.Background(), imageInspect.Id, types.ImageRemoveOptions{})
 	if err != nil {
 		fmt.Printf("Failed to remove image: %s\n", err)
 		os.Exit(1)

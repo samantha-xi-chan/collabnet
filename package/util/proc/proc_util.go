@@ -87,7 +87,7 @@ func StartProcBlo(stdOut chan string, stdErr chan string, cb Callback, trackLog 
 			return FUNC_ERROR_CODE_UNKNOW, 0, nil
 		}
 		pid := cmd.Process.Pid
-		fmt.Println("Process ID:", pid)
+		fmt.Println("Process Id:", pid)
 		cb(pid)
 		go func() {
 			logrus.Debug("stdout start")
@@ -121,7 +121,7 @@ func StartProcBlo(stdOut chan string, stdErr chan string, cb Callback, trackLog 
 			return FUNC_ERROR_CODE_UNKNOW, 0, nil
 		}
 		pid := cmd.Process.Pid
-		fmt.Println("Process ID:", pid)
+		fmt.Println("Process Id:", pid)
 		cb(pid)
 	}
 

@@ -11,16 +11,16 @@ const (
 
 	ALPHABET     = "abcdefghijklmnopqrstuvwxyz"
 	ALPHABETNUM  = "abcdefghijklmnopqrstuvwxyz1234567890"
-	ID_LEN       = 8
-	ID_LEN_SHORT = 4
-	ID_LEN_LONG  = 16
+	Id_LEN       = 8
+	Id_LEN_SHORT = 4
+	Id_LEN_LONG  = 16
 
 	TOKEN_PREF_OPENAPI = "ot"
 	TOKEN_PREF_USER    = "ut"
 )
 
-func GetIDWithPref(pref string) (x string) {
-	rand, _ := gonanoid.Generate(ALPHABET, ID_LEN_SHORT)
+func GetIdWithPref(pref string) (x string) {
+	rand, _ := gonanoid.Generate(ALPHABET, Id_LEN_SHORT)
 	return fmt.Sprintf("%s%d%s", pref, time.Now().UnixMilli(), rand)
 }
 

@@ -6,6 +6,7 @@ import (
 	"collab-net-v2/time/api"
 	"collab-net-v2/time/repo_time"
 	"collab-net-v2/time/util/rmq_util"
+	"fmt"
 	"log"
 
 	"time"
@@ -15,23 +16,24 @@ import (
 )
 
 func shouldAck(x []byte) bool {
-	strVal := string(x)
-	log.Printf("in shouldAck(), strVal=%s\n", strVal)
+	go func() {
+		strVal := string(x)
+		log.Printf("in shouldAck(), strVal=%s\n", strVal)
 
-	item, e := repo_time.GetTimeCtl().GetItemByKeyValue("id_once", strVal)
-	if e != nil {
-		log.Println("repo_time.GetTimeCtl().GetItemByKeyValue e: ", e)
-		return true
-	}
+		item, e := repo_time.GetTimeCtl().GetItemByKeyValue("id_once", strVal)
+		if e != nil {
+			log.Println("repo_time.GetTimeCtl().GetItemByKeyValue e: ", e)
+			return
+		}
+		if item.Status == api.STATUS_TIMER_DISABLED {
+			log.Println("STATUS_TIMER_DISABLED ")
+			return
+		}
+		log.Println("item: ", item)
 
-	if item.Status == api.STATUS_TIMER_DISABLED {
-		log.Println("STATUS_TIMER_DISABLED ")
-		return true
-	}
+		callbackFunc(item.Id, item.Type, item.Holder, nil)
+	}()
 
-	callbackFunc(item.ID, item.Type, item.Holder, nil)
-
-	log.Println("item: ", item)
 	return true
 }
 
@@ -60,11 +62,11 @@ func Init(url string, exchange string) {
 
 func NewTimer(timeoutSecond int, _type int, holder string, desc string) (id string, e error) {
 
-	idTimer := idgen.GetIDWithPref("time")
-	idOnce := idgen.GetIDWithPref("once")
+	idTimer := idgen.GetIdWithPref("time")
+	idOnce := idgen.GetIdWithPref(fmt.Sprintf("once_%s_", desc))
 
 	repo_time.GetTimeCtl().CreateItem(repo_time.Time{
-		ID:       idTimer,
+		Id:       idTimer,
 		Type:     _type,
 		Holder:   holder,
 		Desc:     desc,
@@ -80,7 +82,7 @@ func NewTimer(timeoutSecond int, _type int, holder string, desc string) (id stri
 		log.Printf("run: failed to publish into rabbitmq: %v", err)
 	}
 
-	repo_time.GetTimeCtl().UpdateItemByID(id, map[string]interface{}{
+	repo_time.GetTimeCtl().UpdateItemById(id, map[string]interface{}{
 		"status": api.STATUS_TIMER_RUNNING,
 	})
 
@@ -88,7 +90,7 @@ func NewTimer(timeoutSecond int, _type int, holder string, desc string) (id stri
 }
 
 func DisableTimer(id string) (e error) {
-	repo_time.GetTimeCtl().UpdateItemByID(id, map[string]interface{}{
+	repo_time.GetTimeCtl().UpdateItemById(id, map[string]interface{}{
 		"status": api.STATUS_TIMER_DISABLED,
 	})
 
@@ -96,9 +98,9 @@ func DisableTimer(id string) (e error) {
 }
 
 func RenewTimer(id string, timeoutSecond int) (e error) {
-	idOnce := idgen.GetIDWithPref("once")
+	idOnce := idgen.GetIdWithPref("once")
 
-	repo_time.GetTimeCtl().UpdateItemByID(id, map[string]interface{}{
+	repo_time.GetTimeCtl().UpdateItemById(id, map[string]interface{}{
 		"id_once": idOnce,
 	})
 
