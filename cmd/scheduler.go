@@ -163,10 +163,11 @@ func OnBizDataFromRegisterEndpoint(endpoint string, bytes []byte) (e error) { //
 		idHbTimer, _ := service_time.NewTimer(config.SCHED_HEARTBEAT_TIMEOUT, api.STATUS_SCHED_HEARTBEAT, idSched, "hb_timeout")
 
 		repo.GetSchedCtl().UpdateItemById(body.Id, map[string]interface{}{
-			"active_at": time.Now().UnixMilli(),
-			"status":    status,
-			"run_timer": idRunTimer,
-			"hb_timer":  idHbTimer,
+			"active_at":   time.Now().UnixMilli(),
+			"prepared_at": time.Now().UnixMilli(),
+			"status":      status,
+			"run_timer":   idRunTimer,
+			"hb_timer":    idHbTimer,
 		})
 	} else if body.Msg == "STATUS_SCHED_HEARTBEAT" {
 		status = api.STATUS_SCHED_HEARTBEAT
@@ -274,6 +275,13 @@ func NewSched(cmd string, endpoint string, cmdackTimeoutSecond int, preTimeoutSe
 		"status":       api.STATUS_SCHED_SENT,
 		"cmdack_timer": idCmdackTimer,
 	})
+
+	item, e := repo.GetSchedCtl().GetItemById(idSched)
+	if e != nil {
+
+	}
+	log.Println("[NewSched] item: ", item)
+
 	return idSched, nil
 }
 

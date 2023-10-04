@@ -87,7 +87,7 @@ func NewTimer(timeoutSecond int, _type int, holder string, desc string) (id stri
 		Timeout:  timeoutSecond,
 	})
 
-	err := rmq.PublishWithDelay("user.event.publish", []byte(idOnce), int64(1000*timeoutSecond))
+	err := rmq.PublishWithDelay(rmq_util.KEY, []byte(idOnce), int64(1000*timeoutSecond))
 	if err != nil {
 		log.Printf("run: failed to publish into rabbitmq: %v", err)
 	}
@@ -100,6 +100,14 @@ func NewTimer(timeoutSecond int, _type int, holder string, desc string) (id stri
 }
 
 func DisableTimer(id string) (e error) {
+	item, e := repo_time.GetTimeCtl().GetItemById(id)
+	if e != nil {
+		log.Printf("repo_time.GetTimeCtl().GetItemById, e= %s , id = %s \n ", e, id)
+		return
+	}
+
+	log.Printf("[DisableTimer]  id = %s, type =  %s , desc = %s\n", id, item.Type, item.Desc)
+
 	repo_time.GetTimeCtl().UpdateItemById(id, map[string]interface{}{
 		"status": api.STATUS_TIMER_DISABLED,
 	})
@@ -108,7 +116,7 @@ func DisableTimer(id string) (e error) {
 }
 
 func RenewTimer(id string, timeoutSecond int) (e error) {
-	idOnce := idgen.GetIdWithPref("once")
+	idOnce := idgen.GetIdWithPref("once_renew")
 
 	repo_time.GetTimeCtl().UpdateItemById(id, map[string]interface{}{
 		"id_once": idOnce,

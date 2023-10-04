@@ -43,8 +43,8 @@ func SendDataToEndpoint(endpoint string, bytes []byte) (errCode int, e error) {
 }
 
 func OnNewConn(conn *websocket.Conn) {
-	mapConn2ChanWrite[conn] = make(chan []byte)
-	mapConn2ChanRead[conn] = make(chan []byte)
+	mapConn2ChanWrite[conn] = make(chan []byte, CHAN_BUF_SIZE)
+	mapConn2ChanRead[conn] = make(chan []byte, CHAN_BUF_SIZE)
 }
 
 func OnConnLost(endpoint string) { // todo: mem leak ,chan leak ?

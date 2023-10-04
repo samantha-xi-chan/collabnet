@@ -22,15 +22,16 @@ func (Sched) TableName() string {
 }
 
 type Sched struct {
-	Id       string `json:"id" gorm:"primaryKey"`
-	Desc     string `json:"desc"`
-	Status   int    `json:"status"`
-	Code     int    `json:"code"`
-	Endpoint string `json:"endpoint"`
-	CreateAt int64  `json:"create_at"`
-	FinishAt int64  `json:"finish_at"`
-	ActiveAt int64  `json:"active_at"`
-	Enabled  int    `json:"enabled"`
+	Id         string `json:"id" gorm:"primaryKey"`
+	Desc       string `json:"desc"`
+	Status     int    `json:"status"`
+	Code       int    `json:"code"`
+	Endpoint   string `json:"endpoint"`
+	CreateAt   int64  `json:"create_at"`
+	PreparedAt int64  `json:"prepared_at"`
+	FinishAt   int64  `json:"finish_at"`
+	ActiveAt   int64  `json:"active_at"`
+	Enabled    int    `json:"enabled"`
 
 	PreTimeout int `json:"pre_timeout"` /* second */
 	HbTimeout  int `json:"hb_timeout"`  /* second */

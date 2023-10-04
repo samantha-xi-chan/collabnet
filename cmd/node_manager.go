@@ -35,6 +35,7 @@ func OnNewBizData(bytes []byte) {
 
 	log.Println("[OnNewBizData]  idSched = ", idSched)
 
+	time.Sleep(time.Millisecond * 200)
 	SendBizData(link.GetPackageBytes(
 		time.Now().UnixMilli(),
 		"1.0",

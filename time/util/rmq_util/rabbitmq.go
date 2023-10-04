@@ -8,6 +8,12 @@ import (
 	"github.com/streadway/amqp"
 )
 
+const (
+	KEY      = "user.event.publish_1"
+	QUEUE    = "user-published-queue_1"
+	CONSUMER = "user-published-consumer_1"
+)
+
 // RabbitMQ stores rabbitmq's connection information
 // it also handles disconnection (purpose of URL and QueueName storage)
 type RabbitMQ struct {
@@ -81,16 +87,7 @@ func (rmq *RabbitMQ) load(shouldAck func([]byte) bool) error {
 func declareConsumer(rmq *RabbitMQ, shouldAck func([]byte) bool) error {
 	var err error
 
-	// rmq.Queue, err = rmq.Chann.QueueDeclare("user-created-queue", true, false, false, false, nil)
-	// if err != nil {
-	// 	return err
-	// }
-	// err = rmq.Chann.QueueBind(rmq.Queue.Name, "user.event.create", rmq.Exchange, false, nil)
-	// if err != nil {
-	// 	return err
-	// }
-
-	delayedQueue, err := rmq.Chann.QueueDeclare("user-published-queue", true, false, false, false, nil)
+	delayedQueue, err := rmq.Chann.QueueDeclare(QUEUE, true, false, false, false, nil)
 	if err != nil {
 		return err
 	}
@@ -107,8 +104,8 @@ func declareConsumer(rmq *RabbitMQ, shouldAck func([]byte) bool) error {
 	}
 
 	published, err := rmq.Chann.Consume(
-		"user-published-queue",
-		"user-published-consumer",
+		QUEUE,
+		CONSUMER,
 		false,
 		false,
 		false,
