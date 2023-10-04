@@ -15,6 +15,10 @@ import (
 	//"github.com/jinzhu/configor"
 )
 
+const (
+	DEBUG = false
+)
+
 func shouldAck(x []byte) bool {
 	go func() {
 		strVal := string(x)
@@ -22,14 +26,20 @@ func shouldAck(x []byte) bool {
 
 		item, e := repo_time.GetTimeCtl().GetItemByKeyValue("id_once", strVal)
 		if e != nil {
-			log.Println("repo_time.GetTimeCtl().GetItemByKeyValue e: ", e)
+			if DEBUG {
+				log.Println("repo_time.GetTimeCtl().GetItemByKeyValue e: ", e)
+			}
 			return
 		}
 		if item.Status == api.STATUS_TIMER_DISABLED {
-			log.Println("STATUS_TIMER_DISABLED ")
+			if DEBUG {
+				log.Println("STATUS_TIMER_DISABLED ")
+			}
 			return
 		}
-		log.Println("item: ", item)
+		if DEBUG {
+			log.Println("item: ", item)
+		}
 
 		callbackFunc(item.Id, item.Type, item.Holder, nil)
 	}()
