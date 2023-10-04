@@ -1,4 +1,4 @@
-package repo
+package repo_sched
 
 import (
 	"gorm.io/driver/mysql"

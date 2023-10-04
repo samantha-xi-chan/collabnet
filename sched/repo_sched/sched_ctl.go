@@ -1,4 +1,4 @@
-package repo
+package repo_sched
 
 import (
 	"fmt"
@@ -18,7 +18,7 @@ func GetSchedCtl() *SchedCtl {
 }
 
 func (Sched) TableName() string {
-	return "compute_sched"
+	return "sched"
 }
 
 type Sched struct {
@@ -33,9 +33,10 @@ type Sched struct {
 	ActiveAt   int64  `json:"active_at"`
 	Enabled    int    `json:"enabled"`
 
-	PreTimeout int `json:"pre_timeout"` /* second */
-	HbTimeout  int `json:"hb_timeout"`  /* second */
-	RunTimeout int `json:"run_timeout"` /* second */
+	CmdackTimeout int `json:"cmdack_timeout"` /* second */
+	PreTimeout    int `json:"pre_timeout"`    /* second */
+	HbTimeout     int `json:"hb_timeout"`     /* second */
+	RunTimeout    int `json:"run_timeout"`    /* second */
 
 	CmdackTimer string `json:"cmdack_timer"`
 	PreTimer    string `json:"pre_timer"`

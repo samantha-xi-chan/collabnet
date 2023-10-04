@@ -1,7 +1,7 @@
 package link
 
 import (
-	"collab-net-v2/internal/config"
+	"collab-net-v2/sched/config_sched"
 	"encoding/json"
 	mapset "github.com/deckarep/golang-set"
 	"github.com/gorilla/websocket"
@@ -204,7 +204,7 @@ func OnMessageOfUnregisterChan(conn *websocket.Conn, bytes []byte) ([]byte, int,
 		}
 		log.Println("OnMessage  PACKAGE_TYPE_AUTH body : ", body)
 
-		if body.Token == config.AuthTokenForDev {
+		if body.Token == config_sched.AuthTokenForDev {
 			mapEndpoint2Conn[body.Host] = conn
 			mapConn2Endpoint[conn] = body.Host
 
@@ -245,7 +245,7 @@ func NewServer() {
 
 	go func() {
 		http.HandleFunc("/", handleWebSocket)
-		log.Fatal(http.ListenAndServe(config.SCHEDULER_LISTEN_PORT, nil))
+		log.Fatal(http.ListenAndServe(config_sched.SCHEDULER_LISTEN_PORT, nil))
 	}()
 
 	//go func() {

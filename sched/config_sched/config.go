@@ -1,4 +1,4 @@
-package config
+package config_sched
 
 const (
 	TESTCASE_CNT = 1

@@ -154,7 +154,7 @@ func NewClientConnection(
 				time.Now().UnixMilli(),
 				"1.0",
 				PACKAGE_TYPE_AUTH,
-				//AuthReq{Token: config.AuthTokenForDev},
+				//AuthReq{Token: config_task.AuthTokenForDev},
 				AuthReq{
 					Token: conf.Auth,
 					Host:  conf.HostName,

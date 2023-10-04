@@ -2,7 +2,7 @@ package docker_container
 
 import (
 	"collab-net/api"
-	config "collab-net/internal/config"
+	config "collab-net/internal/config_task"
 	"collab-net/message"
 	"collab-net/package/util/procutil"
 	"context"

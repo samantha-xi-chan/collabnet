@@ -1,8 +1,8 @@
 package main
 
 import (
-	"collab-net-v2/internal/config"
 	"collab-net-v2/link"
+	"collab-net-v2/sched/config_sched"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -31,9 +31,9 @@ func OnNewBizData(bytes []byte) {
 		return
 	}
 
-	idSched := body.Id
+	idTask := body.Id
 
-	log.Println("[OnNewBizData]  idSched = ", idSched)
+	log.Println("[OnNewBizData]  idTask = ", idTask)
 
 	time.Sleep(time.Millisecond * 200)
 	SendBizData(link.GetPackageBytes(
@@ -46,9 +46,9 @@ func OnNewBizData(bytes []byte) {
 			Msg:  "STATUS_SCHED_CMD_ACKED",
 		},
 	))
-	log.Println(" STATUS_SCHED_CMD_ACKED [OnNewBizData]  idSched = ", idSched)
+	log.Println(" STATUS_SCHED_CMD_ACKED [OnNewBizData]  idTask = ", idTask)
 
-	time.Sleep(time.Second * config.TEST_TIME_PREPARE)
+	time.Sleep(time.Second * config_sched.TEST_TIME_PREPARE)
 	SendBizData(link.GetPackageBytes(
 		time.Now().UnixMilli(),
 		"1.0",
@@ -59,9 +59,9 @@ func OnNewBizData(bytes []byte) {
 			Msg:  "STATUS_SCHED_PRE_ACKED",
 		},
 	))
-	log.Println(" STATUS_SCHED_PRE_ACKED [OnNewBizData]  idSched = ", idSched)
+	log.Println(" STATUS_SCHED_PRE_ACKED [OnNewBizData]  idTask = ", idTask)
 
-	for i := 0; i < config.TEST_TIME_RUN/config.SCHED_HEARTBEAT_INTERVAL; i++ {
+	for i := 0; i < config_sched.TEST_TIME_RUN/config_sched.SCHED_HEARTBEAT_INTERVAL; i++ {
 		time.Sleep(time.Second * time.Duration(body.HbInterval))
 		SendBizData(link.GetPackageBytes(
 			time.Now().UnixMilli(),
@@ -73,7 +73,7 @@ func OnNewBizData(bytes []byte) {
 				Msg:  "STATUS_SCHED_HEARTBEAT",
 			},
 		))
-		log.Println(" HeartBeat [OnNewBizData]  idSched = ", idSched)
+		log.Println(" HeartBeat [OnNewBizData]  idTask = ", idTask)
 	}
 
 	time.Sleep(time.Millisecond * 100)
@@ -87,7 +87,7 @@ func OnNewBizData(bytes []byte) {
 			Msg:  "STATUS_SCHED_END",
 		},
 	))
-	log.Println(" Finished [OnNewBizData]  idSched = ", idSched)
+	log.Println(" Finished [OnNewBizData]  idTask = ", idTask)
 }
 
 func SendBizData(bytes []byte) {
@@ -123,9 +123,9 @@ func main() {
 	link.NewClientConnection(
 		link.Config{
 			Ver:      "v1.0",
-			Auth:     config.AuthTokenForDev,
+			Auth:     config_sched.AuthTokenForDev,
 			HostName: hostname,
-			HostAddr: fmt.Sprintf("%s%s", config.SCHEDULER_LISTEN_DOMAIN, config.SCHEDULER_LISTEN_PORT),
+			HostAddr: fmt.Sprintf("%s%s", config_sched.SCHEDULER_LISTEN_DOMAIN, config_sched.SCHEDULER_LISTEN_PORT),
 		},
 		//notify,
 		readChanEx,
@@ -136,7 +136,7 @@ func main() {
 	select {
 	case <-sigint:
 		log.Println("Interrupted by user")
-		//writeChan <- service.GetPackageBytes(time.Now().UnixMilli(), "v1.1", service.PACKAGE_TYPE_GOODBYE, nil)
+		//writeChan <- service_sched.GetPackageBytes(time.Now().UnixMilli(), "v1.1", service_sched.PACKAGE_TYPE_GOODBYE, nil)
 		time.Sleep(time.Millisecond * 20)
 	case <-done:
 		log.Println(" chan done")

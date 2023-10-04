@@ -96,7 +96,7 @@ func declareConsumer(rmq *RabbitMQ, shouldAck func([]byte) bool) error {
 		return err
 	}
 
-	// Set our quality of service.  Since we're sharing 3 consumers on the same
+	// Set our quality of service_sched.  Since we're sharing 3 consumers on the same
 	// channel, we want at least 2 messages in flight.
 	err = rmq.Chann.Qos(1, 0, false)
 	if err != nil {

@@ -1,8 +1,8 @@
 package service_time
 
 import (
-	"collab-net-v2/internal/config"
 	"collab-net-v2/package/util/idgen"
+	"collab-net-v2/sched/config_sched"
 	"collab-net-v2/time/api"
 	"collab-net-v2/time/repo_time"
 	"collab-net-v2/time/util/rmq_util"
@@ -58,7 +58,7 @@ func SetCallback(tmp func(idTimer string, _type int, holder string, bytes []byte
 
 func Init(url string, exchange string) {
 	//repo_time.Init("root:gzn%zkTJ8x!gGZO6@tcp(192.168.31.6:3306)/biz?charset=utf8mb4&parseTime=True&loc=Local", 5, 200)
-	repo_time.Init(config.RepoMySQLDsn, config.RepoLogLevel, config.RepoSlowMs)
+	repo_time.Init(config_sched.RepoMySQLDsn, config_sched.RepoLogLevel, config_sched.RepoSlowMs)
 
 	rmq, err = rmq_util.InitRabbitMQ(rmq_util.AMQP{
 		URL:      url,
