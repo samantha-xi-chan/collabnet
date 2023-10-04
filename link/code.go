@@ -22,12 +22,13 @@ const (
 )
 
 const (
-	PACKAGE_TYPE_HELLO     = 1001
-	PACKAGE_TYPE_AUTH      = 1011
-	PACKAGE_TYPE_HEARTBEAT = 1012
-	PACKAGE_TYPE_GOODBYE   = 1013
-	PACKAGE_TYPE_REPORT    = 1021
-	PACKAGE_TYPE_BIZ       = 1013
+	PACKAGE_TYPE_HELLO         = 1001
+	PACKAGE_TYPE_AUTH          = 1011
+	PACKAGE_TYPE_AUTHOK_RECVED = 1012
+	PACKAGE_TYPE_HEARTBEAT     = 1032
+	PACKAGE_TYPE_GOODBYE       = 1043
+	PACKAGE_TYPE_REPORT        = 1061
+	PACKAGE_TYPE_BIZ           = 1083
 )
 
 type Package struct {
@@ -47,8 +48,12 @@ type AuthResp struct {
 	ExpireAt int64
 }
 type BizData struct {
-	Code int
-	Msg  string
+	Id         string
+	Code       int
+	HbInterval int /* second */
+	PreTimeout int /* second */
+	RunTimeout int /* second */
+	Msg        string
 }
 
 //type HelloReq struct {

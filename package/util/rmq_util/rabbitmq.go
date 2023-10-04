@@ -50,8 +50,6 @@ func (rmq *RabbitMQ) load() error {
 		return err
 	}
 
-	//log.Info("connection to rabbitMQ established")
-
 	rmq.closeChann = make(chan *amqp.Error)
 	rmq.Conn.NotifyClose(rmq.closeChann)
 

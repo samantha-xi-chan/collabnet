@@ -17,9 +17,8 @@ var (
 	done   = make(chan struct{})
 	sigint = make(chan os.Signal, 1)
 
-	//notify    = make(chan int, 1024)
-	readChanX  = make(chan []byte, 1024)
-	writeChanX = make(chan []byte, 1024)
+	readChanX  = make(chan []byte, CHAN_BUF_SIZE)
+	writeChanX = make(chan []byte, CHAN_BUF_SIZE)
 
 	transitions = []statemachine.Transition{
 		// 升级
@@ -63,7 +62,7 @@ func NewClientConnection(
 	conf Config,
 	//notify chan int,
 	readChanEx chan []byte,
-	//writeChan chan []byte,
+	writeChanEx chan []byte,
 ) {
 	go func() {
 		var errConn chan struct{}
@@ -91,7 +90,6 @@ func NewClientConnection(
 			}
 
 			sm.HandleEvent(EVT_CONNECT_SUCC)
-			//notify <- EVT_CONNECT_SUCC
 
 			go func() {
 				defer log.Println("quit current goroutine ReadMessage")
@@ -124,6 +122,17 @@ func NewClientConnection(
 				for {
 					select {
 					case write := <-writeChanX:
+						err := c.WriteMessage(websocket.TextMessage, write)
+						if err != nil {
+							log.Println("write:", err)
+
+							closeOnce.Do(func() {
+								close(errConn)
+							})
+
+							break
+						}
+					case write := <-writeChanEx:
 						err := c.WriteMessage(websocket.TextMessage, write)
 						if err != nil {
 							log.Println("write:", err)
@@ -171,7 +180,7 @@ func NewClientConnection(
 				return
 			}
 
-			log.Println(" string(bytes): ", string(bytes))
+			log.Println("[NewClientConnection] (routine read) string(bytes): ", string(bytes))
 			{
 				var pack Package
 				err := json.Unmarshal(bytes, &pack)
@@ -189,8 +198,16 @@ func NewClientConnection(
 						return
 					}
 					log.Println("[<-readChan] body : ", body)
-					//notify <- EVT_CONNECT_AUTH_OK
+
+					writeChanX <- GetPackageBytes(
+						time.Now().UnixMilli(),
+						"1.0",
+						PACKAGE_TYPE_AUTHOK_RECVED,
+						nil,
+					)
+
 					sm.HandleEvent(EVT_CONNECT_AUTH_OK)
+
 				} else if pack.Type == PACKAGE_TYPE_BIZ {
 					var body BizData
 					bytes, _ := json.Marshal(pack.Body)
@@ -201,7 +218,7 @@ func NewClientConnection(
 					}
 					log.Println("[<-readChan] body : ", body)
 
-					readChanEx <- []byte(body.Msg)
+					readChanEx <- bytes
 				}
 			}
 		}

@@ -3,6 +3,7 @@ package main
 import (
 	"collab-net-v2/internal/config"
 	"collab-net-v2/link"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -15,17 +16,83 @@ var (
 	done   = make(chan struct{})
 	sigint = make(chan os.Signal, 1)
 
-	notify     = make(chan int, 1024)
-	readChanEx = make(chan []byte, 1024)
-	writeChan  = make(chan []byte, 1024)
+	notify      = make(chan int, 1024)
+	readChanEx  = make(chan []byte, 1024)
+	writeChanEx = make(chan []byte, 1024)
 )
 
 func OnNewBizData(bytes []byte) {
 	log.Println("OnNewBizData: ", string(bytes))
+
+	var body link.BizData
+	err = json.Unmarshal(bytes, &body)
+	if err != nil {
+		log.Println("[OnNewBizData] json.Unmarshal")
+		return
+	}
+
+	idSched := body.Id
+
+	log.Println("[OnNewBizData]  idSched = ", idSched)
+
+	time.Sleep(time.Second * 1)
+	SendBizData(link.GetPackageBytes(
+		time.Now().UnixMilli(),
+		"1.0",
+		link.PACKAGE_TYPE_BIZ,
+		link.BizData{
+			Id:   body.Id,
+			Code: 0,
+			Msg:  "STATUS_SCHED_CMD_ACKED",
+		},
+	))
+	log.Println(" STATUS_SCHED_CMD_ACKED [OnNewBizData]  idSched = ", idSched)
+
+	time.Sleep(time.Second * 1)
+	SendBizData(link.GetPackageBytes(
+		time.Now().UnixMilli(),
+		"1.0",
+		link.PACKAGE_TYPE_BIZ,
+		link.BizData{
+			Id:   body.Id,
+			Code: 0,
+			Msg:  "STATUS_SCHED_PRE_ACKED",
+		},
+	))
+	log.Println(" STATUS_SCHED_PRE_ACKED [OnNewBizData]  idSched = ", idSched)
+
+	for i := 0; i < 4; i++ {
+		time.Sleep(time.Second * config.SCHED_HEARTBEAT_INTERVAL / 2)
+		SendBizData(link.GetPackageBytes(
+			time.Now().UnixMilli(),
+			"1.0",
+			link.PACKAGE_TYPE_BIZ,
+			link.BizData{
+				Id:   body.Id,
+				Code: 0,
+				Msg:  "STATUS_SCHED_HEARTBEAT",
+			},
+		))
+		log.Println("task start ok, HeartBeat [OnNewBizData]  idSched = ", idSched)
+	}
+
+	time.Sleep(time.Second * 1)
+	SendBizData(link.GetPackageBytes(
+		time.Now().UnixMilli(),
+		"1.0",
+		link.PACKAGE_TYPE_BIZ,
+		link.BizData{
+			Id:   body.Id,
+			Code: 0,
+			Msg:  "STATUS_SCHED_END",
+		},
+	))
+	log.Println("task start ok, Finished [OnNewBizData]  idSched = ", idSched)
 }
 
 func SendBizData(bytes []byte) {
-	writeChan <- bytes
+	log.Println("SendBizData: ", string(bytes))
+	writeChanEx <- bytes
 }
 
 // 状态: 连接异常、连接正常-业务空、连接正常-认证通过、连接正常-认证失败
@@ -39,11 +106,16 @@ func main() {
 
 	go func() {
 		for true {
-			msg, ok := <-readChanEx
+			bytes, ok := <-readChanEx
 			if !ok {
 				return
 			}
-			log.Println("string(msg): ", string(msg))
+
+			log.Println("string(msg): ", string(bytes))
+
+			go func() {
+				OnNewBizData(bytes)
+			}()
 		}
 	}()
 
@@ -57,7 +129,7 @@ func main() {
 		},
 		//notify,
 		readChanEx,
-		//writeChan,
+		writeChanEx,
 	)
 
 	log.Println("[main] waiting select{}")

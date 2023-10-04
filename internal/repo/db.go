@@ -1,4 +1,4 @@
-package repo_time
+package repo
 
 import (
 	"gorm.io/driver/mysql"
@@ -33,7 +33,7 @@ func Init(dsn string, logLevel int, slowThresholdMs int) {
 	sqlDB.SetMaxIdleConns(10)
 
 	err = db.Migrator().DropTable(
-		&Time{},
+		&Sched{},
 	)
 	if err != nil {
 		log.Println("gorm.DropTable: ", err)
@@ -41,7 +41,7 @@ func Init(dsn string, logLevel int, slowThresholdMs int) {
 	}
 
 	err = db.AutoMigrate(
-		&Time{},
+		&Sched{},
 	)
 	if err != nil {
 		log.Println("gorm.AutoMigrate: ", err)

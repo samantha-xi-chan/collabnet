@@ -23,6 +23,8 @@ func (Time) TableName() string {
 
 type Time struct {
 	ID       string `json:"id" gorm:"primaryKey"`
+	Type     int    `json:"type"`
+	Holder   string `json:"holder"`
 	Desc     string `json:"desc"`
 	Status   int    `json:"status"`
 	CreateAt int64  `json:"create_at"`
@@ -70,13 +72,13 @@ func (ctl *TimeCtl) GetItemByKeyValue(key string, val interface{}) (i Time, e er
 	return item, nil
 }
 
-func (ctl *TimeCtl) GetItemByID(id string) (i Time, e error) { // todo: optimize
+func (ctl *TimeCtl) GetItemById(id string) (i Time, e error) { // todo: optimize
 	var item Time
 	err := db.Where("id = ?", id).Take(&item).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return Time{}, errors.Wrap(err, "TimeCtl GetItemByID ErrRecordNotFound: ")
+		return Time{}, errors.Wrap(err, "TimeCtl GetItemById ErrRecordNotFound: ")
 	} else if err != nil {
-		return Time{}, errors.Wrap(err, "TimeCtl GetItemByID err not nil: ")
+		return Time{}, errors.Wrap(err, "TimeCtl GetItemById err not nil: ")
 	}
 
 	return item, nil
