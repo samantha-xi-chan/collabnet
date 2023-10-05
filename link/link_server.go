@@ -1,6 +1,9 @@
 package link
 
 import (
+	"collab-net-v2/link/config_link"
+	"collab-net-v2/link/repo_link"
+	"collab-net-v2/package/util/idgen"
 	"collab-net-v2/sched/config_sched"
 	"encoding/json"
 	mapset "github.com/deckarep/golang-set"
@@ -20,6 +23,8 @@ var (
 
 	mapEndpoint2Conn = make(map[string]*websocket.Conn)
 	mapConn2Endpoint = make(map[*websocket.Conn]string)
+
+	mapConn2IdLlink = make(map[*websocket.Conn]string)
 )
 
 var callbackFuncBizData func(endpoint string, bytes []byte) (e error)
@@ -47,17 +52,21 @@ func OnNewConn(conn *websocket.Conn) {
 	mapConn2ChanRead[conn] = make(chan []byte, CHAN_BUF_SIZE)
 }
 
-func OnConnLost(endpoint string) { // todo: mem leak ,chan leak ?
-	conn := mapEndpoint2Conn[endpoint]
-	if conn != nil {
-		delete(mapConn2ChanWrite, conn)
-		delete(mapConn2ChanRead, conn)
+func OnConnLost(endpoint string, conn *websocket.Conn) { // todo: mem leak ,chan leak ?
+	delete(mapConn2ChanWrite, conn)
+	delete(mapConn2ChanRead, conn)
 
-		delete(mapConn2Endpoint, conn)
+	delete(mapConn2Endpoint, conn)
 
-		conn.Close()
-	}
+	conn.Close()
+
 	delete(mapEndpoint2Conn, endpoint)
+
+	idLink := mapConn2IdLlink[conn]
+	repo_link.GetLinkCtl().UpdateItemById(idLink, map[string]interface{}{
+		"delete_at": time.Now().UnixMilli(),
+		"online":    0,
+	})
 }
 
 const (
@@ -81,9 +90,13 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) { // it is stateles
 	OnNewConn(conn)
 
 	defer func() {
-		conn.Close()
-		//OnConnLost(conn)
 		log.Println("[handleWebSocket] function defer ....")
+		endpoint := mapConn2Endpoint[conn]
+
+		callbackFuncConnChange(endpoint, LINK_EVT_BYE)
+		OnConnLost(endpoint, conn)
+
+		conn.Close()
 	}()
 
 	go func() { // reader
@@ -93,10 +106,11 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) { // it is stateles
 				log.Println("chanEndNotify")
 				return
 			default:
-				log.Println("waiting conn.ReadMessage")
+				log.Println("[handleWebSocket] waiting conn.ReadMessage")
 				mType, bytes, err := conn.ReadMessage()
 				if err != nil {
-					log.Println(err)
+					log.Println("conn.ReadMessage: e = ", err)
+					close(chanEndNotify)
 					return
 				}
 
@@ -109,8 +123,7 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) { // it is stateles
 						mapConn2ChanWrite[conn] <- bytesResp
 					}
 				} else { // 已注册的链接
-					OnMessageOfRegisterChan(endpoint, bytes)
-					//bytesResp, evtType, e := OnMessageOfRegisterChan(endpoint, bytes)
+					OnMessageOfRegisterChan(endpoint, conn, bytes)
 				}
 			}
 
@@ -128,6 +141,7 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) { // it is stateles
 					log.Println("routine writer bytes: ", string(bytes))
 					if err := conn.WriteMessage(0x01, bytes); err != nil {
 						log.Println("WriteMessage e: ", err)
+						close(chanEndNotify)
 						return
 					}
 				}
@@ -149,13 +163,7 @@ const (
 	LINK_EVT_BYE          = 1099
 )
 
-//func OnConnLost(conn *websocket.Conn) {
-//	delete(mapConn2ChanWrite, conn)
-//	delete(mapConn2ChanRead, conn)
-//	delete(mapConn2ChanRead, conn)
-//}
-
-func OnMessageOfRegisterChan(endpoint string, bytesPack []byte) ([]byte, int, error) { // it is stateless
+func OnMessageOfRegisterChan(endpoint string, conn *websocket.Conn, bytesPack []byte) ([]byte, int, error) { // it is stateless
 
 	var pack Package
 	err := json.Unmarshal(bytesPack, &pack)
@@ -167,12 +175,23 @@ func OnMessageOfRegisterChan(endpoint string, bytesPack []byte) ([]byte, int, er
 
 	if pack.Type == PACKAGE_TYPE_AUTHOK_RECVED {
 		callbackFuncConnChange(endpoint, LINK_EVT_HANDSHAKE_OK)
+
+		// todo: 判重
+
+		idLink := idgen.GetIdWithPref("link")
+		repo_link.GetLinkCtl().CreateItem(repo_link.Link{
+			Id:       idLink,
+			Host:     endpoint,
+			CreateAt: time.Now().UnixMilli(),
+			DeleteAt: 0,
+			Online:   1,
+		})
+		mapConn2IdLlink[conn] = idLink
+
 		return nil, LINK_EVT_HANDSHAKE_OK, nil
 	} else if pack.Type == PACKAGE_TYPE_GOODBYE {
 		log.Println("[OnMessage] body : ", "PACKAGE_TYPE_GOODBYE")
 
-		callbackFuncConnChange(endpoint, LINK_EVT_BYE)
-		OnConnLost(endpoint)
 		return nil, LINK_EVT_BYE, nil
 	} else if pack.Type == PACKAGE_TYPE_BIZ {
 		bytes, _ := json.Marshal(pack.Body)
@@ -236,10 +255,13 @@ func OnMessageOfUnregisterChan(conn *websocket.Conn, bytes []byte) ([]byte, int,
 	return nil, LINK_EVT_NONE, nil
 }
 
-func init() {
+func initRepo() {
+	repo_link.Init(config_link.RepoMySQLDsn, config_link.RepoLogLevel, config_link.RepoSlowMs)
 }
 
 func NewServer() {
+	initRepo()
+
 	done := make(chan struct{})
 	sigint := make(chan os.Signal, 1)
 
@@ -247,11 +269,6 @@ func NewServer() {
 		http.HandleFunc("/", handleWebSocket)
 		log.Fatal(http.ListenAndServe(config_sched.SCHEDULER_LISTEN_PORT, nil))
 	}()
-
-	//go func() {
-	//	time.Sleep(time.Second * 10)
-	//	DispatchCmdToHostAndWait("M1", "touch ~/CmdFromServer")
-	//}()
 
 	log.Println("[NewServer] waiting select{}")
 	select {

@@ -219,7 +219,7 @@ func OnBizDataFromRegisterEndpoint(endpoint string, bytes []byte) (e error) { //
 	return
 }
 
-func StopSched(id string) (ee error) {
+func StopSched(id string) (ee error) { // todo: send stop cmd to excutors
 
 	item, e := repo_sched.GetSchedCtl().GetItemById(id)
 	if e != nil {

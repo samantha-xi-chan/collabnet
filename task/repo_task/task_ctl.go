@@ -22,10 +22,11 @@ func (Task) TableName() string {
 }
 
 type Task struct {
-	Id     string `json:"id" gorm:"primaryKey"`
-	Desc   string `json:"desc"`
-	Cmd    string `json:"cmd"`
-	Status int    `json:"status"`
+	Id      string `json:"id" gorm:"primaryKey"`
+	Desc    string `json:"desc"`
+	Cmd     string `json:"cmd"`
+	Status  int    `json:"status"`
+	Enabled int    `json:"enabled"`
 	//Code     int    `json:"code"`
 	CreateAt int64 `json:"create_at"`
 	QueueAt  int64 `json:"queue_at"`
