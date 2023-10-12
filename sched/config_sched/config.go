@@ -12,7 +12,7 @@ const (
 	SCHED_HEARTBEAT_INTERVAL = 8   /* Second */
 	SCHED_HEARTBEAT_TIMEOUT  = 400 /* Second */
 
-	CMD_ACK_TIMEOUT = 600 /* Second */
+	CMD_ACK_TIMEOUT = 10 /* Second */
 )
 
 const (

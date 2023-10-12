@@ -1,11 +1,15 @@
 package main
 
 import (
+	"collab-net-v2/api"
+	"collab-net-v2/internal/config"
 	"collab-net-v2/link"
 	"collab-net-v2/sched/config_sched"
 	"encoding/json"
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
 	"time"
@@ -21,8 +25,14 @@ var (
 	writeChanEx = make(chan []byte, 1024)
 )
 
+func OnUpdateFromPlugin(id string, status int, para01 int) {
+
+	//SendBizData(  )
+}
+
 func OnNewBizData(bytes []byte) {
-	log.Println("OnNewBizData: ", string(bytes))
+	onNewBizData := string(bytes)
+	log.Println("OnNewBizData: ", onNewBizData)
 
 	var body link.BizData
 	err = json.Unmarshal(bytes, &body)
@@ -49,6 +59,7 @@ func OnNewBizData(bytes []byte) {
 	log.Println(" STATUS_SCHED_CMD_ACKED [OnNewBizData]  idTask = ", idTask)
 
 	time.Sleep(time.Second * config_sched.TEST_TIME_PREPARE)
+
 	SendBizData(link.GetPackageBytes(
 		time.Now().UnixMilli(),
 		"1.0",
@@ -95,13 +106,21 @@ func SendBizData(bytes []byte) {
 	writeChanEx <- bytes
 }
 
-// 状态: 连接异常、连接正常-业务空、连接正常-认证通过、连接正常-认证失败
 func init() {
 
 }
 
-// 需要实现： 登进登出、心跳、容器饿死杀灭、指令执行（启动容器、停止容器、清除容器）
+var pluginChan = make(chan string)
+
 func main() {
+	go func() {
+		e := StartPluginService()
+		if e != nil {
+			log.Fatal("StartPluginService: e=", e)
+		}
+	}()
+	log.Println("end StartPluginService()")
+
 	signal.Notify(sigint, os.Interrupt)
 
 	go func() {
@@ -111,7 +130,10 @@ func main() {
 				return
 			}
 
-			log.Println("string(msg): ", string(bytes))
+			readChanExStr := string(bytes)
+			log.Println("readChanExStr: ", readChanExStr)
+
+			pluginChan <- readChanExStr
 
 			go func() {
 				OnNewBizData(bytes)
@@ -119,12 +141,12 @@ func main() {
 		}
 	}()
 
-	hostname, _ := os.Hostname()
+	hostName, _ := os.Hostname()
 	link.NewClientConnection(
 		link.Config{
 			Ver:      "v1.0",
 			Auth:     config_sched.AuthTokenForDev,
-			HostName: hostname,
+			HostName: hostName,
 			HostAddr: fmt.Sprintf("%s%s", config_sched.SCHEDULER_LISTEN_DOMAIN, config_sched.SCHEDULER_LISTEN_PORT),
 		},
 		//notify,
@@ -143,3 +165,48 @@ func main() {
 	}
 
 }
+
+func StartPluginService() (ee error) {
+	r := gin.Default()
+	r.GET(config.PLUGIN_SERVICE_ROUTER, getTaskCmd)
+	r.POST(config.PLUGIN_SERVICE_ROUTER_ID, postTaskStatus)
+	return r.Run(config.PLUGIN_SERVICE_PORT)
+}
+
+func getTaskCmd(c *gin.Context) {
+	select {
+	case msg := <-pluginChan:
+		c.JSON(http.StatusOK, api.HttpRespBody{
+			Code: 0,
+			Msg:  msg,
+			//Data: []byte(msg),
+		})
+	case <-time.After(30 * time.Second):
+		c.JSON(http.StatusOK, api.HttpRespBody{
+			Code: 9999,
+			Msg:  "no data",
+		})
+	}
+}
+
+func postTaskStatus(c *gin.Context) { // 任务状态变更
+	c.JSON(http.StatusOK, api.HttpRespBody{
+		Code: 0,
+		Msg:  "postTaskStatus ok",
+	})
+}
+
+//func longPollHandler(w http.ResponseWriter, r *http.Request) {
+//	// Set response headers to allow cross-origin requests
+//	w.Header().Set("Access-Control-Allow-Origin", "*")
+//	w.Header().Set("Content-Type", "text/plain")
+//
+//	select {
+//	case msg := <-pluginChan:
+//		// When data is available, send it as a response
+//		w.Write([]byte(msg))
+//	case <-time.After(30 * time.Second):
+//		// After a timeout, respond with a message indicating no new data
+//		w.Write([]byte("No new data available."))
+//	}
+//}

@@ -106,7 +106,7 @@ func DisableTimer(id string) (e error) {
 		return
 	}
 
-	log.Printf("[DisableTimer]  id = %s, type =  %s , desc = %s\n", id, item.Type, item.Desc)
+	log.Printf("[DisableTimer]  id = %s, type =  %d , desc = %s\n", id, item.Type, item.Desc)
 
 	repo_time.GetTimeCtl().UpdateItemById(id, map[string]interface{}{
 		"status": api.STATUS_TIMER_DISABLED,

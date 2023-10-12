@@ -139,7 +139,7 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) { // it is stateles
 			case bytes, ok := <-mapConn2ChanWrite[conn]:
 				if ok {
 					log.Println("routine writer bytes: ", string(bytes))
-					if err := conn.WriteMessage(0x01, bytes); err != nil {
+					if err := conn.WriteMessage(websocket.TextMessage, bytes); err != nil {
 						log.Println("WriteMessage e: ", err)
 						close(chanEndNotify)
 						return
@@ -178,10 +178,11 @@ func OnMessageOfRegisterChan(endpoint string, conn *websocket.Conn, bytesPack []
 
 		// todo: 判重
 
-		idLink := idgen.GetIdWithPref("link")
+		idLink := idgen.GetIdWithPref("co")
 		repo_link.GetLinkCtl().CreateItem(repo_link.Link{
 			Id:       idLink,
-			Host:     endpoint,
+			HostName: endpoint,
+			From:     conn.RemoteAddr().String(),
 			CreateAt: time.Now().UnixMilli(),
 			DeleteAt: 0,
 			Online:   1,
@@ -224,8 +225,8 @@ func OnMessageOfUnregisterChan(conn *websocket.Conn, bytes []byte) ([]byte, int,
 		log.Println("OnMessage  PACKAGE_TYPE_AUTH body : ", body)
 
 		if body.Token == config_sched.AuthTokenForDev {
-			mapEndpoint2Conn[body.Host] = conn
-			mapConn2Endpoint[conn] = body.Host
+			mapEndpoint2Conn[body.HostName] = conn
+			mapConn2Endpoint[conn] = body.HostName
 
 			return GetPackageBytes(
 				time.Now().UnixMilli(),

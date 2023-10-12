@@ -117,10 +117,17 @@ func NewClientConnection(
 
 			}()
 
+			heartbeatTicker := time.NewTicker(30 * time.Second)
 			go func() {
 				defer log.Println("quit current goroutine WriteMessage")
 				for {
 					select {
+					case <-heartbeatTicker.C:
+						if err := c.WriteMessage(websocket.PingMessage, nil); err != nil {
+							log.Println("Failed to send ping:", err)
+							return
+						}
+						log.Println("WriteMessage PingMessage ok")
 					case write := <-writeChanX:
 						err := c.WriteMessage(websocket.TextMessage, write)
 						if err != nil {
@@ -156,15 +163,16 @@ func NewClientConnection(
 				PACKAGE_TYPE_AUTH,
 				//AuthReq{Token: config_task.AuthTokenForDev},
 				AuthReq{
-					Token: conf.Auth,
-					Host:  conf.HostName,
+					Token:    conf.Auth,
+					HostName: conf.HostName,
 				},
 			) // []byte(conf.Auth)
 
 			<-errConn
 			log.Println("<-errConn")
+			heartbeatTicker.Stop()
 			c.Close()
-			//notify <- EVT_CONNECT_FAIL
+
 			sm.HandleEvent(EVT_CONNECT_FAIL)
 
 			retry = 1

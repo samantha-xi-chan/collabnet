@@ -5,3 +5,7 @@ const (
 	RepoLogLevel = 2
 	RepoSlowMs   = 200
 )
+
+const (
+	LISTEN_PORT = ":8080"
+)

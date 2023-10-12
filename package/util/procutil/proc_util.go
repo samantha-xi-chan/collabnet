@@ -2,8 +2,6 @@ package procutil
 
 import (
 	"bufio"
-	"collab-net/internal/config"
-	"collab-net/package/util/stl"
 	"fmt"
 	"github.com/pkg/errors"
 	"github.com/shirou/gopsutil/process"

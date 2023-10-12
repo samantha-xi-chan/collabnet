@@ -23,7 +23,8 @@ func (Link) TableName() string {
 
 type Link struct {
 	Id       string `json:"id" gorm:"primaryKey"`
-	Host     string `json:"host" ` //  gorm:"unique"
+	HostName string `json:"host_name" ` //  gorm:"unique"
+	From     string `json:"from" `      //  gorm:"unique"
 	CreateAt int64  `json:"create_at"`
 	DeleteAt int64  `json:"delete_at"`
 	Online   int    `json:"online"`
@@ -78,6 +79,18 @@ func (ctl *LinkCtl) GetItemById(id string) (i Link, e error) { // todo: optimize
 	}
 
 	return item, nil
+}
+
+func (ctl *LinkCtl) GetItems() (arr []Link, e error) {
+	var items []Link
+	err := db.Find(&items).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, errors.Wrap(err, "LinkCtl GetItems ErrRecordNotFound: ")
+	} else if err != nil {
+		return nil, errors.Wrap(err, "LinkCtl GetItems err not nil: ")
+	}
+
+	return items, nil
 }
 
 func (ctl *LinkCtl) UpdateItemByKeyValue(key string, val interface{}, fieldsToUpdate map[string]interface{}) (i Link, e error) { // todo: optimize

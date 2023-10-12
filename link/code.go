@@ -32,28 +32,28 @@ const (
 )
 
 type Package struct {
-	Id   int64
-	Ver  string
-	Type int /* 1, hello, 2 Auth 3. HeartBeat 4 GoodBye 5. ReportStatus 6.  */
-	Body interface{}
+	Id   int64       `json:"id"`
+	Ver  string      `json:"ver"`
+	Type int         `json:"type"` /* 1, hello, 2 Auth 3. HeartBeat 4 GoodBye 5. ReportStatus 6.  */
+	Body interface{} `json:"body"`
 }
 
 type AuthReq struct {
-	Token string
-	Host  string
+	Token    string `json:"token"`
+	HostName string `json:"host_name"`
 }
 type AuthResp struct {
-	Code     int
-	Msg      string
-	ExpireAt int64
+	Code     int    `json:"code"`
+	Msg      string `json:"msg"`
+	ExpireAt int64  `json:"expire_at"`
 }
-type BizData struct {
-	Id         string
-	Code       int
-	HbInterval int /* second */
-	PreTimeout int /* second */
-	RunTimeout int /* second */
-	Msg        string
+type BizData struct { // 任务分发、心跳
+	Id         string `json:"id"`
+	Code       int    `json:"code"`
+	HbInterval int    `json:"hb_interval"` /* second */
+	PreTimeout int    `json:"pre_timeout"` /* second */
+	RunTimeout int    `json:"run_timeout"` /* second */
+	Msg        string `json:"msg"`
 }
 
 //type HelloReq struct {
