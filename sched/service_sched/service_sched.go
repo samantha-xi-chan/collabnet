@@ -2,6 +2,7 @@ package service_sched
 
 import (
 	"collab-net-v2/api"
+	"collab-net-v2/internal/config"
 	"collab-net-v2/link"
 	"collab-net-v2/package/util/idgen"
 	"collab-net-v2/sched/api_sched"
@@ -30,6 +31,12 @@ func SetCallbackFun(f FUN_CALLBACK) {
 func init() {
 	log.Println("service_sched [init] : ")
 
+	mqDsn, e := config.GetMqDsn()
+	if e != nil {
+		log.Fatal("config.GetMqDsn() e=", e)
+	}
+	log.Println("mqDsn: ", mqDsn)
+
 	// 与下层的通信 01
 	link.SetConnChangeCallback(OnConnChange)
 	link.SetBizDataCallback(OnBizDataFromRegisterEndpointWrapper)
@@ -37,7 +44,7 @@ func init() {
 
 	// 与下层的通信 02
 	service_time.SetCallback(OnTimerWrapper)
-	service_time.Init(config_sched.AMQP_URL, config_sched.AMQP_EXCH)
+	service_time.Init(mqDsn, config_sched.AMQP_EXCH)
 
 	// 与下层的通信 03
 	repo_sched.Init(config_sched.RepoMySQLDsn, config_sched.RepoLogLevel, config_sched.RepoSlowMs)

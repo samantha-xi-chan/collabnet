@@ -36,7 +36,6 @@ const (
 )
 
 const (
-	AMQP_URL  = "amqp://guest:guest@192.168.31.6:5672"
 	AMQP_EXCH = "amq.direct"
 )
 

@@ -1,5 +1,6 @@
 depend:
   mysql_dsn_biz: "root:gzn%zkTJ8x!gGZO6@tcp(192.168.31.6:3306)/biz?charset=utf8mb4&parseTime=True&loc=Local"
+  mq_dsn: "amqp://guest:guest@192.168.31.6:5672"
 
 debug:
   biz_log_level: 6
