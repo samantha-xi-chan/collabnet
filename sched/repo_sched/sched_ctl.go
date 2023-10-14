@@ -22,17 +22,18 @@ func (Sched) TableName() string {
 }
 
 type Sched struct {
-	Id         string `json:"id" gorm:"primaryKey"`
-	TaskId     string `json:"task_id"  gorm:"index:idx_task_id" `
-	Desc       string `json:"desc"`
-	Endpoint   string `json:"endpoint"`
-	CreateAt   int64  `json:"create_at"`
-	CmdackAt   int64  `json:"cmdack_at"`
-	PreparedAt int64  `json:"prepared_at"`
-	FinishAt   int64  `json:"finish_at"`
-	ActiveAt   int64  `json:"active_at"`
+	Id          string `json:"id" gorm:"primaryKey"`
+	TaskId      string `json:"task_id"  gorm:"index:idx_task_id" `
+	TaskEnabled int    `json:"task_enabled"` /* 上层任务是否仍然Enabled */
+	Desc        string `json:"desc"`
+	Endpoint    string `json:"endpoint"`
+	CreateAt    int64  `json:"create_at"`
+	CmdackAt    int64  `json:"cmdack_at"`
+	PreparedAt  int64  `json:"prepared_at"`
+	FinishAt    int64  `json:"finish_at"`
+	ActiveAt    int64  `json:"active_at"`
 
-	Enabled  int `json:"enabled"`   /* 是否已和task脱钩 */
+	Enabled  int `json:"enabled"`   /* 是否已和task脱钩, 包含重试场景和业务角度放弃某个task导致脱钩 */
 	BestProg int `json:"best_prog"` /* 生命周期的最好阶段 */
 	BizCode  int `json:"biz_code"`  /* 业务角度的ExitCode */
 	FwkCode  int `json:"fwk_code"`  /* 调度框架角度的ExitCode */
@@ -78,6 +79,30 @@ func (ctl *SchedCtl) DeleteItemById(id string) (err error) {
 func (ctl *SchedCtl) GetItemByKeyValue(key string, val interface{}) (i Sched, e error) { // todo: optimize
 	var item Sched
 	err := db.Where(fmt.Sprintf("%s = ?", key), val).Take(&item).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return Sched{}, err
+	} else if err != nil {
+		return Sched{}, errors.Wrap(err, "SchedCtl GetItemByContainerId err not nil: ")
+	}
+
+	return item, nil
+}
+
+type QueryKeyValue struct {
+	ColName  string
+	ColValue interface{}
+}
+
+func (ctl *SchedCtl) GetItemByKeyValueArr(arr []QueryKeyValue) (item Sched, e error) { // todo: optimize
+	if len(arr) < 1 {
+		return Sched{}, errors.New("len(arr) < 1 ")
+	}
+
+	result := db.Where(arr[0].ColName, arr[0].ColValue)
+	for i := 1; i < len(arr); i++ {
+		result = result.Where(arr[i].ColName, arr[i].ColValue)
+	}
+	err := result.Take(&item).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return Sched{}, err
 	} else if err != nil {

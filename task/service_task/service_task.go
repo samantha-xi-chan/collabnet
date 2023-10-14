@@ -3,7 +3,6 @@ package service_task
 import (
 	"collab-net-v2/link/service_link"
 	"collab-net-v2/package/util/idgen"
-	"collab-net-v2/sched/api_sched"
 	"collab-net-v2/sched/service_sched"
 	"collab-net-v2/task/config_task"
 	"collab-net-v2/task/repo_task"
@@ -58,16 +57,17 @@ func NewTask(name string, cmd string, linkId string, cmdackTimeoutSecond int, pr
 		Cmd:  cmd,
 		//Status:   api_task.TASK_STATUS_INIT,
 		CreateAt: time.Now().UnixMilli(),
-		QueueAt:  0,
-		Enabled:  api_sched.INT_ENABLED,
+		//Enabled:  api_sched.INT_ENABLED,
 	})
 
 	return idTask, nil
 }
 
-func DisableTask(idTask string) (ee error) {
+func PatchTask(idTask string) (ee error) {
 
-	return
+	service_sched.StopSched(idTask)
+
+	return nil
 }
 
 func GetTask() (arr []repo_task.TaskInfo, ee error) {

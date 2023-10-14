@@ -22,21 +22,22 @@ func (Task) TableName() string {
 }
 
 type Task struct {
-	Id      string `json:"id" gorm:"primaryKey"`
-	Name    string `json:"name"`
-	Cmd     string `json:"cmd"`
-	Enabled int    `json:"enabled"` /* 是否被上层业务需要 */
+	Id   string `json:"id" gorm:"primaryKey"`
+	Name string `json:"name"`
+	Cmd  string `json:"cmd"`
+	//Enabled int    `json:"enabled"` /* 是否被上层业务需要 */
 	//Code     int    `json:"code"`
 	CreateAt int64 `json:"create_at"`
-	QueueAt  int64 `json:"queue_at"`
+	//QueueAt  int64 `json:"queue_at"`
 }
 
 type TaskInfo struct {
-	Id       string `json:"id"`
-	CreateAt int64  `json:"create_at"`
-	FinishAt int64  `json:"finish_at"`
-	BestProg int    `json:"best_prog"`
-	FwkCode  int    `json:"fwk_code"`
+	Id          string `json:"id"`
+	CreateAt    int64  `json:"create_at"`
+	TaskEnabled int    `json:"task_enabled"`
+	FinishAt    int64  `json:"finish_at"`
+	BestProg    int    `json:"best_prog"`
+	FwkCode     int    `json:"fwk_code"`
 }
 
 func (ctl *TaskCtl) CreateItem(item Task) (err error) {
@@ -91,7 +92,7 @@ func (ctl *TaskCtl) GetItemById(id string) (i Task, e error) { // todo: optimize
 }
 
 func (ctl *TaskCtl) GetTasks(id string) (tasks []TaskInfo, e error) { // todo: optimize
-	rawSQL := `SELECT t.id , t.create_at, s.finish_at, s.best_prog , s.fwk_code AS fwk_code FROM task t JOIN sched s ON s.task_id = t.id AND s.enabled = 1`
+	rawSQL := `SELECT t.id , t.create_at, s.task_enabled, s.finish_at, s.best_prog , s.fwk_code AS fwk_code FROM task t JOIN sched s ON s.task_id = t.id AND s.enabled = 1`
 	db.Raw(rawSQL).Scan(&tasks)
 	log.Println("[GetTasks] tasks: ", tasks)
 	return

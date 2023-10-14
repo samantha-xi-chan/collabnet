@@ -44,31 +44,9 @@ func init() {
 	repo_sched.Init(config_sched.RepoMySQLDsn, config_sched.RepoLogLevel, config_sched.RepoSlowMs)
 }
 
-// 对下层
+// 接收下层调用
 func OnConnChange(endpoint string, _type int) (e error) {
 	log.Println("[OnConnChange]: endpoint ", endpoint, ", _type ", _type)
-
-	//go func() {
-	//	if _type == link.LINK_EVT_HANDSHAKE_OK {
-	//		for i := 0; i < config_task.TESTCASE_CNT; i++ {
-	//
-	//			//go func() {
-	//
-	//			log.Println("test starting ...")
-	//			id, e := NewSched("ls -alh ", endpoint, config_task.CMD_ACK_TIMEOUT, config_task.TEST_TIMEOUT_PREPARE, config_task.TEST_TIMEOUT_RUN)
-	//			if e != nil {
-	//				log.Println("NewTask e: ", e)
-	//			}
-	//			log.Println("NewTask succ: id ", id)
-	//			//}()
-	//		}
-	//	} else if _type == link.LINK_EVT_BYE {
-	//		log.Println("bye: ", endpoint)
-	//	} else {
-	//		log.Println("unknown")
-	//	}
-	//
-	//}()
 
 	return nil
 }
@@ -173,8 +151,6 @@ func OnBizDataFromRegisterEndpoint(endpoint string, bytes []byte) (e error) { //
 			"pre_timer": idPreTimer,
 		})
 	} else if body.Msg == config.EVT_STR_STATUS_SCHED_PRE_ACKED {
-		log.Printf("已收到 preAck, 准备 关闭preAck timer 并启动 hb 和 run timer")
-
 		service_time.DisableTimer(itemTask.PreTimer)
 		idRunTimer, _ := service_time.NewTimer(itemTask.RunTimeout, api_sched.SCHED_EVT_TIMEOUT_RUN, idSched, "run_finish_timeout")
 		idHbTimer, _ := service_time.NewTimer(config_sched.SCHED_HEARTBEAT_TIMEOUT, api_sched.SCHED_EVT_TIMEOUT_HB, idSched, "hb_timeout")
@@ -217,18 +193,44 @@ func OnBizDataFromRegisterEndpoint(endpoint string, bytes []byte) (e error) { //
 	return
 }
 
-func StopSched(id string) (ee error) { // todo: send stop cmd to excutors
-
-	item, e := repo_sched.GetSchedCtl().GetItemById(id)
+func StopSched(taskId string) (ee error) { // todo: send stop cmd to excutors
+	var arr []repo_sched.QueryKeyValue
+	arr = append(arr, repo_sched.QueryKeyValue{
+		"task_id",
+		taskId,
+	})
+	arr = append(arr, repo_sched.QueryKeyValue{
+		"enabled",
+		1,
+	})
+	item, e := repo_sched.GetSchedCtl().GetItemByKeyValueArr(arr)
 	if e != nil {
 		log.Println("repo_sched.GetSchedCtl().GetItemById, e=", e)
 		return
 	}
 
-	if item.Enabled == 0 {
-		log.Println("item.Enabled == 0")
-		return
-	}
+	log.Println("[StopSched]  GetItemByKeyValueArr", item)
+
+	//if item.Enabled == 0 {
+	//	log.Println("item.Enabled == 0")
+	//	return
+	//}
+
+	// todo: 发送消息到 node 节点
+	//code, e := link.SendDataToEndpoint(
+	//	endpoint,
+	//	link.GetPackageBytes(
+	//		time.Now().UnixMilli(),
+	//		"v1.0",
+	//		link.PACKAGE_TYPE_BIZ,
+	//		link.BizData{
+	//			Id:         idSched,
+	//			Code:       0,
+	//			HbInterval: config_sched.SCHED_HEARTBEAT_INTERVAL,
+	//			PreTimeout: preTimeoutSecond,
+	//			RunTimeout: runTimeoutSecond,
+	//			Msg:        cmd,
+	//		}))
 
 	if item.FwkCode == api_sched.SCHED_FWK_CODE_END {
 		log.Println("item.FwkCode == api_sched.SCHED_FWK_CODE_END")
@@ -236,9 +238,9 @@ func StopSched(id string) (ee error) { // todo: send stop cmd to excutors
 	}
 
 	repo_sched.GetSchedCtl().UpdateItemById(
-		id,
+		item.Id,
 		map[string]interface{}{
-			"enabled": 0,
+			"task_enabled": 0,
 		},
 	)
 
@@ -250,12 +252,13 @@ func NewSched(taskId string, cmd string, endpoint string, cmdackTimeoutSecond in
 	repo_sched.GetSchedCtl().CreateItem(repo_sched.Sched{
 		Id:            idSched,
 		TaskId:        taskId,
+		TaskEnabled:   1,
 		Desc:          "",
 		BestProg:      api_sched.STATUS_SCHED_INIT,
 		Endpoint:      endpoint,
 		CreateAt:      time.Now().UnixMilli(),
 		ActiveAt:      time.Now().UnixMilli(),
-		Enabled:       1,
+		Enabled:       api_sched.INT_ENABLED,
 		CmdackTimeout: cmdackTimeoutSecond,
 		PreTimeout:    preTimeoutSecond,
 		HbTimeout:     config_sched.SCHED_HEARTBEAT_TIMEOUT,
@@ -304,4 +307,13 @@ func NewSched(taskId string, cmd string, endpoint string, cmdackTimeoutSecond in
 	log.Println("[NewTask] item: ", item)
 
 	return idSched, nil
+}
+
+func GetSched(idSched string) (repo_sched.Sched, error) {
+	item, e := repo_sched.GetSchedCtl().GetItemById(idSched)
+	if e != nil {
+		return repo_sched.Sched{}, errors.Wrap(e, "repo_sched.GetSchedCtl().GetItemById: ")
+	}
+
+	return item, nil
 }

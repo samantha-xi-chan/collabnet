@@ -29,6 +29,7 @@ const (
 	PACKAGE_TYPE_GOODBYE       = 1043
 	PACKAGE_TYPE_REPORT        = 1061
 	PACKAGE_TYPE_BIZ           = 1083
+	PACKAGE_TYPE_STOPTASK      = 1091
 )
 
 type Package struct {

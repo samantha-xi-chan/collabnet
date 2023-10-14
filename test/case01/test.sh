@@ -6,7 +6,7 @@ echo "$current_dir：$current_dir"
 cd $current_dir
 
 # 生成 数据实例
-templateFile="template.json"
+templateFile="prototype.json"
 instanceFile="new_task.json"
 cp -rf $templateFile $instanceFile
 
@@ -42,9 +42,17 @@ DAG=$current_dir"/"$instanceFile
 req=$(cat $DAG)
 echo "$req"
 
-curl -X POST "http://localhost:8081/api/v1/task" -d "$req"
+postTaskResp=$(curl -X POST "http://localhost:8081/api/v1/task" -d "$req")
+echo $postTaskResp
+taskId=$(echo "$postTaskResp" | jq -r '.data.id')
+echo "taskId: "$taskId
 
-sleep 2
+sleep 1
+patchTaskResp=$(curl -X PATCH "http://localhost:8081/api/v1/task/$taskId" )
+echo $patchTaskResp
+echo "patchTaskResp: "$patchTaskResp
+
+sleep 5; echo "get tasks: "
 curl -X GET "http://localhost:8081/api/v1/task"; echo ;
-sleep 5
+sleep 5; echo "get tasks: "
 curl -X GET "http://localhost:8081/api/v1/task";  echo "\n\n";
