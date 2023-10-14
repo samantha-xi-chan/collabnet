@@ -47,10 +47,10 @@ echo $postTaskResp
 taskId=$(echo "$postTaskResp" | jq -r '.data.id')
 echo "taskId: "$taskId
 
-sleep 1
-patchTaskResp=$(curl -X PATCH "http://localhost:8081/api/v1/task/$taskId" )
-echo $patchTaskResp
-echo "patchTaskResp: "$patchTaskResp
+#sleep 1
+#patchTaskResp=$(curl -X PATCH "http://localhost:8081/api/v1/task/$taskId" )
+#echo $patchTaskResp
+#echo "patchTaskResp: "$patchTaskResp
 
 sleep 5; echo "get tasks: "
 curl -X GET "http://localhost:8081/api/v1/task"; echo ;

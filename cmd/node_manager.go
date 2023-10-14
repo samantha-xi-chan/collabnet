@@ -27,7 +27,7 @@ var (
 )
 
 func OnUpdateFromPlugin(id string, status int, para01 int) {
-	if status == config.PLUGIN_TASK_EVT_START {
+	if status == api.TASK_EVT_START {
 		SendBizData2Platform(link.GetPackageBytes(
 			time.Now().UnixMilli(),
 			"1.0",
@@ -35,7 +35,8 @@ func OnUpdateFromPlugin(id string, status int, para01 int) {
 			link.BizData{
 				TypeId:  link.BIZ_TYPE_NEWTASK,
 				SchedId: id,
-				Msg:     config.EVT_STR_STATUS_SCHED_PRE_ACKED,
+
+				Para01: api.TASK_EVT_PREACK,
 			},
 		))
 
@@ -46,10 +47,10 @@ func OnUpdateFromPlugin(id string, status int, para01 int) {
 			link.BizData{
 				TypeId:  link.BIZ_TYPE_NEWTASK,
 				SchedId: id,
-				Msg:     config.EVT_STR_STATUS_SCHED_HEARTBEAT,
+				Para01:  api.TASK_EVT_HEARTBEAT,
 			},
 		))
-	} else if status == config.PLUGIN_TASK_EVT_END_SUCC {
+	} else if status == api.TASK_EVT_END {
 		SendBizData2Platform(link.GetPackageBytes(
 			time.Now().UnixMilli(),
 			"1.0",
@@ -57,7 +58,7 @@ func OnUpdateFromPlugin(id string, status int, para01 int) {
 			link.BizData{
 				TypeId:  link.BIZ_TYPE_NEWTASK,
 				SchedId: id,
-				Msg:     config.EVT_STR_STATUS_SCHED_END,
+				Para01:  api.TASK_EVT_END,
 			},
 		))
 	}
@@ -86,7 +87,7 @@ func OnNewBizDataFromPlatform(bytes []byte) {
 			link.BizData{
 				TypeId:  link.BIZ_TYPE_NEWTASK,
 				SchedId: schedId,
-				Msg:     config.EVT_STR_STATUS_SCHED_CMD_ACKED,
+				Para01:  api.TASK_EVT_CMDACK,
 			},
 		))
 		log.Println(" [OnNewBizDataFromPlatform] SendBizData2Platform STATUS_SCHED_CMD_ACKED schedId = ", schedId)
@@ -95,10 +96,10 @@ func OnNewBizDataFromPlatform(bytes []byte) {
 		newTask := api.PluginTask{
 			Id:         schedId,
 			Msg:        "test",
-			Cmd:        body.Msg,
+			Cmd:        body.Para11,
 			Valid:      true,
-			TimeoutPre: body.PreTimeout,
-			TimeoutRun: body.RunTimeout,
+			TimeoutPre: body.Para02,
+			TimeoutRun: body.Para03,
 		}
 		pluginChan <- newTask
 	} else if body.TypeId == link.BIZ_TYPE_STOPTASK {

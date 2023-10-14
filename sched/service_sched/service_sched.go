@@ -1,7 +1,7 @@
 package service_sched
 
 import (
-	"collab-net-v2/internal/config"
+	"collab-net-v2/api"
 	"collab-net-v2/link"
 	"collab-net-v2/package/util/idgen"
 	"collab-net-v2/sched/api_sched"
@@ -19,7 +19,6 @@ var (
 )
 
 // 对上层
-
 type FUN_CALLBACK func(idSched string, evt int, bytes []byte) (ee error)
 
 var callback FUN_CALLBACK
@@ -145,7 +144,7 @@ func OnBizDataFromRegisterEndpoint(endpoint string, bytes []byte) (e error) { //
 	}
 
 	status := api_sched.INT_INVALID
-	if body.Msg == config.EVT_STR_STATUS_SCHED_CMD_ACKED {
+	if body.Para01 == api.TASK_EVT_CMDACK {
 		service_time.DisableTimer(itemTask.CmdackTimer)
 		idPreTimer, e := service_time.NewTimer(itemTask.PreTimeout, api_sched.SCHED_EVT_TIMEOUT_PREACK, idSched, "pre_ack_timeout")
 		if e != nil {
@@ -158,7 +157,9 @@ func OnBizDataFromRegisterEndpoint(endpoint string, bytes []byte) (e error) { //
 			"best_prog": api_sched.STATUS_SCHED_CMD_ACKED,
 			"pre_timer": idPreTimer,
 		})
-	} else if body.Msg == config.EVT_STR_STATUS_SCHED_PRE_ACKED {
+
+		callback(idSched, body.Para01, nil)
+	} else if body.Para01 == api.TASK_EVT_PREACK {
 		service_time.DisableTimer(itemTask.PreTimer)
 		idRunTimer, _ := service_time.NewTimer(itemTask.RunTimeout, api_sched.SCHED_EVT_TIMEOUT_RUN, idSched, "run_finish_timeout")
 		idHbTimer, _ := service_time.NewTimer(config_sched.SCHED_HEARTBEAT_TIMEOUT, api_sched.SCHED_EVT_TIMEOUT_HB, idSched, "hb_timeout")
@@ -171,8 +172,8 @@ func OnBizDataFromRegisterEndpoint(endpoint string, bytes []byte) (e error) { //
 			"hb_timer":    idHbTimer,
 		})
 
-		callback(idSched, api_sched.SCHED_EVT_TASK_END_OK, nil)
-	} else if body.Msg == config.EVT_STR_STATUS_SCHED_HEARTBEAT {
+		callback(idSched, body.Para01, nil)
+	} else if body.Para01 == api.TASK_EVT_HEARTBEAT {
 		status = api_sched.STATUS_SCHED_RUNNING
 
 		repo_sched.GetSchedCtl().UpdateItemById(idSched, map[string]interface{}{
@@ -182,7 +183,9 @@ func OnBizDataFromRegisterEndpoint(endpoint string, bytes []byte) (e error) { //
 
 		// reset timer
 		service_time.RenewTimer(itemTask.HbTimer, config_sched.SCHED_HEARTBEAT_TIMEOUT)
-	} else if body.Msg == config.EVT_STR_STATUS_SCHED_END {
+
+		callback(idSched, body.Para01, nil)
+	} else if body.Para01 == api.TASK_EVT_END {
 		//idTimer, _ := service_time.NewTimer(itemTask.PreTimeout, api_sched.STATUS_SCHED_PRE_ACKED, idSched, "prepare_timeout")
 
 		repo_sched.GetSchedCtl().UpdateItemById(idSched, map[string]interface{}{
@@ -195,7 +198,7 @@ func OnBizDataFromRegisterEndpoint(endpoint string, bytes []byte) (e error) { //
 		service_time.DisableTimer(itemTask.HbTimer)
 		service_time.DisableTimer(itemTask.RunTimer)
 
-		callback(idSched, api_sched.SCHED_EVT_TASK_END_OK, nil)
+		callback(idSched, api.TASK_EVT_END, nil)
 	} else {
 		log.Println("OnBizDataFromRegisterEndpoint unknown else")
 	}
@@ -243,12 +246,16 @@ func StopSched(taskId string) (ee error) { // todo: send stop cmd to excutors
 		return
 	}
 
+	// todo: add timer ...
+
 	repo_sched.GetSchedCtl().UpdateItemById(
 		item.Id,
 		map[string]interface{}{
 			"task_enabled": api_sched.INT_DISABLED,
 		},
 	)
+
+	callback(item.Id, api.TASK_EVT_STOPPED, nil)
 
 	return
 }
@@ -280,14 +287,13 @@ func NewSched(taskId string, cmd string, linkId string, cmdackTimeoutSecond int,
 			"v1.0",
 			link.PACKAGE_TYPE_BIZ,
 			link.BizData{
-				TypeId:     link.BIZ_TYPE_NEWTASK,
-				SchedId:    idSched,
-				HbInterval: config_sched.SCHED_HEARTBEAT_INTERVAL,
-				PreTimeout: preTimeoutSecond,
-				RunTimeout: runTimeoutSecond,
-				Msg:        cmd,
+				TypeId:  link.BIZ_TYPE_NEWTASK,
+				SchedId: idSched,
+				Para01:  config_sched.SCHED_HEARTBEAT_INTERVAL,
+				Para02:  preTimeoutSecond,
+				Para03:  runTimeoutSecond,
+				Para11:  cmd,
 			}))
-
 	if e != nil || code != 0 {
 		log.Println("link.SendDataToEndpoint failed ")
 
@@ -295,6 +301,7 @@ func NewSched(taskId string, cmd string, linkId string, cmdackTimeoutSecond int,
 			"status":   api_sched.STATUS_SCHED_LOCAL_FAIL,
 			"fwk_code": api_sched.SCHED_FWK_CODE_END,
 		})
+		callback(taskId, api.TASK_EVT_REJECT, nil)
 		return idSched, nil
 	}
 

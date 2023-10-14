@@ -30,7 +30,7 @@ func main() {
 
 		if !dto.Valid {
 			log.Println("业务代码此时应该 关闭如果正在运行的编号为  ", dto.Id, "的任务，并发送任务结束的通知")
-			notifyTaskStatus(dto.Id, config.PLUGIN_TASK_EVT_END_SUCC)
+			notifyTaskStatus(dto.Id, api.TASK_EVT_END)
 			continue
 		} else if false { //  如果 !dto.Valid 且此任务未处理过 (这里明显代码逻辑不对 就不要照着抄写了)
 
@@ -39,17 +39,17 @@ func main() {
 
 		go func() {
 			// 判断内容  如果当前任务的属性为 有效 则发 任务开始执行的http, 解析出 任务的执行时长条件要求，
-			notifyTaskStatus(dto.Id, config.PLUGIN_TASK_EVT_START)
+			notifyTaskStatus(dto.Id, api.TASK_EVT_START)
 
 			// 此处是任务执行 用 sleep 代替, 执行过程中需要发送心跳, 这个demo表示 任务执行耗时 3秒
 			for i := 0; i < 3; i++ {
 				// 这里是任务执行（例如 执行安全测试）
 				time.Sleep(time.Millisecond * 500)
-				notifyTaskStatus(dto.Id, config.PLUGIN_TASK_EVT_HEARTBEAT)
+				notifyTaskStatus(dto.Id, api.TASK_EVT_HEARTBEAT)
 				time.Sleep(time.Millisecond * 500)
 			}
 
-			notifyTaskStatus(dto.Id, config.PLUGIN_TASK_EVT_END_SUCC)
+			notifyTaskStatus(dto.Id, api.TASK_EVT_END)
 		}()
 
 	}
@@ -114,7 +114,6 @@ func waitTaskCmd() (pluginTask api.PluginTask, e error) { // 包含任务启动�
 	err = json.Unmarshal(bodyBytes, &httpRespBody)
 	if err != nil {
 		log.Println("httpRespBody JSON unmarshal error:", err)
-		//notifyTaskStatus(dto.Id, config.PLUGIN_TASK_EVT_REJECT)
 		return api.PluginTask{}, err
 	}
 
@@ -133,7 +132,6 @@ func waitTaskCmd() (pluginTask api.PluginTask, e error) { // 包含任务启动�
 	err = json.Unmarshal(dataBytes, &dto)
 	if err != nil {
 		log.Println("JSON unmarshal error:", err)
-		//notifyTaskStatus(dto.Id, config.PLUGIN_TASK_EVT_REJECT)
 		return api.PluginTask{}, err
 	}
 
