@@ -24,7 +24,7 @@ const ( // 一旦到达  86431099，认为经过 1-N 次尝试，最终 失败/�
 	SCHED_FWK_CODE_END = 86431099 // 整个生命周期已结束
 )
 
-const (
+const ( // timeout
 	SCHED_EVT_TIMEOUT_CMDACK = 70017751
 	SCHED_EVT_TIMEOUT_PREACK = 70017761
 	SCHED_EVT_TIMEOUT_HB     = 70017771

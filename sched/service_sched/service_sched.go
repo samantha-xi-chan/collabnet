@@ -123,7 +123,7 @@ func OnBizDataFromRegisterEndpoint(endpoint string, bytes []byte) (e error) { //
 		return
 	}
 	log.Println("[OnBizDataFromRegisterEndpoint]    [<-readChan] body : ", body)
-	idSched := body.Id
+	idSched := body.SchedId
 
 	itemTask, e := repo_sched.GetSchedCtl().GetItemById(idSched)
 	if e != nil {
@@ -152,7 +152,7 @@ func OnBizDataFromRegisterEndpoint(endpoint string, bytes []byte) (e error) { //
 			return errors.Wrap(e, "service_time.NewTimer: ")
 		}
 
-		repo_sched.GetSchedCtl().UpdateItemById(body.Id, map[string]interface{}{
+		repo_sched.GetSchedCtl().UpdateItemById(idSched, map[string]interface{}{
 			"active_at": time.Now().UnixMilli(),
 			"cmdack_at": time.Now().UnixMilli(),
 			"best_prog": api_sched.STATUS_SCHED_CMD_ACKED,
@@ -163,17 +163,19 @@ func OnBizDataFromRegisterEndpoint(endpoint string, bytes []byte) (e error) { //
 		idRunTimer, _ := service_time.NewTimer(itemTask.RunTimeout, api_sched.SCHED_EVT_TIMEOUT_RUN, idSched, "run_finish_timeout")
 		idHbTimer, _ := service_time.NewTimer(config_sched.SCHED_HEARTBEAT_TIMEOUT, api_sched.SCHED_EVT_TIMEOUT_HB, idSched, "hb_timeout")
 
-		repo_sched.GetSchedCtl().UpdateItemById(body.Id, map[string]interface{}{
+		repo_sched.GetSchedCtl().UpdateItemById(idSched, map[string]interface{}{
 			"active_at":   time.Now().UnixMilli(),
 			"prepared_at": time.Now().UnixMilli(),
 			"best_prog":   api_sched.STATUS_SCHED_PRE_ACKED,
 			"run_timer":   idRunTimer,
 			"hb_timer":    idHbTimer,
 		})
+
+		callback(idSched, api_sched.SCHED_EVT_TASK_END_OK, nil)
 	} else if body.Msg == config.EVT_STR_STATUS_SCHED_HEARTBEAT {
 		status = api_sched.STATUS_SCHED_RUNNING
 
-		repo_sched.GetSchedCtl().UpdateItemById(body.Id, map[string]interface{}{
+		repo_sched.GetSchedCtl().UpdateItemById(idSched, map[string]interface{}{
 			"active_at": time.Now().UnixMilli(),
 			"status":    status,
 		})
@@ -183,7 +185,7 @@ func OnBizDataFromRegisterEndpoint(endpoint string, bytes []byte) (e error) { //
 	} else if body.Msg == config.EVT_STR_STATUS_SCHED_END {
 		//idTimer, _ := service_time.NewTimer(itemTask.PreTimeout, api_sched.STATUS_SCHED_PRE_ACKED, idSched, "prepare_timeout")
 
-		repo_sched.GetSchedCtl().UpdateItemById(body.Id, map[string]interface{}{
+		repo_sched.GetSchedCtl().UpdateItemById(idSched, map[string]interface{}{
 			"active_at": time.Now().UnixMilli(),
 			"finish_at": time.Now().UnixMilli(),
 			"best_prog": api_sched.STATUS_SCHED_RUN_END,
@@ -227,8 +229,8 @@ func StopSched(taskId string) (ee error) { // todo: send stop cmd to excutors
 			"v1.0",
 			link.PACKAGE_TYPE_BIZ,
 			link.BizData{
-				TypeId: link.BIZ_TYPE_STOPTASK,
-				Id:     item.Id,
+				TypeId:  link.BIZ_TYPE_STOPTASK,
+				SchedId: item.Id,
 			}))
 	if e != nil {
 		// 记录关键错误
@@ -279,8 +281,7 @@ func NewSched(taskId string, cmd string, linkId string, cmdackTimeoutSecond int,
 			link.PACKAGE_TYPE_BIZ,
 			link.BizData{
 				TypeId:     link.BIZ_TYPE_NEWTASK,
-				Id:         idSched,
-				Code:       0,
+				SchedId:    idSched,
 				HbInterval: config_sched.SCHED_HEARTBEAT_INTERVAL,
 				PreTimeout: preTimeoutSecond,
 				RunTimeout: runTimeoutSecond,

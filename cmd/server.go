@@ -10,7 +10,7 @@ import (
 )
 
 func OnTaskChange(idTask string, evt int, x []byte) (e error) {
-	log.Println("[OnTaskChange] ", idTask, " ", evt)
+	log.Println("[OnTaskChange] idTask = ", idTask, ", evt = ", evt)
 
 	return nil
 }

@@ -3,6 +3,7 @@ package service_task
 import (
 	"collab-net-v2/link/service_link"
 	"collab-net-v2/package/util/idgen"
+	"collab-net-v2/sched/repo_sched"
 	"collab-net-v2/sched/service_sched"
 	"collab-net-v2/task/config_task"
 	"collab-net-v2/task/repo_task"
@@ -18,6 +19,14 @@ func init() {
 	// 与下层的交互
 	service_sched.SetCallbackFun(func(idSched string, evt int, bytes []byte) (ee error) {
 		log.Println("[service_task.SetCallbackFun.anon] idSched=", idSched, " ,evt= ", evt)
+
+		itemSched, e := repo_sched.GetSchedCtl().GetItemById(idSched)
+		if e != nil {
+
+			return errors.Wrap(e, "repo_sched.GetSchedCtl().GetItemById(: ")
+		}
+
+		callbackFunc(itemSched.TaskId, evt, nil)
 
 		return nil
 	})

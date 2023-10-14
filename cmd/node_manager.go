@@ -33,10 +33,9 @@ func OnUpdateFromPlugin(id string, status int, para01 int) {
 			"1.0",
 			link.PACKAGE_TYPE_BIZ,
 			link.BizData{
-				TypeId: link.BIZ_TYPE_NEWTASK,
-				Id:     id,
-				Code:   0,
-				Msg:    config.EVT_STR_STATUS_SCHED_PRE_ACKED,
+				TypeId:  link.BIZ_TYPE_NEWTASK,
+				SchedId: id,
+				Msg:     config.EVT_STR_STATUS_SCHED_PRE_ACKED,
 			},
 		))
 
@@ -45,10 +44,9 @@ func OnUpdateFromPlugin(id string, status int, para01 int) {
 			"1.0",
 			link.PACKAGE_TYPE_BIZ,
 			link.BizData{
-				TypeId: link.BIZ_TYPE_NEWTASK,
-				Id:     id,
-				Code:   0,
-				Msg:    config.EVT_STR_STATUS_SCHED_HEARTBEAT,
+				TypeId:  link.BIZ_TYPE_NEWTASK,
+				SchedId: id,
+				Msg:     config.EVT_STR_STATUS_SCHED_HEARTBEAT,
 			},
 		))
 	} else if status == config.PLUGIN_TASK_EVT_END_SUCC {
@@ -57,10 +55,9 @@ func OnUpdateFromPlugin(id string, status int, para01 int) {
 			"1.0",
 			link.PACKAGE_TYPE_BIZ,
 			link.BizData{
-				TypeId: link.BIZ_TYPE_NEWTASK,
-				Id:     id,
-				Code:   0,
-				Msg:    config.EVT_STR_STATUS_SCHED_END,
+				TypeId:  link.BIZ_TYPE_NEWTASK,
+				SchedId: id,
+				Msg:     config.EVT_STR_STATUS_SCHED_END,
 			},
 		))
 	}
@@ -78,8 +75,8 @@ func OnNewBizDataFromPlatform(bytes []byte) {
 	}
 
 	if body.TypeId == link.BIZ_TYPE_NEWTASK {
-		idTask := body.Id
-		log.Println("[OnNewBizData]  idTask = ", idTask)
+		schedId := body.SchedId
+		log.Println("[OnNewBizData]  schedId = ", schedId)
 
 		time.Sleep(time.Millisecond * 200)
 		SendBizData2Platform(link.GetPackageBytes(
@@ -87,17 +84,16 @@ func OnNewBizDataFromPlatform(bytes []byte) {
 			"1.0",
 			link.PACKAGE_TYPE_BIZ,
 			link.BizData{
-				TypeId: link.BIZ_TYPE_NEWTASK,
-				Id:     idTask,
-				Code:   0,
-				Msg:    config.EVT_STR_STATUS_SCHED_CMD_ACKED,
+				TypeId:  link.BIZ_TYPE_NEWTASK,
+				SchedId: schedId,
+				Msg:     config.EVT_STR_STATUS_SCHED_CMD_ACKED,
 			},
 		))
-		log.Println(" [OnNewBizDataFromPlatform] SendBizData2Platform STATUS_SCHED_CMD_ACKED idTask = ", idTask)
+		log.Println(" [OnNewBizDataFromPlatform] SendBizData2Platform STATUS_SCHED_CMD_ACKED schedId = ", schedId)
 
 		// 将任务的结构体转换进入 chan
 		newTask := api.PluginTask{
-			Id:         idTask,
+			Id:         schedId,
 			Msg:        "test",
 			Cmd:        body.Msg,
 			Valid:      true,
@@ -106,8 +102,8 @@ func OnNewBizDataFromPlatform(bytes []byte) {
 		}
 		pluginChan <- newTask
 	} else if body.TypeId == link.BIZ_TYPE_STOPTASK {
-		idTask := body.Id
-		log.Println("[OnNewBizData]  idTask = ", idTask)
+		schedId := body.SchedId
+		log.Println("[OnNewBizData]  schedId = ", schedId)
 
 		time.Sleep(time.Millisecond * 200)
 		SendBizData2Platform(link.GetPackageBytes(
@@ -115,15 +111,15 @@ func OnNewBizDataFromPlatform(bytes []byte) {
 			"1.0",
 			link.PACKAGE_TYPE_BIZ,
 			link.BizData{
-				TypeId: link.BIZ_TYPE_STOPTASK,
-				Id:     idTask,
+				TypeId:  link.BIZ_TYPE_STOPTASK,
+				SchedId: schedId,
 			},
 		))
-		log.Println(" [OnNewBizDataFromPlatform] SendBizData2Platform STATUS_SCHED_CMD_ACKED idTask = ", idTask)
+		log.Println(" [OnNewBizDataFromPlatform] SendBizData2Platform STATUS_SCHED_CMD_ACKED schedId = ", schedId)
 
 		// 将任务的结构体转换进入 chan
 		stopTask := api.PluginTask{
-			Id:    idTask,
+			Id:    schedId,
 			Msg:   "stopTtask",
 			Valid: false,
 		}

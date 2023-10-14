@@ -53,9 +53,9 @@ type AuthResp struct {
 	ExpireAt int64  `json:"expire_at"`
 }
 type BizData struct { // 业务角度： 任务新建、任务停止、
-	TypeId     int    `json:"type_id"`
-	Id         string `json:"id"`
-	Code       int    `json:"code"`
+	TypeId  int    `json:"type_id"`
+	SchedId string `json:"sched_id"`
+
 	HbInterval int    `json:"hb_interval"` /* second */
 	PreTimeout int    `json:"pre_timeout"` /* second */
 	RunTimeout int    `json:"run_timeout"` /* second */
