@@ -26,12 +26,13 @@ type Sched struct {
 	TaskId      string `json:"task_id"  gorm:"index:idx_task_id" `
 	TaskEnabled int    `json:"task_enabled"` /* 上层任务是否仍然Enabled */
 	Desc        string `json:"desc"`
-	Endpoint    string `json:"endpoint"`
-	CreateAt    int64  `json:"create_at"`
-	CmdackAt    int64  `json:"cmdack_at"`
-	PreparedAt  int64  `json:"prepared_at"`
-	FinishAt    int64  `json:"finish_at"`
-	ActiveAt    int64  `json:"active_at"`
+	//Endpoint    string `json:"endpoint"`
+	LinkId     string `json:"link_id"`
+	CreateAt   int64  `json:"create_at"`
+	CmdackAt   int64  `json:"cmdack_at"`
+	PreparedAt int64  `json:"prepared_at"`
+	FinishAt   int64  `json:"finish_at"`
+	ActiveAt   int64  `json:"active_at"`
 
 	Enabled  int `json:"enabled"`   /* 是否已和task脱钩, 包含重试场景和业务角度放弃某个task导致脱钩 */
 	BestProg int `json:"best_prog"` /* 生命周期的最好阶段 */

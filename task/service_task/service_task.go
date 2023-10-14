@@ -44,7 +44,7 @@ func NewTask(name string, cmd string, linkId string, cmdackTimeoutSecond int, pr
 		return "", errors.New("item.Online != 1")
 	}
 
-	idSched, e := service_sched.NewSched(idTask, cmd, item.HostName, cmdackTimeoutSecond, preTimeoutSecond, runTimeoutSecond)
+	idSched, e := service_sched.NewSched(idTask, cmd, linkId, cmdackTimeoutSecond, preTimeoutSecond, runTimeoutSecond)
 	if e != nil {
 		log.Printf("service_sched.NewTask: e=", e)
 		return "", e

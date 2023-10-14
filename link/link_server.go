@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	mapset "github.com/deckarep/golang-set"
 	"github.com/gorilla/websocket"
+	"github.com/pkg/errors"
 	"log"
 	"net/http"
 	"os"
@@ -37,8 +38,13 @@ func SetConnChangeCallback(_func func(endpoint string, _type int) (e error)) {
 	callbackFuncConnChange = _func
 }
 
-func SendDataToEndpoint(endpoint string, bytes []byte) (errCode int, e error) {
-	chanDestin := mapEndpoint2Conn[endpoint]
+func SendDataToLinkId(linkId string, bytes []byte) (errCode int, e error) {
+	item, e := repo_link.GetLinkCtl().GetItemById(linkId)
+	if e != nil {
+		return 0, errors.Wrap(e, "repo_link.GetLinkCtl().GetItemById")
+	}
+
+	chanDestin := mapEndpoint2Conn[item.HostName]
 	if chanDestin != nil {
 		mapConn2ChanWrite[chanDestin] <- bytes
 		return 0, nil

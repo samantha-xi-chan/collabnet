@@ -70,7 +70,11 @@ func OnTimer(idTimer string, evtType int, holder string, bytes []byte) (ee error
 		log.Println("itemTask.FwkCode == api_sched.SCHED_FWK_CODE_END")
 		return nil
 	}
-	if itemTask.Enabled == api_sched.INT_DISABLED {
+	if itemTask.TaskEnabled == api_sched.INT_DISABLED { // 业务角度抛弃
+		log.Println("itemTask.TaskEnabled == api_sched.INT_DISABLED")
+		return nil
+	}
+	if itemTask.Enabled == api_sched.INT_DISABLED { // 技术角度抛弃
 		log.Println("itemTask.Enabled == api_sched.INT_DISABLED")
 		return nil
 	}
@@ -131,7 +135,11 @@ func OnBizDataFromRegisterEndpoint(endpoint string, bytes []byte) (e error) { //
 		log.Println("iitemTask.FwkCode == api_sched.SCHED_FWK_CODE_END")
 		return nil
 	}
-	if itemTask.Enabled == api_sched.INT_DISABLED {
+	if itemTask.TaskEnabled == api_sched.INT_DISABLED { // 业务角度抛弃
+		log.Println("itemTask.TaskEnabled == api_sched.INT_DISABLED")
+		return nil
+	}
+	if itemTask.Enabled == api_sched.INT_DISABLED { // 技术角度抛弃
 		log.Println("itemTask.Enabled == api_sched.INT_DISABLED")
 		return nil
 	}
@@ -201,7 +209,7 @@ func StopSched(taskId string) (ee error) { // todo: send stop cmd to excutors
 	})
 	arr = append(arr, repo_sched.QueryKeyValue{
 		"enabled",
-		1,
+		api_sched.INT_ENABLED,
 	})
 	item, e := repo_sched.GetSchedCtl().GetItemByKeyValueArr(arr)
 	if e != nil {
@@ -211,26 +219,22 @@ func StopSched(taskId string) (ee error) { // todo: send stop cmd to excutors
 
 	log.Println("[StopSched]  GetItemByKeyValueArr", item)
 
-	//if item.Enabled == 0 {
-	//	log.Println("item.Enabled == 0")
-	//	return
-	//}
-
 	// todo: 发送消息到 node 节点
-	//code, e := link.SendDataToEndpoint(
-	//	endpoint,
-	//	link.GetPackageBytes(
-	//		time.Now().UnixMilli(),
-	//		"v1.0",
-	//		link.PACKAGE_TYPE_BIZ,
-	//		link.BizData{
-	//			Id:         idSched,
-	//			Code:       0,
-	//			HbInterval: config_sched.SCHED_HEARTBEAT_INTERVAL,
-	//			PreTimeout: preTimeoutSecond,
-	//			RunTimeout: runTimeoutSecond,
-	//			Msg:        cmd,
-	//		}))
+	code, e := link.SendDataToLinkId(
+		item.LinkId,
+		link.GetPackageBytes(
+			time.Now().UnixMilli(),
+			"v1.0",
+			link.PACKAGE_TYPE_BIZ,
+			link.BizData{
+				TypeId: link.BIZ_TYPE_STOPTASK,
+				Id:     item.Id,
+			}))
+	if e != nil {
+		// 记录关键错误
+		log.Println("StopSched e ", e)
+	}
+	log.Println("StopSched code", code)
 
 	if item.FwkCode == api_sched.SCHED_FWK_CODE_END {
 		log.Println("item.FwkCode == api_sched.SCHED_FWK_CODE_END")
@@ -240,14 +244,14 @@ func StopSched(taskId string) (ee error) { // todo: send stop cmd to excutors
 	repo_sched.GetSchedCtl().UpdateItemById(
 		item.Id,
 		map[string]interface{}{
-			"task_enabled": 0,
+			"task_enabled": api_sched.INT_DISABLED,
 		},
 	)
 
 	return
 }
 
-func NewSched(taskId string, cmd string, endpoint string, cmdackTimeoutSecond int, preTimeoutSecond int, runTimeoutSecond int) (_id string, e error) {
+func NewSched(taskId string, cmd string, linkId string, cmdackTimeoutSecond int, preTimeoutSecond int, runTimeoutSecond int) (_id string, e error) {
 	idSched := idgen.GetIdWithPref("sched")
 	repo_sched.GetSchedCtl().CreateItem(repo_sched.Sched{
 		Id:            idSched,
@@ -255,7 +259,7 @@ func NewSched(taskId string, cmd string, endpoint string, cmdackTimeoutSecond in
 		TaskEnabled:   1,
 		Desc:          "",
 		BestProg:      api_sched.STATUS_SCHED_INIT,
-		Endpoint:      endpoint,
+		LinkId:        linkId,
 		CreateAt:      time.Now().UnixMilli(),
 		ActiveAt:      time.Now().UnixMilli(),
 		Enabled:       api_sched.INT_ENABLED,
@@ -267,13 +271,14 @@ func NewSched(taskId string, cmd string, endpoint string, cmdackTimeoutSecond in
 		FwkCode:       api_sched.INT_INVALID,
 	})
 
-	code, e := link.SendDataToEndpoint(
-		endpoint,
+	code, e := link.SendDataToLinkId(
+		linkId,
 		link.GetPackageBytes(
 			time.Now().UnixMilli(),
 			"v1.0",
 			link.PACKAGE_TYPE_BIZ,
 			link.BizData{
+				TypeId:     link.BIZ_TYPE_NEWTASK,
 				Id:         idSched,
 				Code:       0,
 				HbInterval: config_sched.SCHED_HEARTBEAT_INTERVAL,

@@ -29,7 +29,11 @@ const (
 	PACKAGE_TYPE_GOODBYE       = 1043
 	PACKAGE_TYPE_REPORT        = 1061
 	PACKAGE_TYPE_BIZ           = 1083
-	PACKAGE_TYPE_STOPTASK      = 1091
+)
+
+const (
+	BIZ_TYPE_NEWTASK  = 1011
+	BIZ_TYPE_STOPTASK = 1021
 )
 
 type Package struct {
@@ -48,7 +52,8 @@ type AuthResp struct {
 	Msg      string `json:"msg"`
 	ExpireAt int64  `json:"expire_at"`
 }
-type BizData struct { // 任务分发、心跳
+type BizData struct { // 业务角度： 任务新建、任务停止、
+	TypeId     int    `json:"type_id"`
 	Id         string `json:"id"`
 	Code       int    `json:"code"`
 	HbInterval int    `json:"hb_interval"` /* second */
