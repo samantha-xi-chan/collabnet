@@ -18,8 +18,8 @@ const (
 )
 
 const (
-	SCHEDULER_LISTEN_PORT   = ":80"
-	SCHEDULER_LISTEN_DOMAIN = "localhost"
+	SCHEDULER_LISTEN_PORT = ":80"
+	//SCHEDULER_LISTEN_DOMAIN = "localhost"
 )
 
 const (
@@ -30,7 +30,7 @@ const (
 )
 
 const (
-	RepoMySQLDsn = "root:gzn%zkTJ8x!gGZO6@tcp(192.168.31.6:3306)/biz?charset=utf8mb4&parseTime=True&loc=Local"
+	//RepoMySQLDsn = "root:gzn%zkTJ8x!gGZO6@tcp(192.168.31.6:3306)/biz?charset=utf8mb4&parseTime=True&loc=Local"
 	RepoLogLevel = 2
 	RepoSlowMs   = 200
 )

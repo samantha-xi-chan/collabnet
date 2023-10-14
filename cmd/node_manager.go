@@ -170,13 +170,19 @@ func main() {
 		}
 	}()
 
+	schedServer, e := config.GetBizSchedServer()
+	if e != nil {
+		log.Fatal("config.GetBizSchedServer: ", e)
+	}
+	log.Println("schedServer: ", schedServer)
+
 	hostName, _ := os.Hostname()
 	link.NewClientConnection(
 		link.Config{
 			Ver:      "v1.0",
 			Auth:     config_sched.AuthTokenForDev,
 			HostName: hostName,
-			HostAddr: fmt.Sprintf("%s%s", config_sched.SCHEDULER_LISTEN_DOMAIN, config_sched.SCHEDULER_LISTEN_PORT),
+			HostAddr: fmt.Sprintf("%s%s", schedServer, config_sched.SCHEDULER_LISTEN_PORT),
 		},
 		//notify,
 		readChanEx,

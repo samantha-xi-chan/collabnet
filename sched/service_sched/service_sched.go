@@ -36,6 +36,11 @@ func init() {
 		log.Fatal("config.GetMqDsn() e=", e)
 	}
 	log.Println("mqDsn: ", mqDsn)
+	mySqlDsn, e := config.GetMySqlDsn()
+	if e != nil {
+		log.Fatal("config.GetMySqlDsn: ", e)
+	}
+	log.Println("mySqlDsn", mySqlDsn)
 
 	// 与下层的通信 01
 	link.SetConnChangeCallback(OnConnChange)
@@ -47,7 +52,7 @@ func init() {
 	service_time.Init(mqDsn, config_sched.AMQP_EXCH)
 
 	// 与下层的通信 03
-	repo_sched.Init(config_sched.RepoMySQLDsn, config_sched.RepoLogLevel, config_sched.RepoSlowMs)
+	repo_sched.Init(mySqlDsn, config_sched.RepoLogLevel, config_sched.RepoSlowMs)
 }
 
 // 接收下层调用
