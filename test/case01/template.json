@@ -1,6 +1,7 @@
 {
+  "name": "build",
+  "link_id": "co",
   "cmd": "ls -alh; date; tree; sleep 2;",
-  "host_name": "M1",
   "timeout_pre": 5,
   "timeout_run": 20
 }

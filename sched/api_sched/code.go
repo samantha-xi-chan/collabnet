@@ -17,7 +17,7 @@ const ( // 内部可能在此不断重试 所以状态会不断循环迁移
 	STATUS_SCHED_CMD_ACKED  = 86031031 // 指令已收回执
 	STATUS_SCHED_PRE_ACKED  = 86031041 // 准备动作完成
 	STATUS_SCHED_RUNNING    = 86031051 // 运行状态的心跳
-	STATUS_SCHED_END        = 86031099 // 整个生命周期已结束
+	STATUS_SCHED_RUN_END    = 86031099 // 收到运行结束通知(包含正常结束、异常结束)
 )
 
 const ( // 一旦到达  86431099，认为经过 1-N 次尝试，最终 失败/成功。不翻身。

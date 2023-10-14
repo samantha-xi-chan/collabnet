@@ -107,14 +107,14 @@ func NewTimer(timeoutSecond int, _type int, holder string, desc string) (id stri
 }
 
 func DisableTimer(id string) (e error) {
-	log.Printf("[DisableTimer] id=%s \n", id)
+	log.Printf("[DisableTimer]  id=%s \n", id)
 	item, e := repo_time.GetTimeCtl().GetItemById(id)
 	if e != nil {
 		log.Printf("repo_time.GetTimeCtl().GetItemById, e= %s , id = %s \n ", e, id)
 		return
 	}
 
-	log.Printf("[DisableTimer]  id = %s, type =  %d , desc = %s\n", id, item.Type, item.Desc)
+	log.Printf("    [DisableTimer]  id = %s, type =  %d , desc = %s\n", id, item.Type, item.Desc)
 	repo_time.GetTimeCtl().UpdateItemById(id, map[string]interface{}{
 		"status": api.STATUS_TIMER_DISABLED,
 	})

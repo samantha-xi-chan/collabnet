@@ -23,15 +23,20 @@ func (Task) TableName() string {
 
 type Task struct {
 	Id      string `json:"id" gorm:"primaryKey"`
-	Desc    string `json:"desc"`
+	Name    string `json:"name"`
 	Cmd     string `json:"cmd"`
-	Status  int    `json:"status"`
-	Enabled int    `json:"enabled"`
+	Enabled int    `json:"enabled"` /* 是否被上层业务需要 */
 	//Code     int    `json:"code"`
 	CreateAt int64 `json:"create_at"`
 	QueueAt  int64 `json:"queue_at"`
+}
 
-	IdSched string `json:"id_sched"  gorm:"index:idx_id_sched"  `
+type TaskInfo struct {
+	Id       string `json:"id"`
+	CreateAt int64  `json:"create_at"`
+	FinishAt int64  `json:"finish_at"`
+	BestProg int    `json:"best_prog"`
+	FwkCode  int    `json:"fwk_code"`
 }
 
 func (ctl *TaskCtl) CreateItem(item Task) (err error) {
@@ -83,4 +88,11 @@ func (ctl *TaskCtl) GetItemById(id string) (i Task, e error) { // todo: optimize
 	}
 
 	return item, nil
+}
+
+func (ctl *TaskCtl) GetTasks(id string) (tasks []TaskInfo, e error) { // todo: optimize
+	rawSQL := `SELECT t.id , t.create_at, s.finish_at, s.best_prog , s.fwk_code AS fwk_code FROM task t JOIN sched s ON s.task_id = t.id AND s.enabled = 1`
+	db.Raw(rawSQL).Scan(&tasks)
+	log.Println("[GetTasks] tasks: ", tasks)
+	return
 }

@@ -20,6 +20,7 @@ func InitGinService(addr string) (ee error) {
 	task := r.Group("/api/v1/task")
 	{
 		task.POST("", PostTask)
+		task.GET("", GetTask)
 	}
 
 	return r.Run(addr)
@@ -38,8 +39,7 @@ func PostTask(c *gin.Context) {
 
 	log.Println("PostTask:  ", dto)
 
-	//id, e := service_task.NewTask("ls -alh ", "M1", config_sched.CMD_ACK_TIMEOUT, config_sched.TEST_TIMEOUT_PREPARE, config_sched.TEST_TIMEOUT_RUN)
-	id, e := service_task.NewTask(dto.Cmd, dto.HostName, config_sched.CMD_ACK_TIMEOUT, dto.TimeoutPre, dto.TimeoutRun)
+	id, e := service_task.NewTask(dto.Name, dto.Cmd, dto.LinkId, config_sched.CMD_ACK_TIMEOUT, dto.TimeoutPre, dto.TimeoutRun)
 	if e != nil {
 		c.JSON(http.StatusOK, api.HttpRespBody{
 			Code: api.ERR_OTHER,
@@ -53,6 +53,27 @@ func PostTask(c *gin.Context) {
 		Code: 0,
 		Msg:  "ok",
 		Data: api_task.PostTaskResp{Id: id},
+	})
+	return
+}
+
+func GetTask(c *gin.Context) {
+	log.Println("GetTask:  ")
+
+	arr, e := service_task.GetTask()
+	if e != nil {
+		c.JSON(http.StatusOK, api.HttpRespBody{
+			Code: api.ERR_OTHER,
+			Msg:  "service_task.NewTask:  " + e.Error(),
+		})
+		return
+	}
+
+	log.Println("[main] service_task.GetTask . ")
+	c.JSON(http.StatusOK, api.HttpRespBody{
+		Code: 0,
+		Msg:  "ok",
+		Data: arr,
 	})
 	return
 }

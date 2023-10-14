@@ -57,16 +57,16 @@ func (ctl *LinkCtl) DeleteItemById(id string) (err error) {
 	return nil
 }
 
-func (ctl *LinkCtl) GetItemByKeyValue(key string, val interface{}) (i Link, e error) { // todo: optimize
-	var item Link
-	err := db.Where(fmt.Sprintf("%s = ?", key), val).Take(&item).Error
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return Link{}, err
-	} else if err != nil {
-		return Link{}, errors.Wrap(err, "LinkCtl GetItemByContainerId err not nil: ")
-	}
+func (ctl *LinkCtl) GetItemsByKeyValue(key string, val interface{}) (arr []Link, e error) { // todo: optimize
 
-	return item, nil
+	err := db.Where(key, val).Take(&arr).Error
+	//if errors.Is(err, gorm.ErrRecordNotFound) {
+	//	return nil, err
+	//} else if err != nil {
+	//	return nil, errors.Wrap(err, "LinkCtl GetItemByContainerId err not nil: ")
+	//}
+
+	return arr, err
 }
 
 func (ctl *LinkCtl) GetItemById(id string) (i Link, e error) { // todo: optimize

@@ -22,7 +22,7 @@ func InitGinService(addr string) (ee error) {
 }
 
 func GetLinks(c *gin.Context) {
-	items, e := repo_link.GetLinkCtl().GetItems()
+	items, e := repo_link.GetLinkCtl().GetItemsByKeyValue("online", 1)
 	if e != nil {
 		c.JSON(http.StatusOK, api.HttpRespBody{
 			Code: api.ERR_OTHER,
