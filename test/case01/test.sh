@@ -52,7 +52,7 @@ echo "taskId: "$taskId
 #echo $patchTaskResp
 #echo "patchTaskResp: "$patchTaskResp
 
-sleep 5; echo "get tasks: "
-curl -X GET "http://localhost:8081/api/v1/task"; echo ;
-sleep 5; echo "get tasks: "
-curl -X GET "http://localhost:8081/api/v1/task";  echo "\n\n";
+#sleep 5; echo "get tasks: "
+#curl -X GET "http://localhost:8081/api/v1/task"; echo ;
+#sleep 5; echo "get tasks: "
+#curl -X GET "http://localhost:8081/api/v1/task";  echo "\n\n";

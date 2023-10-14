@@ -25,8 +25,7 @@ type Sched struct {
 	Id          string `json:"id" gorm:"primaryKey"`
 	TaskId      string `json:"task_id"  gorm:"index:idx_task_id" `
 	TaskEnabled int    `json:"task_enabled"` /* 上层任务是否仍然Enabled */
-	Desc        string `json:"desc"`
-	//Endpoint    string `json:"endpoint"`
+
 	LinkId     string `json:"link_id"`
 	CreateAt   int64  `json:"create_at"`
 	CmdackAt   int64  `json:"cmdack_at"`

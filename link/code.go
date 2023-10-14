@@ -60,6 +60,8 @@ type BizData struct { // 业务角度： 任务新建、任务停止、
 	Para02 int    `json:"para02"`
 	Para03 int    `json:"para03"`
 	Para11 string `json:"para11"`
+	// 洋葱进去一层
+	Para0101 int `json:"para0101"`
 
 	//HbInterval int `json:"hb_interval"` /* second */
 	//PreTimeout int `json:"pre_timeout"` /* second */

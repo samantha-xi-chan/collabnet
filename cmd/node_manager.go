@@ -27,6 +27,8 @@ var (
 )
 
 func OnUpdateFromPlugin(id string, status int, para01 int) {
+	log.Printf("[OnUpdateFromPlugin] id=%s, status=%d, para01=%d \n", id, status, para01)
+
 	if status == api.TASK_EVT_START {
 		SendBizData2Platform(link.GetPackageBytes(
 			time.Now().UnixMilli(),
@@ -35,8 +37,7 @@ func OnUpdateFromPlugin(id string, status int, para01 int) {
 			link.BizData{
 				TypeId:  link.BIZ_TYPE_NEWTASK,
 				SchedId: id,
-
-				Para01: api.TASK_EVT_PREACK,
+				Para01:  api.TASK_EVT_PREACK,
 			},
 		))
 
@@ -56,9 +57,10 @@ func OnUpdateFromPlugin(id string, status int, para01 int) {
 			"1.0",
 			link.PACKAGE_TYPE_BIZ,
 			link.BizData{
-				TypeId:  link.BIZ_TYPE_NEWTASK,
-				SchedId: id,
-				Para01:  api.TASK_EVT_END,
+				TypeId:   link.BIZ_TYPE_NEWTASK,
+				SchedId:  id,
+				Para01:   api.TASK_EVT_END,
+				Para0101: para01,
 			},
 		))
 	}

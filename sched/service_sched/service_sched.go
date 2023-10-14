@@ -59,7 +59,7 @@ func OnTimerWrapper(idTimer string, _type int, holder string, bytes []byte) (ee 
 }
 
 func OnTimer(idTimer string, evtType int, holder string, bytes []byte) (ee error) { // 定时器 事件
-	log.Printf("[OnTimer]holder %s,  idTimer: %s, bytes: %s\n", holder, idTimer, string(bytes))
+	log.Printf("[OnTimer]holder %s,  idTimer: %s, evtType: %d, bytes: %s\n", holder, idTimer, evtType, string(bytes))
 	itemTask, e := repo_sched.GetSchedCtl().GetItemById(holder)
 	if e != nil {
 		log.Println("repo_sched.GetSchedCtl().GetItemById e :", e)
@@ -79,20 +79,20 @@ func OnTimer(idTimer string, evtType int, holder string, bytes []byte) (ee error
 	}
 
 	// 更新状态 并关闭 已经不再需要的定时器
-	if evtType == api_sched.SCHED_EVT_TIMEOUT_CMDACK {
+	if evtType == api.SCHED_EVT_TIMEOUT_CMDACK {
 		log.Printf("[OnTimer]  STATUS_SCHED_CMD_ACKED ")
 		repo_sched.GetSchedCtl().UpdateItemById(itemTask.Id, map[string]interface{}{
 			"fwk_code": api_sched.SCHED_FWK_CODE_END,
 		})
-	} else if evtType == api_sched.SCHED_EVT_TIMEOUT_PREACK {
+	} else if evtType == api.SCHED_EVT_TIMEOUT_PREACK {
 		repo_sched.GetSchedCtl().UpdateItemById(itemTask.Id, map[string]interface{}{
 			"fwk_code": api_sched.SCHED_FWK_CODE_END,
 		})
-	} else if evtType == api_sched.SCHED_EVT_TIMEOUT_HB {
+	} else if evtType == api.SCHED_EVT_TIMEOUT_HB {
 		repo_sched.GetSchedCtl().UpdateItemById(itemTask.Id, map[string]interface{}{
 			"fwk_code": api_sched.SCHED_FWK_CODE_END,
 		})
-	} else if evtType == api_sched.SCHED_EVT_TIMEOUT_RUN {
+	} else if evtType == api.SCHED_EVT_TIMEOUT_RUN {
 		repo_sched.GetSchedCtl().UpdateItemById(itemTask.Id, map[string]interface{}{
 			"fwk_code": api_sched.SCHED_FWK_CODE_END,
 		})
@@ -143,10 +143,10 @@ func OnBizDataFromRegisterEndpoint(endpoint string, bytes []byte) (e error) { //
 		return nil
 	}
 
-	status := api_sched.INT_INVALID
+	// api.TASK_EVT_PREACK , api.SCHED_EVT_TIMEOUT_PREACK
 	if body.Para01 == api.TASK_EVT_CMDACK {
 		service_time.DisableTimer(itemTask.CmdackTimer)
-		idPreTimer, e := service_time.NewTimer(itemTask.PreTimeout, api_sched.SCHED_EVT_TIMEOUT_PREACK, idSched, "pre_ack_timeout")
+		idPreTimer, e := service_time.NewTimer(itemTask.PreTimeout, api.SCHED_EVT_TIMEOUT_PREACK, idSched, "pre_ack_timeout")
 		if e != nil {
 			return errors.Wrap(e, "service_time.NewTimer: ")
 		}
@@ -154,31 +154,29 @@ func OnBizDataFromRegisterEndpoint(endpoint string, bytes []byte) (e error) { //
 		repo_sched.GetSchedCtl().UpdateItemById(idSched, map[string]interface{}{
 			"active_at": time.Now().UnixMilli(),
 			"cmdack_at": time.Now().UnixMilli(),
-			"best_prog": api_sched.STATUS_SCHED_CMD_ACKED,
+			"best_prog": api.STATUS_SCHED_CMD_ACKED,
 			"pre_timer": idPreTimer,
 		})
 
 		callback(idSched, body.Para01, nil)
 	} else if body.Para01 == api.TASK_EVT_PREACK {
 		service_time.DisableTimer(itemTask.PreTimer)
-		idRunTimer, _ := service_time.NewTimer(itemTask.RunTimeout, api_sched.SCHED_EVT_TIMEOUT_RUN, idSched, "run_finish_timeout")
-		idHbTimer, _ := service_time.NewTimer(config_sched.SCHED_HEARTBEAT_TIMEOUT, api_sched.SCHED_EVT_TIMEOUT_HB, idSched, "hb_timeout")
+		idRunTimer, _ := service_time.NewTimer(itemTask.RunTimeout, api.SCHED_EVT_TIMEOUT_RUN, idSched, "run_finish_timeout")
+		idHbTimer, _ := service_time.NewTimer(config_sched.SCHED_HEARTBEAT_TIMEOUT, api.SCHED_EVT_TIMEOUT_HB, idSched, "hb_timeout")
 
 		repo_sched.GetSchedCtl().UpdateItemById(idSched, map[string]interface{}{
 			"active_at":   time.Now().UnixMilli(),
 			"prepared_at": time.Now().UnixMilli(),
-			"best_prog":   api_sched.STATUS_SCHED_PRE_ACKED,
+			"best_prog":   api.STATUS_SCHED_PRE_ACKED,
 			"run_timer":   idRunTimer,
 			"hb_timer":    idHbTimer,
 		})
 
 		callback(idSched, body.Para01, nil)
 	} else if body.Para01 == api.TASK_EVT_HEARTBEAT {
-		status = api_sched.STATUS_SCHED_RUNNING
-
 		repo_sched.GetSchedCtl().UpdateItemById(idSched, map[string]interface{}{
 			"active_at": time.Now().UnixMilli(),
-			"status":    status,
+			"best_prog": api.STATUS_SCHED_RUNNING,
 		})
 
 		// reset timer
@@ -186,13 +184,14 @@ func OnBizDataFromRegisterEndpoint(endpoint string, bytes []byte) (e error) { //
 
 		callback(idSched, body.Para01, nil)
 	} else if body.Para01 == api.TASK_EVT_END {
-		//idTimer, _ := service_time.NewTimer(itemTask.PreTimeout, api_sched.STATUS_SCHED_PRE_ACKED, idSched, "prepare_timeout")
+		//idTimer, _ := service_time.NewTimer(itemTask.PreTimeout, api.STATUS_SCHED_PRE_ACKED, idSched, "prepare_timeout")
 
 		repo_sched.GetSchedCtl().UpdateItemById(idSched, map[string]interface{}{
 			"active_at": time.Now().UnixMilli(),
 			"finish_at": time.Now().UnixMilli(),
-			"best_prog": api_sched.STATUS_SCHED_RUN_END,
+			"best_prog": api.STATUS_SCHED_RUN_END,
 			"fwk_code":  api_sched.SCHED_FWK_CODE_END,
+			"biz_code":  body.Para0101,
 		})
 
 		service_time.DisableTimer(itemTask.HbTimer)
@@ -265,9 +264,8 @@ func NewSched(taskId string, cmd string, linkId string, cmdackTimeoutSecond int,
 	repo_sched.GetSchedCtl().CreateItem(repo_sched.Sched{
 		Id:            idSched,
 		TaskId:        taskId,
-		TaskEnabled:   1,
-		Desc:          "",
-		BestProg:      api_sched.STATUS_SCHED_INIT,
+		TaskEnabled:   api_sched.INT_ENABLED,
+		BestProg:      api.STATUS_SCHED_INIT,
 		LinkId:        linkId,
 		CreateAt:      time.Now().UnixMilli(),
 		ActiveAt:      time.Now().UnixMilli(),
@@ -298,17 +296,17 @@ func NewSched(taskId string, cmd string, linkId string, cmdackTimeoutSecond int,
 		log.Println("link.SendDataToEndpoint failed ")
 
 		repo_sched.GetSchedCtl().UpdateItemById(idSched, map[string]interface{}{
-			"status":   api_sched.STATUS_SCHED_LOCAL_FAIL,
-			"fwk_code": api_sched.SCHED_FWK_CODE_END,
+			"best_prog": api.STATUS_SCHED_ANALYZE,
+			"fwk_code":  api_sched.SCHED_FWK_CODE_END,
 		})
 		callback(taskId, api.TASK_EVT_REJECT, nil)
 		return idSched, nil
 	}
 
-	idCmdackTimer, _ := service_time.NewTimer(cmdackTimeoutSecond, api_sched.SCHED_EVT_TIMEOUT_CMDACK, idSched, "cmd_ack_timeout")
+	idCmdackTimer, _ := service_time.NewTimer(cmdackTimeoutSecond, api.SCHED_EVT_TIMEOUT_CMDACK, idSched, "cmd_ack_timeout")
 	repo_sched.GetSchedCtl().UpdateItemById(idSched, map[string]interface{}{
 		"active_at":    time.Now().UnixMilli(),
-		"status":       api_sched.STATUS_SCHED_SENT,
+		"best_prog":    api.STATUS_SCHED_SENT,
 		"cmdack_timer": idCmdackTimer,
 	})
 
@@ -319,6 +317,7 @@ func NewSched(taskId string, cmd string, linkId string, cmdackTimeoutSecond int,
 	}
 	log.Println("[NewTask] item: ", item)
 
+	callback(taskId, api.TASK_EVT_ACCEPT, nil)
 	return idSched, nil
 }
 

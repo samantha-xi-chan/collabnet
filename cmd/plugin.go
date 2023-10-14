@@ -30,8 +30,8 @@ func main() {
 
 		if !dto.Valid {
 			log.Println("业务代码此时应该 关闭如果正在运行的编号为  ", dto.Id, "的任务，并发送任务结束的通知")
-			notifyTaskStatus(dto.Id, api.TASK_EVT_END)
-			continue
+			notifyTaskStatus(dto.Id, api.TASK_EVT_END, 0)
+			return
 		} else if false { //  如果 !dto.Valid 且此任务未处理过 (这里明显代码逻辑不对 就不要照着抄写了)
 
 			continue
@@ -39,31 +39,29 @@ func main() {
 
 		go func() {
 			// 判断内容  如果当前任务的属性为 有效 则发 任务开始执行的http, 解析出 任务的执行时长条件要求，
-			notifyTaskStatus(dto.Id, api.TASK_EVT_START)
+			notifyTaskStatus(dto.Id, api.TASK_EVT_START, 0)
 
 			// 此处是任务执行 用 sleep 代替, 执行过程中需要发送心跳, 这个demo表示 任务执行耗时 3秒
 			for i := 0; i < 3; i++ {
 				// 这里是任务执行（例如 执行安全测试）
 				time.Sleep(time.Millisecond * 500)
-				notifyTaskStatus(dto.Id, api.TASK_EVT_HEARTBEAT)
+				notifyTaskStatus(dto.Id, api.TASK_EVT_HEARTBEAT, 0)
 				time.Sleep(time.Millisecond * 500)
 			}
 
-			notifyTaskStatus(dto.Id, api.TASK_EVT_END)
+			notifyTaskStatus(dto.Id, api.TASK_EVT_END, 1) // 1 是脚本的exitCode
 		}()
-
 	}
 }
 
-func notifyTaskStatus(id string, status int) (x string, e error) {
+func notifyTaskStatus(id string, status int, statusPara01 int) (x string, e error) {
 	url := fmt.Sprintf("http://%s%s%s/%s", config.PLUGIN_SERVICE_IP, config.PLUGIN_SERVICE_PORT, config.PLUGIN_SERVICE_ROUTER, id)
 	log.Println("notifyTaskStatus url : ", url)
 
 	requestBody, err := json.Marshal(api.PostPluginTaskStatusReq{
-		//Id:     "",
 		Msg:    "PostPluginTaskStatusReq",
 		Status: status,
-		Para01: 0,
+		Para01: statusPara01,
 	})
 	if err != nil {
 		fmt.Println("转换为JSON时发生错误:", err)
