@@ -9,9 +9,9 @@ import (
 )
 
 const (
-	KEY      = "user.event.publish_1"
-	QUEUE    = "user-published-queue_1"
-	CONSUMER = "user-published-consumer_1"
+	KEY      = "user.event.publish"
+	QUEUE    = "user-published-queue"
+	CONSUMER = "user-published-consumer"
 )
 
 // RabbitMQ stores rabbitmq's connection information
@@ -131,13 +131,13 @@ func consume(ds <-chan amqp.Delivery, shouldAck func([]byte) bool) {
 			}
 			//log.Infof("consume: %s", string(d.Body))
 
-			tick := time.Now().UnixMilli()
+			//tick := time.Now().UnixMilli()
 			if shouldAck(d.Body) {
 				d.Ack(false)
 			} else {
 				d.Nack(true, false)
 			}
-			log.Println("#### shouldAck: time=", time.Now().UnixMilli()-tick)
+			//log.Println("#### shouldAck: time consume =", time.Now().UnixMilli()-tick)
 		}
 	}
 }

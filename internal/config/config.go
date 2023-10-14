@@ -7,9 +7,17 @@ const (
 	PLUGIN_SERVICE_ROUTER_ID = "/api/v1/task/:id"
 )
 
-type PluginTask struct {
-	Id         string `json:"id"`
-	Cmd        string `json:"cmd"`
-	TimeoutPre int    `json:"timeout_pre"` // 秒
-	TimeoutRun int    `json:"timeout_run"` // 秒
-}
+const (
+	PLUGIN_TASK_EVT_REJECT    = 61021022
+	PLUGIN_TASK_EVT_START     = 61021071
+	PLUGIN_TASK_EVT_HEARTBEAT = 61021077
+	PLUGIN_TASK_EVT_END_SUCC  = 61021999
+	PLUGIN_TASK_EVT_END_FAIL  = 61021989
+)
+
+const (
+	EVT_STR_STATUS_SCHED_CMD_ACKED = "22STATUS_SCHED_CMD_ACKED"
+	EVT_STR_STATUS_SCHED_PRE_ACKED = "22STATUS_SCHED_PRE_ACKED"
+	EVT_STR_STATUS_SCHED_HEARTBEAT = "22STATUS_SCHED_HEARTBEAT"
+	EVT_STR_STATUS_SCHED_END       = "22STATUS_SCHED_END"
+)

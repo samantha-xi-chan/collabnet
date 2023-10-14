@@ -44,15 +44,15 @@ func PostTask(c *gin.Context) {
 		c.JSON(http.StatusOK, api.HttpRespBody{
 			Code: api.ERR_OTHER,
 			Msg:  "service_task.NewTask:  " + e.Error(),
-			Data: api_task.PostTaskResp{Id: id},
 		})
 		return
 	}
 
-	log.Println("[main]  id :  ", id)
+	log.Println("[main] service_task.NewTask id :  ", id)
 	c.JSON(http.StatusOK, api.HttpRespBody{
 		Code: 0,
 		Msg:  "ok",
+		Data: api_task.PostTaskResp{Id: id},
 	})
 	return
 }

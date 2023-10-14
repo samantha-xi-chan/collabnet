@@ -8,5 +8,4 @@ echo "$req"
 
 curl -X POST "http://localhost:8081/api/v1/task" -d "$req"
 
-
-while true; do sh test/case01/test.sh; sleep 30; done
+# while true; do sh test/case01/test.sh; echo; echo; sleep 30; done

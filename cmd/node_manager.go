@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 	"log"
 	"net/http"
 	"os"
@@ -26,11 +27,43 @@ var (
 )
 
 func OnUpdateFromPlugin(id string, status int, para01 int) {
+	if status == config.PLUGIN_TASK_EVT_START {
+		SendBizData2Platform(link.GetPackageBytes(
+			time.Now().UnixMilli(),
+			"1.0",
+			link.PACKAGE_TYPE_BIZ,
+			link.BizData{
+				Id:   id,
+				Code: 0,
+				Msg:  config.EVT_STR_STATUS_SCHED_PRE_ACKED,
+			},
+		))
 
-	//SendBizData(  )
+		SendBizData2Platform(link.GetPackageBytes(
+			time.Now().UnixMilli(),
+			"1.0",
+			link.PACKAGE_TYPE_BIZ,
+			link.BizData{
+				Id:   id,
+				Code: 0,
+				Msg:  config.EVT_STR_STATUS_SCHED_HEARTBEAT,
+			},
+		))
+	} else if status == config.PLUGIN_TASK_EVT_END_SUCC {
+		SendBizData2Platform(link.GetPackageBytes(
+			time.Now().UnixMilli(),
+			"1.0",
+			link.PACKAGE_TYPE_BIZ,
+			link.BizData{
+				Id:   id,
+				Code: 0,
+				Msg:  config.EVT_STR_STATUS_SCHED_END,
+			},
+		))
+	}
 }
 
-func OnNewBizData(bytes []byte) {
+func OnNewBizDataFromPlatform(bytes []byte) {
 	onNewBizData := string(bytes)
 	log.Println("OnNewBizData: ", onNewBizData)
 
@@ -42,66 +75,34 @@ func OnNewBizData(bytes []byte) {
 	}
 
 	idTask := body.Id
-
 	log.Println("[OnNewBizData]  idTask = ", idTask)
 
 	time.Sleep(time.Millisecond * 200)
-	SendBizData(link.GetPackageBytes(
+	SendBizData2Platform(link.GetPackageBytes(
 		time.Now().UnixMilli(),
 		"1.0",
 		link.PACKAGE_TYPE_BIZ,
 		link.BizData{
-			Id:   body.Id,
+			Id:   idTask,
 			Code: 0,
-			Msg:  "STATUS_SCHED_CMD_ACKED",
+			Msg:  config.EVT_STR_STATUS_SCHED_CMD_ACKED,
 		},
 	))
-	log.Println(" STATUS_SCHED_CMD_ACKED [OnNewBizData]  idTask = ", idTask)
+	log.Println(" [OnNewBizDataFromPlatform] SendBizData2Platform STATUS_SCHED_CMD_ACKED idTask = ", idTask)
 
-	time.Sleep(time.Second * config_sched.TEST_TIME_PREPARE)
-
-	SendBizData(link.GetPackageBytes(
-		time.Now().UnixMilli(),
-		"1.0",
-		link.PACKAGE_TYPE_BIZ,
-		link.BizData{
-			Id:   body.Id,
-			Code: 0,
-			Msg:  "STATUS_SCHED_PRE_ACKED",
-		},
-	))
-	log.Println(" STATUS_SCHED_PRE_ACKED [OnNewBizData]  idTask = ", idTask)
-
-	for i := 0; i < config_sched.TEST_TIME_RUN/config_sched.SCHED_HEARTBEAT_INTERVAL; i++ {
-		time.Sleep(time.Second * time.Duration(body.HbInterval))
-		SendBizData(link.GetPackageBytes(
-			time.Now().UnixMilli(),
-			"1.0",
-			link.PACKAGE_TYPE_BIZ,
-			link.BizData{
-				Id:   body.Id,
-				Code: 0,
-				Msg:  "STATUS_SCHED_HEARTBEAT",
-			},
-		))
-		log.Println(" HeartBeat [OnNewBizData]  idTask = ", idTask)
+	// 将任务的结构体转换进入 chan
+	newTask := api.PluginTask{
+		Id:         idTask,
+		Msg:        "test",
+		Cmd:        body.Msg,
+		Valid:      true,
+		TimeoutPre: body.PreTimeout,
+		TimeoutRun: body.RunTimeout,
 	}
-
-	time.Sleep(time.Millisecond * 100)
-	SendBizData(link.GetPackageBytes(
-		time.Now().UnixMilli(),
-		"1.0",
-		link.PACKAGE_TYPE_BIZ,
-		link.BizData{
-			Id:   body.Id,
-			Code: 0,
-			Msg:  "STATUS_SCHED_END",
-		},
-	))
-	log.Println(" Finished [OnNewBizData]  idTask = ", idTask)
+	pluginChan <- newTask
 }
 
-func SendBizData(bytes []byte) {
+func SendBizData2Platform(bytes []byte) {
 	log.Println("SendBizData: ", string(bytes))
 	writeChanEx <- bytes
 }
@@ -110,7 +111,7 @@ func init() {
 
 }
 
-var pluginChan = make(chan string)
+var pluginChan = make(chan api.PluginTask)
 
 func main() {
 	go func() {
@@ -133,10 +134,10 @@ func main() {
 			readChanExStr := string(bytes)
 			log.Println("readChanExStr: ", readChanExStr)
 
-			pluginChan <- readChanExStr
+			//pluginChan <- readChanExStr
 
 			go func() {
-				OnNewBizData(bytes)
+				OnNewBizDataFromPlatform(bytes)
 			}()
 		}
 	}()
@@ -168,18 +169,18 @@ func main() {
 
 func StartPluginService() (ee error) {
 	r := gin.Default()
-	r.GET(config.PLUGIN_SERVICE_ROUTER, getTaskCmd)
-	r.POST(config.PLUGIN_SERVICE_ROUTER_ID, postTaskStatus)
+	r.GET(config.PLUGIN_SERVICE_ROUTER, getPluginTaskCmd)
+	r.POST(config.PLUGIN_SERVICE_ROUTER_ID, postPluginTaskStatus)
 	return r.Run(config.PLUGIN_SERVICE_PORT)
 }
 
-func getTaskCmd(c *gin.Context) {
+func getPluginTaskCmd(c *gin.Context) {
 	select {
-	case msg := <-pluginChan:
+	case pluginTaskInfo := <-pluginChan:
 		c.JSON(http.StatusOK, api.HttpRespBody{
 			Code: 0,
-			Msg:  msg,
-			//Data: []byte(msg),
+			Msg:  "",
+			Data: pluginTaskInfo,
 		})
 	case <-time.After(30 * time.Second):
 		c.JSON(http.StatusOK, api.HttpRespBody{
@@ -189,24 +190,26 @@ func getTaskCmd(c *gin.Context) {
 	}
 }
 
-func postTaskStatus(c *gin.Context) { // 任务状态变更
+func postPluginTaskStatus(c *gin.Context) { // 任务状态变更
+	id := c.Param("id")
+	log.Println("postPluginTaskStatus id:  ", id)
+
+	var dto api.PostPluginTaskStatusReq
+	if err := c.BindJSON(&dto); err != nil {
+		logrus.Error("bad request in Post(): ", err)
+		c.JSON(http.StatusOK, api.HttpRespBody{
+			Code: api.ERR_FORMAT,
+			Msg:  "ERR_FORMAT: " + err.Error(),
+		})
+		return
+	}
+
+	log.Println("postPluginTaskStatus dto:  ", dto)
+
+	OnUpdateFromPlugin(id, dto.Status, dto.Para01)
+
 	c.JSON(http.StatusOK, api.HttpRespBody{
 		Code: 0,
 		Msg:  "postTaskStatus ok",
 	})
 }
-
-//func longPollHandler(w http.ResponseWriter, r *http.Request) {
-//	// Set response headers to allow cross-origin requests
-//	w.Header().Set("Access-Control-Allow-Origin", "*")
-//	w.Header().Set("Content-Type", "text/plain")
-//
-//	select {
-//	case msg := <-pluginChan:
-//		// When data is available, send it as a response
-//		w.Write([]byte(msg))
-//	case <-time.After(30 * time.Second):
-//		// After a timeout, respond with a message indicating no new data
-//		w.Write([]byte("No new data available."))
-//	}
-//}

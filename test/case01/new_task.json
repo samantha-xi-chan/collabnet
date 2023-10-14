@@ -1,6 +1,6 @@
 {
-  "cmd": "ls -alh; date; tree",
+  "cmd": "ls -alh; date; tree; sleep 2;",
   "host_name": "M1",
   "timeout_pre": 5,
-  "timeout_run": 3600
+  "timeout_run": 20
 }

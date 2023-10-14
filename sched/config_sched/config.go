@@ -3,14 +3,16 @@ package config_sched
 const (
 	TESTCASE_CNT = 1
 
-	TEST_TIME_PREPARE    = 5
-	TEST_TIMEOUT_PREPARE = TEST_TIME_PREPARE * 20
+	//TEST_TIME_PREPARE    = 5
+	//TEST_TIMEOUT_PREPARE = TEST_TIME_PREPARE * 20
 
-	TEST_TIME_RUN    = 10
-	TEST_TIMEOUT_RUN = TEST_TIME_RUN * 20
+	//TEST_TIME_RUN    = 10
+	//TEST_TIMEOUT_RUN = TEST_TIME_RUN * 20
+)
 
-	SCHED_HEARTBEAT_INTERVAL = 8   /* Second */
-	SCHED_HEARTBEAT_TIMEOUT  = 400 /* Second */
+const (
+	SCHED_HEARTBEAT_INTERVAL = 30 /* Second */
+	SCHED_HEARTBEAT_TIMEOUT  = 60 /* Second */
 
 	CMD_ACK_TIMEOUT = 10 /* Second */
 )
@@ -34,7 +36,7 @@ const (
 )
 
 const (
-	AMQP_URL  = "amqp://guest:guest@192.168.31.7:5672"
+	AMQP_URL  = "amqp://guest:guest@192.168.31.6:5672"
 	AMQP_EXCH = "amq.direct"
 )
 

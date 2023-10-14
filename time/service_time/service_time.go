@@ -7,6 +7,7 @@ import (
 	"collab-net-v2/time/repo_time"
 	"collab-net-v2/time/util/rmq_util"
 	"fmt"
+	"github.com/pkg/errors"
 	"log"
 
 	"time"
@@ -22,7 +23,9 @@ const (
 func shouldAck(x []byte) bool {
 	go func() {
 		strVal := string(x)
-		log.Printf("in shouldAck(), strVal=%s\n", strVal)
+		if DEBUG {
+			log.Printf("in shouldAck(), strVal=%s\n", strVal)
+		}
 
 		item, e := repo_time.GetTimeCtl().GetItemByKeyValue("id_once", strVal)
 		if e != nil {
@@ -50,14 +53,17 @@ func shouldAck(x []byte) bool {
 var rmq *rmq_util.RabbitMQ
 var err error
 
-var callbackFunc func(idTimer string, _type int, holder string, bytes []byte) (x error)
+type FUNC_TIMEOUT_CB func(idTimer string, _type int, holder string, bytes []byte) (x error)
 
-func SetCallback(tmp func(idTimer string, _type int, holder string, bytes []byte) (x error)) {
+var callbackFunc FUNC_TIMEOUT_CB
+
+func SetCallback(tmp FUNC_TIMEOUT_CB) {
 	callbackFunc = tmp
 }
 
 func Init(url string, exchange string) {
-	//repo_time.Init("root:gzn%zkTJ8x!gGZO6@tcp(192.168.31.6:3306)/biz?charset=utf8mb4&parseTime=True&loc=Local", 5, 200)
+	log.Println("service_time [Init] : ")
+
 	repo_time.Init(config_sched.RepoMySQLDsn, config_sched.RepoLogLevel, config_sched.RepoSlowMs)
 
 	rmq, err = rmq_util.InitRabbitMQ(rmq_util.AMQP{
@@ -71,6 +77,7 @@ func Init(url string, exchange string) {
 }
 
 func NewTimer(timeoutSecond int, _type int, holder string, desc string) (id string, e error) {
+	log.Printf("[NewTimer] timeoutSecond=%d , _type = %d, holder = %s, desc = %s \n", timeoutSecond, _type, holder, desc)
 
 	idTimer := idgen.GetIdWithPref("time")
 	idOnce := idgen.GetIdWithPref(fmt.Sprintf("once_%s_", desc))
@@ -100,6 +107,7 @@ func NewTimer(timeoutSecond int, _type int, holder string, desc string) (id stri
 }
 
 func DisableTimer(id string) (e error) {
+	log.Printf("[DisableTimer] id=%s \n", id)
 	item, e := repo_time.GetTimeCtl().GetItemById(id)
 	if e != nil {
 		log.Printf("repo_time.GetTimeCtl().GetItemById, e= %s , id = %s \n ", e, id)
@@ -107,7 +115,6 @@ func DisableTimer(id string) (e error) {
 	}
 
 	log.Printf("[DisableTimer]  id = %s, type =  %d , desc = %s\n", id, item.Type, item.Desc)
-
 	repo_time.GetTimeCtl().UpdateItemById(id, map[string]interface{}{
 		"status": api.STATUS_TIMER_DISABLED,
 	})
@@ -116,6 +123,7 @@ func DisableTimer(id string) (e error) {
 }
 
 func RenewTimer(id string, timeoutSecond int) (e error) {
+	log.Printf("[RenewTimer] id=%s  timeoutSecond=%d \n", id, timeoutSecond)
 	idOnce := idgen.GetIdWithPref("once_renew")
 
 	repo_time.GetTimeCtl().UpdateItemById(id, map[string]interface{}{
@@ -125,6 +133,7 @@ func RenewTimer(id string, timeoutSecond int) (e error) {
 	err := rmq.PublishWithDelay("user.event.publish", []byte(idOnce), int64(1000*timeoutSecond))
 	if err != nil {
 		log.Printf("run: failed to publish into rabbitmq: %v", err)
+		return errors.Wrap(err, "rmq.PublishWithDelay: ")
 	}
 
 	return nil

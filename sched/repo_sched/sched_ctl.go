@@ -24,14 +24,17 @@ func (Sched) TableName() string {
 type Sched struct {
 	Id         string `json:"id" gorm:"primaryKey"`
 	Desc       string `json:"desc"`
-	Status     int    `json:"status"`
-	Code       int    `json:"code"`
 	Endpoint   string `json:"endpoint"`
 	CreateAt   int64  `json:"create_at"`
+	CmdackAt   int64  `json:"cmdack_at"`
 	PreparedAt int64  `json:"prepared_at"`
 	FinishAt   int64  `json:"finish_at"`
 	ActiveAt   int64  `json:"active_at"`
-	Enabled    int    `json:"enabled"`
+
+	Enabled int `json:"enabled"`  /* 需求角度 是否需要 */
+	Status  int `json:"status"`   /* 生命周期的阶段 */
+	BizCode int `json:"biz_code"` /* 业务角度的ExitCode */
+	FwkCode int `json:"fwk_code"` /* 调度框架角度的ExitCode */
 
 	CmdackTimeout int `json:"cmdack_timeout"` /* second */
 	PreTimeout    int `json:"pre_timeout"`    /* second */
