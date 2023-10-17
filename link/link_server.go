@@ -1,6 +1,7 @@
 package link
 
 import (
+	"collab-net-v2/internal/config"
 	"collab-net-v2/link/config_link"
 	"collab-net-v2/link/repo_link"
 	"collab-net-v2/package/util/idgen"
@@ -263,7 +264,13 @@ func OnMessageOfUnregisterChan(conn *websocket.Conn, bytes []byte) ([]byte, int,
 }
 
 func initRepo() {
-	repo_link.Init(config_link.RepoMySQLDsn, config_link.RepoLogLevel, config_link.RepoSlowMs)
+	mySqlDsn, e := config.GetMySqlDsn()
+	if e != nil {
+		log.Fatal("config.GetMySqlDsn: ", e)
+	}
+	log.Println("mySqlDsn", mySqlDsn)
+
+	repo_link.Init(mySqlDsn, config_link.RepoLogLevel, config_link.RepoSlowMs)
 }
 
 func NewServer() {

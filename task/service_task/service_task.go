@@ -1,6 +1,7 @@
 package service_task
 
 import (
+	"collab-net-v2/internal/config"
 	"collab-net-v2/link/service_link"
 	"collab-net-v2/package/util/idgen"
 	"collab-net-v2/sched/repo_sched"
@@ -13,8 +14,14 @@ import (
 )
 
 func init() {
+	mySqlDsn, e := config.GetMySqlDsn()
+	if e != nil {
+		log.Fatal("config.GetMySqlDsn: ", e)
+	}
+	log.Println("mySqlDsn", mySqlDsn)
+
 	// 与下层的通信 03
-	repo_task.Init(config_task.RepoMySQLDsn, config_task.RepoLogLevel, config_task.RepoSlowMs)
+	repo_task.Init(mySqlDsn, config_task.RepoLogLevel, config_task.RepoSlowMs)
 
 	// 与下层的交互
 	service_sched.SetCallbackFun(func(idSched string, evt int, bytes []byte) (ee error) {

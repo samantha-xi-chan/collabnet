@@ -29,3 +29,8 @@ func GetMqDsn() (string, error) {
 	v := viper.GetString("depend.mq_dsn")
 	return v, nil
 }
+
+func GetBizSchedServer() (string, error) {
+	v := viper.GetString("biz.sched_server")
+	return v, nil
+}
