@@ -8,6 +8,7 @@ type PostPluginTaskStatusReq struct {
 
 type PluginTask struct {
 	Id         string `json:"id"`
+	TaskId     string `json:"task_id"`
 	Msg        string `json:"msg"`
 	Cmd        string `json:"cmd"`
 	Valid      bool   `json:"valid"`

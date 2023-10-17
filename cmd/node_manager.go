@@ -79,6 +79,7 @@ func OnNewBizDataFromPlatform(bytes []byte) {
 
 	if body.TypeId == link.BIZ_TYPE_NEWTASK {
 		schedId := body.SchedId
+		taskId := body.TaskId
 		log.Println("[OnNewBizData]  schedId = ", schedId)
 
 		time.Sleep(time.Millisecond * 200)
@@ -89,6 +90,7 @@ func OnNewBizDataFromPlatform(bytes []byte) {
 			link.BizData{
 				TypeId:  link.BIZ_TYPE_NEWTASK,
 				SchedId: schedId,
+				TaskId:  taskId,
 				Para01:  api.TASK_EVT_CMDACK,
 			},
 		))
@@ -97,6 +99,7 @@ func OnNewBizDataFromPlatform(bytes []byte) {
 		// 将任务的结构体转换进入 chan
 		newTask := api.PluginTask{
 			Id:         schedId,
+			TaskId:     taskId,
 			Msg:        "test",
 			Cmd:        body.Para11,
 			Valid:      true,
@@ -106,6 +109,7 @@ func OnNewBizDataFromPlatform(bytes []byte) {
 		pluginChan <- newTask
 	} else if body.TypeId == link.BIZ_TYPE_STOPTASK {
 		schedId := body.SchedId
+		taskId := body.TaskId
 		log.Println("[OnNewBizData]  schedId = ", schedId)
 
 		time.Sleep(time.Millisecond * 200)
@@ -116,15 +120,17 @@ func OnNewBizDataFromPlatform(bytes []byte) {
 			link.BizData{
 				TypeId:  link.BIZ_TYPE_STOPTASK,
 				SchedId: schedId,
+				TaskId:  taskId,
 			},
 		))
 		log.Println(" [OnNewBizDataFromPlatform] SendBizData2Platform STATUS_SCHED_CMD_ACKED schedId = ", schedId)
 
 		// 将任务的结构体转换进入 chan
 		stopTask := api.PluginTask{
-			Id:    schedId,
-			Msg:   "stopTtask",
-			Valid: false,
+			Id:     schedId,
+			TaskId: taskId,
+			Msg:    "stopTtask",
+			Valid:  false,
 		}
 		pluginChan <- stopTask
 	}

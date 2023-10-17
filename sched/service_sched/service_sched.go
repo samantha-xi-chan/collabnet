@@ -245,6 +245,7 @@ func StopSched(taskId string) (ee error) { // todo: send stop cmd to excutors
 			link.BizData{
 				TypeId:  link.BIZ_TYPE_STOPTASK,
 				SchedId: item.Id,
+				TaskId:  taskId,
 			}))
 	if e != nil {
 		// 记录关键错误
@@ -299,6 +300,7 @@ func NewSched(taskId string, cmd string, linkId string, cmdackTimeoutSecond int,
 			link.BizData{
 				TypeId:  link.BIZ_TYPE_NEWTASK,
 				SchedId: idSched,
+				TaskId:  taskId,
 				Para01:  config_sched.SCHED_HEARTBEAT_INTERVAL,
 				Para02:  preTimeoutSecond,
 				Para03:  runTimeoutSecond,

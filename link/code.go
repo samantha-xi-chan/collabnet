@@ -55,6 +55,7 @@ type AuthResp struct {
 type BizData struct { // 业务角度： 任务新建、任务停止、
 	TypeId  int    `json:"type_id"`
 	SchedId string `json:"sched_id"`
+	TaskId  string `json:"task_id"`
 
 	Para01 int    `json:"para01"`
 	Para02 int    `json:"para02"`
