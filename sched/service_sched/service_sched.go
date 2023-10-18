@@ -158,7 +158,7 @@ func OnBizDataFromRegisterEndpoint(endpoint string, bytes []byte) (e error) { //
 	// api.TASK_EVT_PREACK , api.SCHED_EVT_TIMEOUT_PREACK
 	if body.Para01 == api.TASK_EVT_CMDACK {
 		service_time.DisableTimer(itemTask.CmdackTimer)
-		idPreTimer, e := service_time.NewTimer(itemTask.PreTimeout, api.SCHED_EVT_TIMEOUT_PREACK, idSched, "pre_ack_timeout")
+		idPreTimer, e := service_time.NewTimer(itemTask.PreTimeout, api.SCHED_EVT_TIMEOUT_PREACK, idSched, "pre_ack_timeout", "")
 		if e != nil {
 			return errors.Wrap(e, "service_time.NewTimer: ")
 		}
@@ -173,8 +173,8 @@ func OnBizDataFromRegisterEndpoint(endpoint string, bytes []byte) (e error) { //
 		callback(idSched, body.Para01, nil)
 	} else if body.Para01 == api.TASK_EVT_PREACK {
 		service_time.DisableTimer(itemTask.PreTimer)
-		idRunTimer, _ := service_time.NewTimer(itemTask.RunTimeout, api.SCHED_EVT_TIMEOUT_RUN, idSched, "run_finish_timeout")
-		idHbTimer, _ := service_time.NewTimer(config_sched.SCHED_HEARTBEAT_TIMEOUT, api.SCHED_EVT_TIMEOUT_HB, idSched, "hb_timeout")
+		idRunTimer, _ := service_time.NewTimer(itemTask.RunTimeout, api.SCHED_EVT_TIMEOUT_RUN, idSched, "run_finish_timeout", "")
+		idHbTimer, _ := service_time.NewTimer(config_sched.SCHED_HEARTBEAT_TIMEOUT, api.SCHED_EVT_TIMEOUT_HB, idSched, "hb_timeout", "")
 
 		repo_sched.GetSchedCtl().UpdateItemById(idSched, map[string]interface{}{
 			"active_at":   time.Now().UnixMilli(),
@@ -317,7 +317,7 @@ func NewSched(taskId string, cmd string, linkId string, cmdackTimeoutSecond int,
 		return idSched, nil
 	}
 
-	idCmdackTimer, _ := service_time.NewTimer(cmdackTimeoutSecond, api.SCHED_EVT_TIMEOUT_CMDACK, idSched, "cmd_ack_timeout")
+	idCmdackTimer, _ := service_time.NewTimer(cmdackTimeoutSecond, api.SCHED_EVT_TIMEOUT_CMDACK, idSched, "cmd_ack_timeout", "")
 	repo_sched.GetSchedCtl().UpdateItemById(idSched, map[string]interface{}{
 		"active_at":    time.Now().UnixMilli(),
 		"best_prog":    api.STATUS_SCHED_SENT,

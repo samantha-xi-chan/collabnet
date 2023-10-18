@@ -22,15 +22,16 @@ func (Time) TableName() string {
 }
 
 type Time struct {
-	Id       string `json:"id" gorm:"primaryKey"`
-	Type     int    `json:"type"`
-	Holder   string `json:"holder"`
-	Desc     string `json:"desc"`
-	Status   int    `json:"status"`
-	CreateAt int64  `json:"create_at"`
-	IdOnce   string `json:"id_once"  gorm:"index:idx_id_once"  `
-	CreateBy int64  `json:"create_by"`
-	Timeout  int    `json:"timeout"`
+	Id           string `json:"id" gorm:"primaryKey"`
+	Type         int    `json:"type"`
+	Holder       string `json:"holder"`
+	Desc         string `json:"desc"`
+	Status       int    `json:"status"`
+	CreateAt     int64  `json:"create_at"`
+	IdOnce       string `json:"id_once"  gorm:"index:idx_id_once"  `
+	CreateBy     int64  `json:"create_by"`
+	Timeout      int    `json:"timeout"`
+	CallbackAddr string `json:"callback_addr"`
 }
 
 func (ctl *TimeCtl) CreateItem(item Time) (err error) {

@@ -1,15 +1,18 @@
 package service_time
 
 import (
+	"bytes"
 	"collab-net-v2/internal/config"
 	"collab-net-v2/package/util/idgen"
 	"collab-net-v2/sched/config_sched"
-	"collab-net-v2/time/api"
+	"collab-net-v2/time/api_time"
 	"collab-net-v2/time/repo_time"
 	"collab-net-v2/time/util/rmq_util"
+	"encoding/json"
 	"fmt"
 	"github.com/pkg/errors"
 	"log"
+	"net/http"
 
 	"time"
 	//"github.com/apex/log"
@@ -35,7 +38,7 @@ func shouldAck(x []byte) bool {
 			}
 			return
 		}
-		if item.Status == api.STATUS_TIMER_DISABLED {
+		if item.Status == api_time.STATUS_TIMER_DISABLED {
 			if DEBUG {
 				log.Println("STATUS_TIMER_DISABLED ")
 			}
@@ -45,7 +48,32 @@ func shouldAck(x []byte) bool {
 			log.Println("item: ", item)
 		}
 
-		callbackFunc(item.Id, item.Type, item.Holder, nil)
+		if callbackFunc != nil {
+			callbackFunc(item.Id, item.Type, item.Holder, nil)
+		}
+		if item.CallbackAddr != "" {
+			go func() {
+				data := api_time.CallbackReq{
+					Id:      item.Id,
+					Type:    item.Type,
+					Holder:  item.Holder,
+					Desc:    item.Desc,
+					Timeout: item.Timeout,
+				}
+
+				jsonData, err := json.Marshal(data)
+				if err != nil {
+					log.Println("json.Marshal err:", err)
+					return
+				}
+				response, err := http.Post(item.CallbackAddr, "application/json", bytes.NewBuffer(jsonData))
+				if err != nil {
+					log.Println("http.Post err:", err)
+					return
+				}
+				defer response.Body.Close()
+			}()
+		}
 	}()
 
 	return true
@@ -83,22 +111,23 @@ func Init(url string, exchange string) {
 
 }
 
-func NewTimer(timeoutSecond int, _type int, holder string, desc string) (id string, e error) {
-	log.Printf("[NewTimer] timeoutSecond=%d , _type = %d, holder = %s, desc = %s \n", timeoutSecond, _type, holder, desc)
+func NewTimer(timeoutSecond int, _type int, holder string, desc string, callbackAddr string) (id string, e error) {
+	log.Printf("[NewTimer] timeoutSecond=%d , _type = %d, holder = %s, desc = %s , callbackAddr = %s \n", timeoutSecond, _type, holder, desc, callbackAddr)
 
 	idTimer := idgen.GetIdWithPref("time")
 	idOnce := idgen.GetIdWithPref(fmt.Sprintf("once_%s_", desc))
 
 	repo_time.GetTimeCtl().CreateItem(repo_time.Time{
-		Id:       idTimer,
-		Type:     _type,
-		Holder:   holder,
-		Desc:     desc,
-		Status:   api.STATUS_TIMER_INITED,
-		CreateAt: time.Now().UnixMilli(),
-		IdOnce:   idOnce,
-		CreateBy: 0,
-		Timeout:  timeoutSecond,
+		Id:           idTimer,
+		Type:         _type,
+		Holder:       holder,
+		Desc:         desc,
+		Status:       api_time.STATUS_TIMER_INITED,
+		CreateAt:     time.Now().UnixMilli(),
+		IdOnce:       idOnce,
+		CreateBy:     0,
+		Timeout:      timeoutSecond,
+		CallbackAddr: callbackAddr,
 	})
 
 	err := rmq.PublishWithDelay(rmq_util.KEY, []byte(idOnce), int64(1000*timeoutSecond))
@@ -107,7 +136,7 @@ func NewTimer(timeoutSecond int, _type int, holder string, desc string) (id stri
 	}
 
 	repo_time.GetTimeCtl().UpdateItemById(id, map[string]interface{}{
-		"status": api.STATUS_TIMER_RUNNING,
+		"status": api_time.STATUS_TIMER_RUNNING,
 	})
 
 	return idTimer, nil
@@ -123,7 +152,7 @@ func DisableTimer(id string) (e error) {
 
 	log.Printf("    [DisableTimer]  id = %s, type =  %d , desc = %s\n", id, item.Type, item.Desc)
 	repo_time.GetTimeCtl().UpdateItemById(id, map[string]interface{}{
-		"status": api.STATUS_TIMER_DISABLED,
+		"status": api_time.STATUS_TIMER_DISABLED,
 	})
 
 	return nil

@@ -27,7 +27,7 @@ func main() {
 		log.Printf("dto: %#v \n", dto)
 
 		// 业务接入提示：
-		log.Println("当前收到的任务编号是:  ", dto.Id, ", TaskId =   ", dto.TaskId, ", 任务是否仍然有效： ", dto.Valid)
+		log.Println("当前收到的任务编号是:  ", dto.Id, ", TaskId = ", dto.TaskId, ", 任务是否仍然有效： ", dto.Valid)
 		if dto.Valid {
 			log.Println("  任务内容是： ", dto.Cmd, ", 任务准备的超时时间(秒)是： ", dto.TimeoutPre, ", 任务运行的超时时间(秒)是： ", dto.TimeoutRun)
 		}
@@ -35,7 +35,7 @@ func main() {
 		if !dto.Valid {
 			log.Println("业务代码此时应该 关闭如果正在运行的编号为  ", dto.Id, "的任务，并发送任务结束的通知")
 			notifyTaskStatus(dto.Id, api.TASK_EVT_END, 0)
-			return
+			//return
 		} else {
 			log.Println("继续等待新任务")
 			continue
