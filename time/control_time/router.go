@@ -23,7 +23,7 @@ func InitTimeHttpService(addr string) (ee error) {
 		time.DELETE("/:id", DeleteTime)
 	}
 	test := r.Group("/api/v1/test")
-	{
+	{ // curl -X POST http://192.168.36.5:30088/api/v1/time -d '{"holder":"h1","desc":"d11","timeout":20,"type":1,"callback_addr":"http:// 192.168.18.201:8088/api/v1/test"}'
 		test.POST("", PostTest)
 	}
 

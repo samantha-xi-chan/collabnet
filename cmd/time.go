@@ -24,17 +24,17 @@ func init() {
 		log.Println("mySqlDsn", mySqlDsn)
 	*/
 
+	service_time.Init(
+		"amqp://RABBITMQ_USER:RABBITMQ_PASS@rmq-cluster:5672",
+		config_sched.AMQP_EXCH,
+		"root:password@tcp(mysql:3306)/biz?charset=utf8mb4&parseTime=True&loc=Local")
+
+	log.Println("service_time.Init ok  222")
 }
 
 func main() {
 	log.Println("[main] start ... ")
 	go func() {
-		service_time.Init(
-			"amqp://RABBITMQ_USER:RABBITMQ_PASS@rmq-cluster:5672/",
-			config_sched.AMQP_EXCH,
-			"root:password@tcp(mysql:3306)/biz?charset=utf8mb4&parseTime=True&loc=Local")
-
-		log.Println("service_time.Init ok ")
 	}()
 
 	go func() {
