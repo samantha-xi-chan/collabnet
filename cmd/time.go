@@ -1,7 +1,6 @@
 package main
 
 import (
-	"collab-net-v2/internal/config"
 	"collab-net-v2/sched/config_sched"
 	"collab-net-v2/time/control_time"
 	"collab-net-v2/time/service_time"
@@ -11,19 +10,24 @@ import (
 func init() {
 	log.Println("main [init] : ")
 
-	mqDsn, e := config.GetMqDsn()
-	if e != nil {
-		log.Fatal("config.GetMqDsn() e=", e)
-	}
-	log.Println("mqDsn: ", mqDsn)
+	/*
+		mqDsn, e := config.GetMqDsn()
+		if e != nil {
+			log.Fatal("config.GetMqDsn() e=", e)
+		}
+		log.Println("mqDsn: ", mqDsn)
 
-	mySqlDsn, e := config.GetMySqlDsn()
-	if e != nil {
-		log.Fatal("config.GetMySqlDsn: ", e)
-	}
-	log.Println("mySqlDsn", mySqlDsn)
+		mySqlDsn, e := config.GetMySqlDsn()
+		if e != nil {
+			log.Fatal("config.GetMySqlDsn: ", e)
+		}
+		log.Println("mySqlDsn", mySqlDsn)
+	*/
 
-	service_time.Init(mqDsn, config_sched.AMQP_EXCH, mySqlDsn)
+	service_time.Init(
+		"amqp://RABBITMQ_USER:RABBITMQ_PASS@rmq-cluster:5672/",
+		config_sched.AMQP_EXCH,
+		"root:password@tcp(mysql:3306)/biz?charset=utf8mb4&parseTime=True&loc=Local")
 }
 
 func main() {
