@@ -16,12 +16,14 @@ func init() {
 		log.Fatal("config.GetMqDsn() e=", e)
 	}
 	log.Println("mqDsn: ", mqDsn)
+
 	mySqlDsn, e := config.GetMySqlDsn()
 	if e != nil {
 		log.Fatal("config.GetMySqlDsn: ", e)
 	}
 	log.Println("mySqlDsn", mySqlDsn)
-	service_time.Init(mqDsn, config_sched.AMQP_EXCH)
+
+	service_time.Init(mqDsn, config_sched.AMQP_EXCH, mySqlDsn)
 }
 
 func main() {

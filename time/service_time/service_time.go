@@ -2,7 +2,6 @@ package service_time
 
 import (
 	"bytes"
-	"collab-net-v2/internal/config"
 	"collab-net-v2/package/util/idgen"
 	"collab-net-v2/sched/config_sched"
 	"collab-net-v2/time/api_time"
@@ -90,19 +89,13 @@ func SetCallback(tmp FUNC_TIMEOUT_CB) {
 	callbackFunc = tmp
 }
 
-func Init(url string, exchange string) {
+func Init(mqUrl string, exchange string, mySqlDsn string) {
 	log.Println("service_time [Init] : ")
-
-	mySqlDsn, e := config.GetMySqlDsn()
-	if e != nil {
-		log.Fatal("config.GetMySqlDsn: ", e)
-	}
-	log.Println("mySqlDsn", mySqlDsn)
 
 	repo_time.Init(mySqlDsn, config_sched.RepoLogLevel, config_sched.RepoSlowMs)
 
 	rmq, err = rmq_util.InitRabbitMQ(rmq_util.AMQP{
-		URL:      url,
+		URL:      mqUrl,
 		Exchange: exchange,
 	}, shouldAck)
 	if err != nil {
