@@ -49,7 +49,7 @@ func init() {
 
 	// 与下层的通信 02
 	service_time.SetCallback(OnTimerWrapper)
-	service_time.Init(mqDsn, config_sched.AMQP_EXCH)
+	service_time.Init(mqDsn, config_sched.AMQP_EXCH, mySqlDsn)
 
 	// 与下层的通信 03
 	repo_sched.Init(mySqlDsn, config_sched.RepoLogLevel, config_sched.RepoSlowMs)
