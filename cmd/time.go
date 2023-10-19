@@ -10,13 +10,13 @@ import (
 	logrustash "github.com/bshuster-repo/logrus-logstash-hook"
 	"github.com/sirupsen/logrus"
 	"log"
+	"os"
 )
 
 var logger *logrus.Logger
 
 func init() {
 	logger = logrus.New()
-
 	logServer := "192.168.36.101:5000"
 	logger.SetLevel(logrus.TraceLevel) // 后续改为 配置中心处理
 	//logger.SetFormatter(&logrus_wrap.TextFormatter{
@@ -29,10 +29,16 @@ func init() {
 	logger.Hooks.Add(hook)
 
 	log := logger.WithFields(logrus.Fields{
-		"method": "main",
+		"method": "init",
 	})
 
 	log.Println("main [init] : ")
+	podName := os.Getenv("POD_NAME")
+	if podName == "" {
+		log.Println("Failed to get POD_NAME environment variable")
+	} else {
+		log.Printf("Pod Name: %s\n", podName)
+	}
 
 	if true { // if in k8s
 		service_time.Init(
