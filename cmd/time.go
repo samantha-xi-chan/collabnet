@@ -16,7 +16,6 @@ import (
 var logger *logrus.Logger
 
 func init() {
-
 	log.Println("main [init] : ")
 	podName := os.Getenv("POD_NAME")
 	if podName == "" {
@@ -25,9 +24,15 @@ func init() {
 		log.Printf("Pod Name: %s\n", podName)
 	}
 
+	logServer := os.Getenv("LOG_SERVER")
+	if logServer == "" {
+		log.Println("Failed to get LOG_SERVER environment variable")
+	} else {
+		log.Printf("logServer: %s\n", logServer)
+	}
+
 	//
 	logger = logrus.New()
-	logServer := "192.168.36.101:5000"
 	logger.SetLevel(logrus.TraceLevel) // 后续改为 配置中心处理
 	hook, err := logrustash.NewHook("tcp", logServer, ""+podName)
 	if err != nil {
@@ -45,7 +50,7 @@ func init() {
 			config_sched.AMQP_EXCH,
 			"root:password@tcp(mysql:3306)/biz?charset=utf8mb4&parseTime=True&loc=Local")
 
-		log.Println("service_time.Init ok  222")
+		log.Println("service_time.Init ok ")
 	} else { // if native
 		//mqDsn, e := config.GetMqDsn()
 		//if e != nil {
