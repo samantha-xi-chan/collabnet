@@ -16,21 +16,6 @@ import (
 var logger *logrus.Logger
 
 func init() {
-	logger = logrus.New()
-	logServer := "192.168.36.101:5000"
-	logger.SetLevel(logrus.TraceLevel) // 后续改为 配置中心处理
-	//logger.SetFormatter(&logrus_wrap.TextFormatter{
-	//	FullTimestamp: true,
-	//})
-	hook, err := logrustash.NewHook("tcp", logServer, "serviceName002")
-	if err != nil {
-		log.Fatal(err)
-	}
-	logger.Hooks.Add(hook)
-
-	log := logger.WithFields(logrus.Fields{
-		"method": "init",
-	})
 
 	log.Println("main [init] : ")
 	podName := os.Getenv("POD_NAME")
@@ -39,6 +24,20 @@ func init() {
 	} else {
 		log.Printf("Pod Name: %s\n", podName)
 	}
+
+	//
+	logger = logrus.New()
+	logServer := "192.168.36.101:5000"
+	logger.SetLevel(logrus.TraceLevel) // 后续改为 配置中心处理
+	hook, err := logrustash.NewHook("tcp", logServer, ""+podName)
+	if err != nil {
+		log.Fatal(err)
+	}
+	logger.Hooks.Add(hook)
+
+	log := logger.WithFields(logrus.Fields{
+		"method": "init",
+	})
 
 	if true { // if in k8s
 		service_time.Init(
