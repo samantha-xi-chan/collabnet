@@ -4,12 +4,19 @@ import (
 	"collab-net-v2/api"
 	"collab-net-v2/link/middleware"
 	"collab-net-v2/link/repo_link"
+	"collab-net-v2/util/logrus_wrap"
+	"context"
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 	"net/http"
 )
 
-func InitGinService(addr string) (ee error) {
-	//gin.SetMode(gin.ReleaseMode)
+func InitGinService(ctx context.Context, addr string) (ee error) {
+	logger := logrus_wrap.GetContextLogger(ctx)
+	log := logger.WithFields(logrus.Fields{
+		"method": "InitGinService",
+	})
+
 	r := gin.Default()
 	r.Use(middleware.GetLoggerMiddleware())
 
@@ -18,6 +25,7 @@ func InitGinService(addr string) (ee error) {
 		link.GET("", GetLinks)
 	}
 
+	log.Println("going to listen on : ", addr)
 	return r.Run(addr)
 }
 
