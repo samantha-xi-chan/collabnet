@@ -5,13 +5,14 @@ import (
 	"collab-net-v2/link/middleware"
 	"collab-net-v2/time/api_time"
 	"collab-net-v2/time/service_time"
+	"context"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"log"
 	"net/http"
 )
 
-func InitTimeHttpService(addr string) (ee error) {
+func InitTimeHttpService(ctx context.Context, addr string) (ee error) {
 	//gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
 	r.Use(middleware.GetLoggerMiddleware())
@@ -23,7 +24,7 @@ func InitTimeHttpService(addr string) (ee error) {
 		time.DELETE("/:id", DeleteTime)
 	}
 	test := r.Group("/api/v1/test")
-	{ // curl -X POST http://192.168.36.5:30088/api/v1/time -d '{"holder":"h1","desc":"d11","timeout":20,"type":1,"callback_addr":"http:// 192.168.18.201:8088/api/v1/test"}'
+	{ // curl -X POST http://192.168.36.5:30088/api/v1/time -d '{"holder":"h1","desc":"d11","timeout":20,"type":1,"callback_addr":"http://192.168.18.201:8088/api/v1/test"}'
 		test.POST("", PostTest)
 	}
 

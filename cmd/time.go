@@ -5,10 +5,33 @@ import (
 	"collab-net-v2/sched/config_sched"
 	"collab-net-v2/time/control_time"
 	"collab-net-v2/time/service_time"
+	"collab-net-v2/util/logrus_wrap"
+	"context"
+	logrustash "github.com/bshuster-repo/logrus-logstash-hook"
+	"github.com/sirupsen/logrus"
 	"log"
 )
 
+var logger *logrus.Logger
+
 func init() {
+	logger = logrus.New()
+
+	logServer := "192.168.36.101:5000"
+	logger.SetLevel(logrus.TraceLevel) // 后续改为 配置中心处理
+	//logger.SetFormatter(&logrus_wrap.TextFormatter{
+	//	FullTimestamp: true,
+	//})
+	hook, err := logrustash.NewHook("tcp", logServer, "serviceName002")
+	if err != nil {
+		log.Fatal(err)
+	}
+	logger.Hooks.Add(hook)
+
+	log := logger.WithFields(logrus.Fields{
+		"method": "main",
+	})
+
 	log.Println("main [init] : ")
 
 	if true { // if in k8s
@@ -41,14 +64,17 @@ func init() {
 }
 
 func main() {
+	// 业务逻辑
+	log := logger.WithFields(logrus.Fields{
+		"method": "main",
+	})
+
 	log.Println("[main] start ... ")
-	go func() {
-	}()
 
 	go func() {
 		addr := ":8088"
 		log.Printf("goting to InitTimeHttpService on  %s\n", addr)
-		e := control_time.InitTimeHttpService(addr)
+		e := control_time.InitTimeHttpService(logrus_wrap.SetContextLogger(context.Background(), logger), addr)
 		if e != nil {
 			log.Fatal("control_time.InitTimeHttpService e: ", e)
 		}

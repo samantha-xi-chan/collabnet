@@ -1,31 +1,19 @@
 package main
 
 import (
+	"collab-net-v2/util/logrus_wrap"
 	"context"
-	"github.com/bshuster-repo/logrus-logstash-hook" // github.com/bshuster-repo/logrus-logstash-hook v0.4.1
-	"github.com/sirupsen/logrus"                    // github.com/sirupsen/logrus v1.9.3
+	"github.com/bshuster-repo/logrus-logstash-hook" // github.com/bshuster-repo/logrus_wrap-logstash-hook v0.4.1
+	"github.com/sirupsen/logrus"
 	"log"
 	"time"
 )
 
-func GetContextLogger(ctx context.Context) (x *logrus.Logger) {
-	k := "logger"
-	v, ok := ctx.Value(k).(*logrus.Logger)
-	if !ok {
-		return nil
-	}
-	return v
-}
-func SetContextLogger(ctx context.Context, v interface{}) (x context.Context) {
-	k := "logger"
-	return context.WithValue(ctx, k, v)
-}
-
 func main() {
 	logger := logrus.New()
-	logServer := "192.168.36.6:5000"
+	logServer := "192.168.36.101:5000"
 	logger.SetLevel(logrus.TraceLevel) // 后续改为 配置中心处理
-	//logger.SetFormatter(&logrus.TextFormatter{
+	//logger.SetFormatter(&logrus_wrap.TextFormatter{
 	//	FullTimestamp: true,
 	//})
 	hook, err := logrustash.NewHook("tcp", logServer, "serviceName002")
@@ -34,7 +22,7 @@ func main() {
 	}
 	logger.Hooks.Add(hook)
 
-	go ABC(SetContextLogger(context.Background(), logger))
+	go ABC(logrus_wrap.SetContextLogger(context.Background(), logger))
 
 	// 业务逻辑
 	log := logger.WithFields(logrus.Fields{
@@ -57,7 +45,7 @@ func main() {
 }
 
 func ABC(ctx context.Context) {
-	logger := GetContextLogger(ctx)
+	logger := logrus_wrap.GetContextLogger(ctx)
 	log := logger.WithFields(logrus.Fields{
 		"method": "methodABC",
 	})

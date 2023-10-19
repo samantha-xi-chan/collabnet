@@ -62,7 +62,7 @@ func getProcByPid(pid int32) (x *process.Process, err error) {
 
 //func Run(cmd string) {
 //	//cmd := fmt.Sprintf("docker logs --follow %s", containerId)
-//	logrus.Debug("cmd : ", cmd)
+//	logrus_wrap.Debug("cmd : ", cmd)
 //	strArr := strings.Fields(strings.TrimSpace(cmd))
 //	process, err := os.StartProcess(GetDockerBin(), strArr, procAttr)
 //	if err != nil {
