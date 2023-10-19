@@ -19,6 +19,8 @@ func OnTaskChange(idTask string, evt int, x []byte) (e error) {
 }
 
 func main() {
+	var logger *logrus.Logger
+
 	log.Println("main [init] : ")
 	podName := os.Getenv("POD_NAME")
 	if podName == "" {
@@ -44,7 +46,7 @@ func main() {
 	logger.Hooks.Add(hook)
 
 	log := logger.WithFields(logrus.Fields{
-		"method": "main",
+		"method": "init",
 	})
 
 	service_task.SetTaskCallback(OnTaskChange)
