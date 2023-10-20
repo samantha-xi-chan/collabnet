@@ -1,6 +1,7 @@
 package main
 
 import (
+	"collab-net-v2/internal/config"
 	//"collab-net-v2/internal/config"
 	"collab-net-v2/sched/config_sched"
 	"collab-net-v2/time/control_time"
@@ -10,31 +11,19 @@ import (
 	logrustash "github.com/bshuster-repo/logrus-logstash-hook"
 	"github.com/sirupsen/logrus"
 	"log"
-	"os"
 )
 
 var logger *logrus.Logger
 
 func init() {
 	log.Println("main [init] : ")
-	podName := os.Getenv("POD_NAME")
-	if podName == "" {
-		log.Println("Failed to get POD_NAME environment variable")
-	} else {
-		log.Printf("Pod Name: %s\n", podName)
-	}
-
-	logServer := os.Getenv("LOG_SERVER")
-	if logServer == "" {
-		log.Println("Failed to get LOG_SERVER environment variable")
-	} else {
-		log.Printf("logServer: %s\n", logServer)
-	}
+	instance := config.GetRunningInstance()
+	logServer := config.GetLogServer()
 
 	//
 	logger = logrus.New()
 	logger.SetLevel(logrus.TraceLevel) // 后续改为 配置中心处理
-	hook, err := logrustash.NewHook("tcp", logServer, ""+podName)
+	hook, err := logrustash.NewHook("tcp", logServer, instance)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -78,6 +67,8 @@ func main() {
 	log := logger.WithFields(logrus.Fields{
 		"method": "main",
 	})
+	log.Error("Error")
+	log.Warn("Warn")
 
 	log.Println("[main] start ... ")
 

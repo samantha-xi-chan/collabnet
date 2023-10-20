@@ -19,10 +19,10 @@ cleanup() {
     rm -rf $instanceFile
 }
 
-serverIp=192.168.31.6 #localhost #192.168.36.101
+serverIp=192.168.36.5 #localhost #192.168.36.101
 
 echo "link: "
-linkResp=$(curl -X GET "http://$serverIp:8080/api/v1/link")
+linkResp=$(curl -X GET "http://$serverIp:31080/api/v1/link")
 echo $linkResp
 first_id=$(echo "$linkResp" | jq -r '.data[0].id')
 echo $first_id
@@ -57,13 +57,13 @@ DAG=$current_dir"/"$instanceFile
 req=$(cat $DAG)
 echo "$req"
 
-postTaskResp=$(curl -X POST "http://$serverIp:8081/api/v1/task" -d "$req")
+postTaskResp=$(curl -X POST "http://$serverIp:32080/api/v1/task" -d "$req")
 echo $postTaskResp
 taskId=$(echo "$postTaskResp" | jq -r '.data.id')
 echo "taskId: "$taskId
 
 sleep 1
-patchTaskResp=$(curl -X PATCH "http://$serverIp:8081/api/v1/task/$taskId" )
+patchTaskResp=$(curl -X PATCH "http://$serverIp:32080/api/v1/task/$taskId" )
 echo $patchTaskResp
 echo "patchTaskResp: "$patchTaskResp
 

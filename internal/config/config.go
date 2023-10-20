@@ -1,6 +1,7 @@
 package config
 
 import (
+	"collab-net-v2/package/util/idgen"
 	"fmt"
 	"github.com/spf13/viper"
 	"log"
@@ -52,11 +53,21 @@ func GetMqDsn() (string, error) {
 func GetLogServer() string {
 	logServer := os.Getenv("LOG_SERVER")
 	if logServer == "" {
-		log.Println("Failed to get LOG_SERVER environment variable")
-		return "192.168.36.101:5000"
+		v := viper.GetString("debug.log_server")
+		return v
 	} else {
 		log.Printf("logServer: %s\n", logServer)
 		return logServer
+	}
+}
+
+func GetRunningInstance() string {
+	podName := os.Getenv("POD_NAME")
+	if podName == "" {
+		hostName, _ := os.Hostname()
+		return hostName + "-" + idgen.GetRandStr()
+	} else {
+		return podName
 	}
 }
 

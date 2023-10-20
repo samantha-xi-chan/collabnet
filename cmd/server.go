@@ -1,6 +1,7 @@
 package main
 
 import (
+	"collab-net-v2/internal/config"
 	"collab-net-v2/link/config_link"
 	"collab-net-v2/link/control_link"
 	"collab-net-v2/task/config_task"
@@ -11,7 +12,7 @@ import (
 	logrustash "github.com/bshuster-repo/logrus-logstash-hook"
 	"github.com/sirupsen/logrus"
 	"log"
-	"os"
+	"time"
 )
 
 func OnTaskChange(idTask string, evt int, x []byte) (e error) {
@@ -23,26 +24,13 @@ func OnTaskChange(idTask string, evt int, x []byte) (e error) {
 func main() {
 	ctx := context.Background()
 	var logger *logrus.Logger
-
 	log.Println("main [init] : ")
-	podName := os.Getenv("POD_NAME")
-	if podName == "" {
-		log.Println("Failed to get POD_NAME environment variable")
-	} else {
-		log.Printf("Pod Name: %s\n", podName)
-	}
-
-	logServer := os.Getenv("LOG_SERVER")
-	if logServer == "" {
-		log.Println("Failed to get LOG_SERVER environment variable")
-	} else {
-		log.Printf("logServer: %s\n", logServer)
-	}
-
+	instance := config.GetRunningInstance()
+	logServer := config.GetLogServer()
 	//
 	logger = logrus.New()
 	logger.SetLevel(logrus.TraceLevel) // 后续改为 配置中心处理
-	hook, err := logrustash.NewHook("tcp", logServer, ""+podName)
+	hook, err := logrustash.NewHook("tcp", logServer, instance)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -56,6 +44,7 @@ func main() {
 	service_task.SetTaskCallback(OnTaskChange)
 
 	go func() {
+		time.Sleep(time.Second * 1)
 		e := control_link.InitGinService(logrus_wrap.SetContextLogger(ctx, logger), config_link.LISTEN_PORT)
 		if e != nil {
 			log.Fatal("control_link.InitGinService e: ", e)
@@ -63,6 +52,7 @@ func main() {
 	}()
 
 	go func() {
+		time.Sleep(time.Second * 2)
 		e := control_task.InitGinService(logrus_wrap.SetContextLogger(ctx, logger), config_task.LISTEN_PORT)
 		if e != nil {
 			log.Fatal("control_task.InitGinService4 e: ", e)

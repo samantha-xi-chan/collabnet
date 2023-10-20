@@ -1,5 +1,5 @@
 biz:
-  sched_server: localhost #192.168.36.101
+  sched_server: "192.168.32.13:80" #192.168.36.101
 
 depend:
   mysql_dsn: "root:gzn%zkTJ8x!gGZO6@tcp(192.168.31.6:3306)/biz?charset=utf8mb4&parseTime=True&loc=Local"
@@ -12,3 +12,4 @@ debug:
   # 1. Silent ; 2. Error ; 3. Warn ; 4. Info ;
   #auth_disabled: false
   debug_mode: true
+  log_server: "192.168.36.101:5000"

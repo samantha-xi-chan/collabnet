@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"log"
+	"math/rand"
 	"net/http"
 	"os"
 	"os/signal"
@@ -182,13 +183,14 @@ func main() {
 	}
 	log.Println("schedServer: ", schedServer)
 
-	hostName, _ := os.Hostname()
+	//hostName, _ := os.Hostname()
+	instance := config.GetRunningInstance()
 	link.NewClientConnection(
 		link.Config{
 			Ver:      "v1.0",
 			Auth:     config_sched.AuthTokenForDev,
-			HostName: hostName,
-			HostAddr: fmt.Sprintf("%s%s", schedServer, config_sched.SCHEDULER_LISTEN_PORT),
+			HostName: instance,
+			HostAddr: schedServer, //fmt.Sprintf("%s%s", schedServer, config_sched.SCHEDULER_LISTEN_PORT),
 		},
 		//notify,
 		readChanEx,
@@ -211,7 +213,12 @@ func StartPluginService() (ee error) {
 	r := gin.Default()
 	r.GET(config.PLUGIN_SERVICE_ROUTER, getPluginTaskCmd)
 	r.POST(config.PLUGIN_SERVICE_ROUTER_ID, postPluginTaskStatus)
-	return r.Run(config.PLUGIN_SERVICE_PORT)
+
+	//return r.Run(config.PLUGIN_SERVICE_PORT)
+
+	rand.Seed(time.Now().UnixMilli())
+	addr := fmt.Sprintf(":%d", 8090+rand.Intn(100))
+	return r.Run(addr)
 }
 
 func getPluginTaskCmd(c *gin.Context) {
