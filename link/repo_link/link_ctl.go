@@ -65,6 +65,7 @@ func (ctl *LinkCtl) GetItemsByKeyValue(key string, val interface{}) (arr []Link,
 	//} else if err != nil {
 	//	return nil, errors.Wrap(err, "LinkCtl GetItemByContainerId err not nil: ")
 	//}
+	log.Println("GetItemsByKeyValue : ", arr)
 
 	return arr, err
 }
