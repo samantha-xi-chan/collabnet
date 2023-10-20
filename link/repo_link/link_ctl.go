@@ -1,8 +1,11 @@
 package repo_link
 
 import (
+	"collab-net-v2/util/logrus_wrap"
+	"context"
 	"fmt"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 	"log"
 
 	_ "gorm.io/driver/mysql"
@@ -82,14 +85,22 @@ func (ctl *LinkCtl) GetItemById(id string) (i Link, e error) { // todo: optimize
 	return item, nil
 }
 
-func (ctl *LinkCtl) GetItems() (arr []Link, e error) {
+func (ctl *LinkCtl) GetItems(ctx context.Context) (arr []Link, e error) {
+	logger := logrus_wrap.GetContextLogger(ctx)
+	log := logger.WithFields(logrus.Fields{
+		"method": "GetItems",
+	})
+
 	var items []Link
 	err := db.Find(&items).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, errors.Wrap(err, "LinkCtl GetItems ErrRecordNotFound: ")
+		return items, nil
+		//return nil, errors.Wrap(err, "LinkCtl GetItems ErrRecordNotFound: ")
 	} else if err != nil {
 		return nil, errors.Wrap(err, "LinkCtl GetItems err not nil: ")
 	}
+
+	log.Println("items: ", items)
 
 	return items, nil
 }

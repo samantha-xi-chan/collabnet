@@ -22,27 +22,26 @@ func InitGinService(ctx context.Context, addr string) (ee error) {
 
 	link := r.Group("/api/v1/link")
 	{
-		link.GET("", GetLinks)
+		link.GET("", func(c *gin.Context) {
+
+			items, e := repo_link.GetLinkCtl().GetItems(ctx) //("online", 1)
+			if e != nil {
+				c.JSON(http.StatusOK, api.HttpRespBody{
+					Code: api.ERR_OTHER,
+					Msg:  "ERR_OTHER: " + e.Error(),
+				})
+				return
+			}
+
+			c.JSON(http.StatusOK, api.HttpRespBody{
+				Code: 0,
+				Msg:  "ok",
+				Data: items,
+			})
+			return
+		})
 	}
 
 	log.Println("going to listen on : ", addr)
 	return r.Run(addr)
-}
-
-func GetLinks(c *gin.Context) {
-	items, e := repo_link.GetLinkCtl().GetItems() //("online", 1)
-	if e != nil {
-		c.JSON(http.StatusOK, api.HttpRespBody{
-			Code: api.ERR_OTHER,
-			Msg:  "ERR_OTHER: " + e.Error(),
-		})
-		return
-	}
-
-	c.JSON(http.StatusOK, api.HttpRespBody{
-		Code: 0,
-		Msg:  "ok",
-		Data: items,
-	})
-	return
 }
