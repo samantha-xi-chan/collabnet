@@ -30,7 +30,7 @@ func InitGinService(ctx context.Context, addr string) (ee error) {
 }
 
 func GetLinks(c *gin.Context) {
-	items, e := repo_link.GetLinkCtl().GetItemsByKeyValue("online", 1)
+	items, e := repo_link.GetLinkCtl().GetItems() //("online", 1)
 	if e != nil {
 		c.JSON(http.StatusOK, api.HttpRespBody{
 			Code: api.ERR_OTHER,
