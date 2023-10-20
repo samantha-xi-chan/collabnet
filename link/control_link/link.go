@@ -40,6 +40,25 @@ func InitGinService(ctx context.Context, addr string) (ee error) {
 			})
 			return
 		})
+
+		link.GET(":id", func(c *gin.Context) {
+			id := c.Param("id")
+			items, e := repo_link.GetLinkCtl().GetItemById(ctx, id) //("online", 1)
+			if e != nil {
+				c.JSON(http.StatusOK, api.HttpRespBody{
+					Code: api.ERR_OTHER,
+					Msg:  "ERR_OTHER: " + e.Error(),
+				})
+				return
+			}
+
+			c.JSON(http.StatusOK, api.HttpRespBody{
+				Code: 0,
+				Msg:  "ok",
+				Data: items,
+			})
+			return
+		})
 	}
 
 	log.Println("going to listen on : ", addr)

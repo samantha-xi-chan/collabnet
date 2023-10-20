@@ -73,7 +73,7 @@ func (ctl *LinkCtl) GetItemsByKeyValue(key string, val interface{}) (x []Link, e
 	return arr, err
 }
 
-func (ctl *LinkCtl) GetItemById(id string) (i Link, e error) { // todo: optimize
+func (ctl *LinkCtl) GetItemById(ctx context.Context, id string) (i Link, e error) { // todo: optimize
 	var item Link
 	err := db.Where("id = ?", id).Take(&item).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
