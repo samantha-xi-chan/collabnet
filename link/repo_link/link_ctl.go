@@ -59,7 +59,7 @@ func (ctl *LinkCtl) DeleteItemById(id string) (err error) {
 
 func (ctl *LinkCtl) GetItemsByKeyValue(key string, val interface{}) (arr []Link, e error) { // todo: optimize
 
-	err := db.Where(key, val).Take(&arr).Error
+	err := db.Where(key, val).Find(&arr).Error
 	//if errors.Is(err, gorm.ErrRecordNotFound) {
 	//	return nil, err
 	//} else if err != nil {
