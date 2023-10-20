@@ -8,6 +8,7 @@ import (
 	"collab-net-v2/sched/service_sched"
 	"collab-net-v2/task/config_task"
 	"collab-net-v2/task/repo_task"
+	"github.com/docker/distribution/context"
 	"github.com/pkg/errors"
 	"log"
 	"time"
@@ -52,7 +53,7 @@ func SetTaskCallback(tmp CALLBACK) {
 func NewTask(name string, cmd string, linkId string, cmdackTimeoutSecond int, preTimeoutSecond int, runTimeoutSecond int) (id string, ee error) {
 	idTask := idgen.GetIdWithPref("task") // "NewTask" //
 
-	item, e := service_link.GetLinkItemFromId(linkId)
+	item, e := service_link.GetLinkItemFromId(context.Background(), linkId)
 	if e != nil {
 		return "", errors.Wrap(e, "service_link.GetLinkItemFromId")
 	}

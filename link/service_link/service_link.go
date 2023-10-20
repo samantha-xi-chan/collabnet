@@ -2,6 +2,7 @@ package service_link
 
 import (
 	"collab-net-v2/link/repo_link"
+	"context"
 	"github.com/pkg/errors"
 )
 
@@ -14,8 +15,8 @@ func GetValidLinkFromHostName(hostName string) (links []repo_link.Link, ee error
 	return links, nil
 }
 
-func GetLinkItemFromId(linkId string) (link repo_link.Link, ee error) {
-	item, e := repo_link.GetLinkCtl().GetItemById(linkId)
+func GetLinkItemFromId(ctx context.Context, linkId string) (link repo_link.Link, ee error) {
+	item, e := repo_link.GetLinkCtl().GetItemById(ctx, linkId)
 	if e != nil {
 		return repo_link.Link{}, errors.Wrap(e, "repo_link.GetLinkCtl().GetItemById : ")
 	}

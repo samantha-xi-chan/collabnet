@@ -6,6 +6,7 @@ import (
 	"collab-net-v2/link/repo_link"
 	"collab-net-v2/package/util/idgen"
 	"collab-net-v2/sched/config_sched"
+	"context"
 	"encoding/json"
 	mapset "github.com/deckarep/golang-set"
 	"github.com/gorilla/websocket"
@@ -40,7 +41,7 @@ func SetConnChangeCallback(_func func(endpoint string, _type int) (e error)) {
 }
 
 func SendDataToLinkId(linkId string, bytes []byte) (errCode int, e error) {
-	item, e := repo_link.GetLinkCtl().GetItemById(linkId)
+	item, e := repo_link.GetLinkCtl().GetItemById(context.Background(), linkId)
 	if e != nil {
 		return 0, errors.Wrap(e, "repo_link.GetLinkCtl().GetItemById")
 	}
