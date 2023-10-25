@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"time"
 )
 
@@ -67,6 +68,49 @@ func OnUpdateFromPlugin(id string, status int, para01 int) {
 	}
 }
 
+func HandlerPlatformTask(task api.PluginTask) (willHandle bool) {
+	go func() { // 模拟任务处理的情况
+		time.Sleep(time.Second * 2)
+		SendBizData2Platform(link.GetPackageBytes(
+			time.Now().UnixMilli(),
+			"1.0",
+			link.PACKAGE_TYPE_BIZ,
+			link.BizData{
+				TypeId:  link.BIZ_TYPE_NEWTASK,
+				SchedId: task.Id,
+				Para01:  api.TASK_EVT_PREACK,
+			},
+		))
+
+		time.Sleep(time.Second * 2)
+		SendBizData2Platform(link.GetPackageBytes(
+			time.Now().UnixMilli(),
+			"1.0",
+			link.PACKAGE_TYPE_BIZ,
+			link.BizData{
+				TypeId:  link.BIZ_TYPE_NEWTASK,
+				SchedId: task.Id,
+				Para01:  api.TASK_EVT_HEARTBEAT,
+			},
+		))
+
+		time.Sleep(time.Second * 2)
+		SendBizData2Platform(link.GetPackageBytes(
+			time.Now().UnixMilli(),
+			"1.0",
+			link.PACKAGE_TYPE_BIZ,
+			link.BizData{
+				TypeId:   link.BIZ_TYPE_NEWTASK,
+				SchedId:  task.Id,
+				Para01:   api.TASK_EVT_END,
+				Para0101: 0, // exitCode: 0表示成功
+			},
+		))
+	}()
+
+	return true
+}
+
 func OnNewBizDataFromPlatform(bytes []byte) {
 	onNewBizData := string(bytes)
 	log.Println("OnNewBizData: ", onNewBizData)
@@ -107,7 +151,12 @@ func OnNewBizDataFromPlatform(bytes []byte) {
 			TimeoutPre: body.Para02,
 			TimeoutRun: body.Para03,
 		}
-		pluginChan <- newTask
+
+		if !HandlerPlatformTask(newTask) {
+			log.Println("task not handled by first party")
+			pluginChan <- newTask
+		}
+
 	} else if body.TypeId == link.BIZ_TYPE_STOPTASK {
 		schedId := body.SchedId
 		taskId := body.TaskId
@@ -143,12 +192,39 @@ func SendBizData2Platform(bytes []byte) {
 }
 
 func init() {
-
+	platform := config.GetPlatform()
+	log.Println("platform: ", platform)
+	if platform {
+		dsn, e := config.GetMinioDsn()
+		if e != nil {
+			log.Fatal("GetMinioDsn: ", dsn)
+		}
+		log.Println("minioDsn: ", dsn)
+		parts := strings.SplitN(dsn, ":", 2)
+		if len(parts) != 2 {
+			log.Fatal("format error ")
+		}
+		username := parts[0]
+		lastIndex := strings.LastIndex(parts[1], "@")
+		if lastIndex == -1 {
+			log.Fatal(" @ not found")
+		}
+		password := parts[1][:lastIndex]
+		address := parts[1][lastIndex+1:]
+		log.Printf("username: %s , password: %s, address: %s\n", username, password, address)
+	}
 }
+
+//e = util_minio.Init(context.Background(), endPoint, id, sec, "bucket001", false)
+//if e != nil {
+//	log.Fatal("util_minio.Init: ", e)
+//}
 
 var pluginChan = make(chan api.PluginTask)
 
 func main() {
+	log.Println("main() ")
+
 	go func() {
 		e := StartPluginService()
 		if e != nil {

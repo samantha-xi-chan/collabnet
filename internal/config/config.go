@@ -50,6 +50,21 @@ func GetMqDsn() (string, error) {
 	}
 }
 
+func GetMinioDsn() (string, error) {
+	value := os.Getenv("MIN_DSN")
+	if value == "" {
+		v := viper.GetString("depend.minio_dsn")
+		return v, nil
+	} else {
+		return value, nil
+	}
+}
+
+func GetPlatform() bool {
+	v := viper.GetBool("biz.platform")
+	return v
+}
+
 func GetLogServer() string {
 	logServer := os.Getenv("LOG_SERVER")
 	if logServer == "" {

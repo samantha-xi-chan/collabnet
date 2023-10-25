@@ -23,12 +23,13 @@ func (Link) TableName() string {
 }
 
 type Link struct {
-	Id       string `json:"id" gorm:"primaryKey"`
-	HostName string `json:"host_name" ` //  gorm:"unique"
-	From     string `json:"from" `      //  gorm:"unique"
-	CreateAt int64  `json:"create_at"`
-	DeleteAt int64  `json:"delete_at"`
-	Online   int    `json:"online"`
+	Id         string `json:"id" gorm:"primaryKey"`
+	HostName   string `json:"host_name" ` //  gorm:"unique"
+	FirstParty int    `json:"first_party"`
+	From       string `json:"from" ` //  gorm:"unique"
+	CreateAt   int64  `json:"create_at"`
+	DeleteAt   int64  `json:"delete_at"`
+	Online     int    `json:"online"`
 }
 
 func (ctl *LinkCtl) CreateItem(item Link) (err error) {

@@ -21,8 +21,11 @@ cleanup() {
 
 serverIp=192.168.36.5 #localhost #192.168.36.101
 
+linkEndpoint=localhost:1080
+taskEndpoint=localhost:2080
+
 echo "link: "
-linkResp=$(curl -X GET "http://$serverIp:31080/api/v1/link")
+linkResp=$(curl -X GET "http://$linkEndpoint/api/v1/link")
 echo $linkResp
 first_id=$(echo "$linkResp" | jq -r '.data[0].id')
 echo $first_id
@@ -57,15 +60,15 @@ DAG=$current_dir"/"$instanceFile
 req=$(cat $DAG)
 echo "$req"
 
-postTaskResp=$(curl -X POST "http://$serverIp:32080/api/v1/task" -d "$req")
+postTaskResp=$(curl -X POST "http://$taskEndpoint/api/v1/task" -d "$req")
 echo $postTaskResp
 taskId=$(echo "$postTaskResp" | jq -r '.data.id')
 echo "taskId: "$taskId
 
 sleep 1
-patchTaskResp=$(curl -X PATCH "http://$serverIp:32080/api/v1/task/$taskId" )
-echo $patchTaskResp
-echo "patchTaskResp: "$patchTaskResp
+#patchTaskResp=$(curl -X PATCH "http://$taskEndpoint/api/v1/task/$taskId" )
+#echo $patchTaskResp
+#echo "patchTaskResp: "$patchTaskResp
 
 #sleep 5; echo "get tasks: "
 #curl -X GET "http://$serverIp:8081/api/v1/task"; echo ;

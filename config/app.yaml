@@ -1,9 +1,11 @@
 biz:
-  sched_server: "192.168.32.13:80" #192.168.36.101
+  sched_server: "192.168.32.13:80" # node_manager 使用
+  first_party: true  # node_manager 使用,  first_party 表示是否为自营 。 如果不填写默认为 false
 
 depend:
-  mysql_dsn: "root:gzn%zkTJ8x!gGZO6@tcp(192.168.31.6:3306)/biz?charset=utf8mb4&parseTime=True&loc=Local"
-  mq_dsn: "amqp://guest:guest@192.168.31.6:5672"
+  mysql_dsn: "root:gzn%zkTJ8x!gGZO6@tcp(192.168.31.28:3306)/biz?charset=utf8mb4&parseTime=True&loc=Local" # server 使用
+  mq_dsn: "amqp://guest:guest@192.168.31.28:5672" # server 使用
+  minio_dsn: "admin:zydrzzyds@192.168.31.28:9000" # node_manager 使用
 
 debug:
   biz_log_level: 6
@@ -13,3 +15,18 @@ debug:
   #auth_disabled: false
   debug_mode: true
   log_server: "192.168.36.101:5000"
+
+#  docker rm -f "dmysql" ;
+#  docker run --name "dmysql" \
+#  -e MYSQL_ROOT_PASSWORD='gzn%zkTJ8x!gGZO6' \
+#  -e MYSQL_DATABASE=biz \
+#  -p 3306:3306 \
+#  --restart=unless-stopped \
+#  -d mysql:5.7 \
+#  --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+#  sudo docker rm -f "drabbitmq" ;
+#  sudo docker run -d --name drabbitmq \
+#  -p 5671:5671 -p 5672:5672 -p 4369:4369 \
+#  -p 15671:15671 -p 15672:15672 -p 25672:25672 \
+#  --restart=always  \
+#  heidiks/rabbitmq-delayed-message-exchange:3.7.23-management
