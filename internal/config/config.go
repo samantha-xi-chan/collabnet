@@ -1,7 +1,6 @@
 package config
 
 import (
-	"collab-net-v2/package/util/idgen"
 	"fmt"
 	"github.com/spf13/viper"
 	"log"
@@ -80,7 +79,8 @@ func GetRunningInstance() string {
 	podName := os.Getenv("POD_NAME")
 	if podName == "" {
 		hostName, _ := os.Hostname()
-		return hostName + "-" + idgen.GetRandStr()
+		return hostName //+ "-" + idgen.GetRandStr()
+		//return hostName + "-" + idgen.GetRandStr()
 	} else {
 		return podName
 	}

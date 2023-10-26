@@ -5,4 +5,6 @@ CGO_ENABLED=0 GOOS=linux  GOARCH=amd64 go build -o release/plugin       cmd/plug
 
 HOST="36109_root"
 scp release/* $HOST:/root/;  scp -r ./config $HOST:/root/ ;
+HOST="36110_root"
+scp release/* $HOST:/root/;  scp -r ./config $HOST:/root/ ;
 
