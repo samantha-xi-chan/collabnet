@@ -32,15 +32,16 @@ func Init(dsn string, logLevel int, slowThresholdMs int) {
 	sqlDB.SetMaxOpenConns(20)
 	sqlDB.SetMaxIdleConns(10)
 
-	err = db.Migrator().DropTable(
-		&Workflow{},
-		&Task{},
-		&Edge{},
-	)
-	if err != nil {
-		log.Println("gorm.DropTable: ", err)
-		panic("DropTable, error=" + err.Error())
-	}
+	// only enable it in dev mode
+	//err = db.Migrator().DropTable(
+	//	&Workflow{},
+	//	&Task{},
+	//	&Edge{},
+	//)
+	//if err != nil {
+	//	log.Println("gorm.DropTable: ", err)
+	//	panic("DropTable, error=" + err.Error())
+	//}
 
 	err = db.AutoMigrate(
 		&Workflow{},
