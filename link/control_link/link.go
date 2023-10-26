@@ -4,6 +4,7 @@ import (
 	"collab-net-v2/api"
 	"collab-net-v2/link/middleware"
 	"collab-net-v2/link/repo_link"
+	"collab-net-v2/link/service_link"
 	"collab-net-v2/util/logrus_wrap"
 	"context"
 	"github.com/gin-gonic/gin"
@@ -23,8 +24,8 @@ func InitGinService(ctx context.Context, addr string) (ee error) {
 	link := r.Group("/api/v1/link")
 	{
 		link.GET("", func(c *gin.Context) {
-
-			items, e := repo_link.GetLinkCtl().GetItems(ctx) //("online", 1)
+			//items, e := repo_link.GetLinkCtl().GetItems(ctx) //("online", 1)
+			items, e := service_link.GetNonFirstPartyNodeLinks(ctx)
 			if e != nil {
 				c.JSON(http.StatusOK, api.HttpRespBody{
 					Code: api.ERR_OTHER,

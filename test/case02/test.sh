@@ -19,10 +19,10 @@ cleanup() {
     rm -rf $instanceFile
 }
 
-serverIp=192.168.36.5 #localhost #192.168.36.101
+#serverIp=192.168.36.5 #localhost #192.168.36.101
 
-linkEndpoint=localhost:1080
-taskEndpoint=localhost:2080
+linkEndpoint=192.168.36.102:31080
+taskEndpoint=192.168.36.102:32080
 
 echo "link: "
 linkResp=$(curl -X GET "http://$linkEndpoint/api/v1/link")
