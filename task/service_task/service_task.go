@@ -9,6 +9,7 @@ import (
 	"collab-net-v2/sched/service_sched"
 	"collab-net-v2/task/config_task"
 	"collab-net-v2/task/repo_task"
+	"fmt"
 	"github.com/docker/distribution/context"
 	"github.com/pkg/errors"
 	"log"
@@ -89,5 +90,18 @@ func PatchTask(idTask string) (ee error) {
 }
 
 func GetTask() (arr []repo_task.TaskInfo, ee error) {
-	return repo_task.GetTaskCtl().GetTasks("")
+	return repo_task.GetTaskCtl().GetTasks()
+}
+
+func GetTaskById(id string) (arr repo_task.TaskInfo, ee error) {
+	tasks, e := repo_task.GetTaskCtl().GetTaskById(id)
+	if e != nil {
+		return repo_task.TaskInfo{}, errors.Wrap(e, "repo_task.GetTaskCtl().GetTaskById: ")
+	}
+
+	if len(tasks) == 1 {
+		return tasks[0], nil
+	}
+
+	return repo_task.TaskInfo{}, errors.Wrap(e, fmt.Sprint("repo_task.GetTaskCtl().GetTaskById: len(tasks) = ", len(tasks)))
 }

@@ -27,6 +27,7 @@ func InitGinService(ctx context.Context, addr string) (ee error) {
 	{
 		task.POST("", PostTask)
 		task.GET("", GetTask)
+		task.GET("/:id", GetTaskById)
 		task.PATCH("/:id", PatchTask)
 	}
 
@@ -104,6 +105,31 @@ func GetTask(c *gin.Context) {
 		Code: 0,
 		Msg:  "ok",
 		Data: arr,
+	})
+	return
+}
+
+func GetTaskById(c *gin.Context) { //todo: opt
+	id := c.Param("id")
+	log.Println("                         [main] GetTaskById id :  ", id)
+
+	// 判断 id 是否有效
+
+	// 判断是否真实在运行
+	item, e := service_task.GetTaskById(id)
+	if e != nil {
+		c.JSON(http.StatusOK, api.HttpRespBody{
+			Code: api.ERR_OTHER,
+			Msg:  "service_task.GetTaskById:  " + e.Error(),
+		})
+		return
+	}
+
+	log.Println("[main] service_task.GetTask . ")
+	c.JSON(http.StatusOK, api.HttpRespBody{
+		Code: 0,
+		Msg:  "ok",
+		Data: item,
 	})
 	return
 }
