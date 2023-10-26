@@ -32,6 +32,11 @@ type Link struct {
 	Online     int    `json:"online"`
 }
 
+type QueryKeyValue struct {
+	ColName  string
+	ColValue interface{}
+}
+
 func (ctl *LinkCtl) CreateItem(item Link) (err error) {
 	if err := db.Create(&item).Error; err != nil {
 		return errors.Wrap(err, "LinkCtl.CreateItem: ")
@@ -70,6 +75,25 @@ func (ctl *LinkCtl) GetItemsByKeyValue(key string, val interface{}) (x []Link, e
 	log.Println("GetItemsByKeyValue : ", arr, ", size= ", len(arr))
 
 	return arr, err
+}
+
+func (ctl *LinkCtl) GetItemByKeyValueArr(arr []QueryKeyValue) (items []Link, e error) { // todo: optimize
+	if len(arr) < 1 {
+		return nil, errors.New("len(arr) < 1 ")
+	}
+
+	result := db.Where(arr[0].ColName, arr[0].ColValue)
+	for i := 1; i < len(arr); i++ {
+		result = result.Where(arr[i].ColName, arr[i].ColValue)
+	}
+	err := result.Take(&items).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, err
+	} else if err != nil {
+		return nil, errors.Wrap(err, "SchedCtl GetItemByContainerId err not nil: ")
+	}
+
+	return items, nil
 }
 
 func (ctl *LinkCtl) GetItemById(ctx context.Context, id string) (i Link, e error) { // todo: optimize

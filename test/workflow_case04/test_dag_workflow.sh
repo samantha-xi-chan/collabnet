@@ -1,7 +1,8 @@
 #!/bin/sh
 
-API_IP="192.168.31.6"
-API_PORT="30081"
+#API_IP="192.168.31.6"
+API_IP="192.168.36.102"
+API_PORT="30181"
 DOWNLOAD_HOST="8_root"
 
 current_dir="$(cd "$(dirname "$0")" && pwd)"
