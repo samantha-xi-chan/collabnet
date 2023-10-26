@@ -34,6 +34,9 @@ const (
 const (
 	BIZ_TYPE_NEWTASK  = 1011
 	BIZ_TYPE_STOPTASK = 1021
+
+	BIZ_TYPE_NEW_DOCKER_TASK  = 1111
+	BIZ_TYPE_STOP_DOCKER_TASK = 1121
 )
 
 type Package struct {
@@ -52,6 +55,11 @@ type AuthResp struct {
 	Msg      string `json:"msg"`
 	ExpireAt int64  `json:"expire_at"`
 }
+
+type BizInit struct { // 暂时做语意角度的开放
+	Para01 int `json:"para01"`
+}
+
 type BizData struct { // 业务角度： 任务新建、任务停止、
 	TypeId  int    `json:"type_id"`
 	SchedId string `json:"sched_id"`

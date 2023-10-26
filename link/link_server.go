@@ -1,6 +1,7 @@
 package link
 
 import (
+	"collab-net-v2/api"
 	"collab-net-v2/internal/config"
 	"collab-net-v2/link/config_link"
 	"collab-net-v2/link/repo_link"
@@ -184,16 +185,24 @@ func OnMessageOfRegisterChan(endpoint string, conn *websocket.Conn, bytesPack []
 	if pack.Type == PACKAGE_TYPE_AUTHOK_RECVED {
 		callbackFuncConnChange(endpoint, LINK_EVT_HANDSHAKE_OK)
 
+		var body BizInit
+		bytes, _ := json.Marshal(pack.Body)
+		err = json.Unmarshal(bytes, &body)
+		if err != nil {
+			log.Println("Error decoding JSON:", err, " string(bytes): ", string(bytes))
+		}
+		log.Println("[<-readChan] body : ", body)
 		// todo: 判重
 
 		idLink := idgen.GetIdWithPref("co")
 		repo_link.GetLinkCtl().CreateItem(repo_link.Link{
-			Id:       idLink,
-			HostName: endpoint,
-			From:     conn.RemoteAddr().String(),
-			CreateAt: time.Now().UnixMilli(),
-			DeleteAt: 0,
-			Online:   1,
+			Id:         idLink,
+			HostName:   endpoint,
+			FirstParty: body.Para01,
+			From:       conn.RemoteAddr().String(),
+			CreateAt:   time.Now().UnixMilli(),
+			DeleteAt:   0,
+			Online:     api.TRUE,
 		})
 		mapConn2IdLlink[conn] = idLink
 

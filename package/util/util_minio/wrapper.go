@@ -1,7 +1,7 @@
 package util_minio
 
 import (
-	"collab-net/package/util/util_zip"
+	"collab-net-v2/package/util/util_zip"
 	"context"
 	"github.com/pkg/errors"
 	"io/ioutil"
@@ -10,9 +10,9 @@ import (
 
 var fileManager FileManager
 
-func Init(ctx context.Context, endpoint string, accessKeyId string, secretAccessKey string, bucketName string, clean bool) (e error) {
+func Init(ctx context.Context, endpoint string, accessKeyID string, secretAccessKey string, bucketName string, clean bool) (e error) {
 	useSSL := false
-	return fileManager.InitFM(ctx, endpoint, accessKeyId, secretAccessKey, useSSL, bucketName, clean)
+	return fileManager.InitFM(ctx, endpoint, accessKeyID, secretAccessKey, useSSL, bucketName, clean)
 }
 
 // 备份文件夹内部
@@ -32,6 +32,7 @@ func BackupDir(bucketName string, localDir string, objId string) (x error) {
 		return errors.Wrap(e, "util_zip.RecursiveZip: ")
 	}
 
+	log.Println("BackupDir", bucketName, tmpFile.Name(), objId)
 	e = fileManager.UploadFile(ctx, bucketName, tmpFile.Name(), objId)
 	if e != nil {
 		return errors.Wrap(e, "fileManager.UploadFile: ")

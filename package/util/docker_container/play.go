@@ -1,7 +1,9 @@
 package docker_container
 
 import (
+	"collab-net-v2/api"
 	"collab-net-v2/package/util/procutil"
+	"collab-net-v2/workflow/config_workflow"
 	"context"
 	"fmt"
 	"github.com/docker/docker/api/types"
@@ -17,16 +19,16 @@ func WatchContainer(ctx context.Context, taskId string, containerId string, clea
 	stdOut := make(chan string, BUF_SIZE)
 	stdErr := make(chan string, BUF_SIZE)
 
-	go func() {
-		for msg := range stdOut {
-			message.GetMsgCtl().UpdateTaskWrapper(taskId, api.TASK_STATUS_RUNNING, msg)
-		}
-	}()
-	go func() {
-		for msg := range stdErr {
-			message.GetMsgCtl().UpdateTaskWrapper(taskId, api.TASK_STATUS_RUNNING, msg)
-		}
-	}()
+	//go func() {
+	//	for msg := range stdOut {
+	//		message.GetMsgCtl().UpdateTaskWrapper(taskId, api.TASK_STATUS_RUNNING, msg)
+	//	}
+	//}()
+	//go func() {
+	//	for msg := range stdErr {
+	//		message.GetMsgCtl().UpdateTaskWrapper(taskId, api.TASK_STATUS_RUNNING, msg)
+	//	}
+	//}()
 
 	if logRt {
 		funcErrCode, procErrCode, e := procutil.StartProcBloRt(stdOut, stdErr, func(pid int) {
@@ -72,7 +74,8 @@ func WatchContainer(ctx context.Context, taskId string, containerId string, clea
 
 func StartContainer(ctx context.Context,
 	taskId string, callbackAddr string,
-	block bool, cleanContainer bool, imageName string, cmdStringArr []string, memLimMb int64, cpuPercent int, cpuSetCpus string, containerName string,
+	block bool,
+	imageName string, cmdStringArr []string, memLimMb int64, cpuPercent int, cpuSetCpus string, containerName string,
 	bindIn []api.Bind,
 	bindOut []api.Bind,
 ) (containerId_ string, e error) {
@@ -87,7 +90,8 @@ func StartContainer(ctx context.Context,
 		}
 	}()
 
-	var binds = []string{config.DOCKER_PATH_BIND}
+	var binds = []string{config_workflow.DOCKER_PATH_BIND}
+	binds = append(binds, config_workflow.HOSTS_BIND)
 
 	for _, val := range bindIn {
 		binds = append(binds, fmt.Sprintf("%s:%s", val.VolId, val.VolPath))
@@ -128,7 +132,7 @@ func StartContainer(ctx context.Context,
 		return "", err
 	}
 
-	containerId := resp.Id
+	containerId := resp.ID
 	log.Print("ContainerCreate resp: ", resp)
 
 	err = cli.ContainerStart(
@@ -144,7 +148,7 @@ func StartContainer(ctx context.Context,
 	return containerId, nil
 }
 
-func IsContainerRunning(containerNameOrId string) (bRunning bool, e error) {
+func IsContainerRunning(containerNameOrID string) (bRunning bool, e error) {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		return false, errors.Wrap(err, "client.NewClientWithOpts: ")
@@ -156,7 +160,7 @@ func IsContainerRunning(containerNameOrId string) (bRunning bool, e error) {
 	}
 
 	for _, container := range containers {
-		if container.Names[0] == "/"+containerNameOrId || container.Id == containerNameOrId {
+		if container.Names[0] == "/"+containerNameOrID || container.ID == containerNameOrID {
 			log.Println("container running ")
 			return true, nil
 		}
@@ -198,7 +202,7 @@ func ListContainer(ctx context.Context) (x []types.Container, e error) {
 
 	// 打印容器信息
 	for _, container := range containers {
-		//fmt.Printf("容器Id：%s\n", container.Id)
+		//fmt.Printf("容器ID：%s\n", container.ID)
 		fmt.Printf("containerName：%s\n", container.Names)
 		//fmt.Printf("镜像：%s\n", container.Image)
 		//fmt.Printf("状态：%s\n", container.State)

@@ -2,6 +2,7 @@ package service_task
 
 import (
 	"collab-net-v2/internal/config"
+	"collab-net-v2/link"
 	"collab-net-v2/link/service_link"
 	"collab-net-v2/package/util/idgen"
 	"collab-net-v2/sched/repo_sched"
@@ -61,7 +62,7 @@ func NewTask(name string, cmd string, linkId string, cmdackTimeoutSecond int, pr
 		return "", errors.New("item.Online != 1")
 	}
 
-	idSched, e := service_sched.NewSched(idTask, cmd, linkId, cmdackTimeoutSecond, preTimeoutSecond, runTimeoutSecond)
+	idSched, e := service_sched.NewSched(idTask, link.BIZ_TYPE_NEWTASK, cmd, linkId, cmdackTimeoutSecond, preTimeoutSecond, runTimeoutSecond)
 	if e != nil {
 		log.Printf("service_sched.NewTask: e=", e)
 		return "", e

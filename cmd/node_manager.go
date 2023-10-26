@@ -4,13 +4,17 @@ import (
 	"collab-net-v2/api"
 	"collab-net-v2/internal/config"
 	"collab-net-v2/link"
+	"collab-net-v2/package/util/docker_vol"
+	"collab-net-v2/package/util/util_minio"
 	"collab-net-v2/sched/config_sched"
+	"collab-net-v2/workflow/config_workflow"
+	"collab-net-v2/workflow/service_workflow"
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"log"
-	"math/rand"
 	"net/http"
 	"os"
 	"os/signal"
@@ -68,9 +72,10 @@ func OnUpdateFromPlugin(id string, status int, para01 int) {
 	}
 }
 
-func HandlerPlatformTask(task api.PluginTask) (willHandle bool) {
+func HandlerDockerTask(task api.PluginTask) (willHandle bool) {
 	go func() { // 模拟任务处理的情况
-		time.Sleep(time.Second * 2)
+		log.Println("任务准备 ing", task.TaskId)
+		time.Sleep(time.Second * 1)
 		SendBizData2Platform(link.GetPackageBytes(
 			time.Now().UnixMilli(),
 			"1.0",
@@ -82,19 +87,68 @@ func HandlerPlatformTask(task api.PluginTask) (willHandle bool) {
 			},
 		))
 
-		time.Sleep(time.Second * 2)
-		SendBizData2Platform(link.GetPackageBytes(
-			time.Now().UnixMilli(),
-			"1.0",
-			link.PACKAGE_TYPE_BIZ,
-			link.BizData{
-				TypeId:  link.BIZ_TYPE_NEWTASK,
-				SchedId: task.Id,
-				Para01:  api.TASK_EVT_HEARTBEAT,
-			},
-		))
+		// 普通的命令行执行
+		/*
+			cmd := exec.Command("bash", "-c", task.Cmd)
 
-		time.Sleep(time.Second * 2)
+			// 设置命令的输出和错误输出
+			cmd.Stdout = os.Stdout
+			cmd.Stderr = os.Stderr
+
+			// 执行命令
+			err := cmd.Run()
+			if err != nil {
+				fmt.Printf("Command execution failed: %v\n", err)
+			}
+		*/
+
+		// 启动 docker 执行命令
+		log.Println("task.Cmd: ", task.Cmd)
+
+		var containerReq api.PostContainerReq
+		err = json.Unmarshal([]byte(task.Cmd), &containerReq)
+		if err != nil {
+			fmt.Println("JSON deserialization error:", err)
+			return
+		}
+
+		quit := make(chan bool)
+
+		go func() { // 心跳
+			ticker := time.NewTicker(time.Second * 10)
+			defer ticker.Stop()
+
+			for {
+				select {
+				case <-ticker.C:
+					log.Println("Heartbeat")
+
+					SendBizData2Platform(link.GetPackageBytes(
+						time.Now().UnixMilli(),
+						"1.0",
+						link.PACKAGE_TYPE_BIZ,
+						link.BizData{
+							TypeId:  link.BIZ_TYPE_NEWTASK,
+							SchedId: task.Id,
+							Para01:  api.TASK_EVT_HEARTBEAT,
+						},
+					))
+
+				case <-quit:
+					// 停止发送心跳信息
+					return
+				}
+			}
+		}()
+
+		// 启动任务
+		_, exitCode, e := service_workflow.PostContainerBlock(context.Background(), containerReq)
+		if e != nil {
+			exitCode = 101 // todo: 特殊错误 进入编码表
+		}
+		quit <- true
+
+		log.Println("任务执行 ed", task.TaskId)
 		SendBizData2Platform(link.GetPackageBytes(
 			time.Now().UnixMilli(),
 			"1.0",
@@ -103,7 +157,7 @@ func HandlerPlatformTask(task api.PluginTask) (willHandle bool) {
 				TypeId:   link.BIZ_TYPE_NEWTASK,
 				SchedId:  task.Id,
 				Para01:   api.TASK_EVT_END,
-				Para0101: 0, // exitCode: 0表示成功
+				Para0101: exitCode, // exitCode: 0表示成功
 			},
 		))
 	}()
@@ -141,7 +195,6 @@ func OnNewBizDataFromPlatform(bytes []byte) {
 		))
 		log.Println(" [OnNewBizDataFromPlatform] SendBizData2Platform STATUS_SCHED_CMD_ACKED schedId = ", schedId)
 
-		// 将任务的结构体转换进入 chan
 		newTask := api.PluginTask{
 			Id:         schedId,
 			TaskId:     taskId,
@@ -151,12 +204,7 @@ func OnNewBizDataFromPlatform(bytes []byte) {
 			TimeoutPre: body.Para02,
 			TimeoutRun: body.Para03,
 		}
-
-		if !HandlerPlatformTask(newTask) {
-			log.Println("task not handled by first party")
-			pluginChan <- newTask
-		}
-
+		pluginChan <- newTask
 	} else if body.TypeId == link.BIZ_TYPE_STOPTASK {
 		schedId := body.SchedId
 		taskId := body.TaskId
@@ -183,7 +231,57 @@ func OnNewBizDataFromPlatform(bytes []byte) {
 			Valid:  false,
 		}
 		pluginChan <- stopTask
+	} else if body.TypeId == link.BIZ_TYPE_NEW_DOCKER_TASK {
+		schedId := body.SchedId
+		taskId := body.TaskId
+		log.Println("[OnNewBizData]  schedId = ", schedId)
+
+		time.Sleep(time.Millisecond * 200)
+		SendBizData2Platform(link.GetPackageBytes(
+			time.Now().UnixMilli(),
+			"1.0",
+			link.PACKAGE_TYPE_BIZ,
+			link.BizData{
+				TypeId:  link.BIZ_TYPE_NEWTASK, // todo: 变为 docker
+				SchedId: schedId,
+				TaskId:  taskId,
+				Para01:  api.TASK_EVT_CMDACK,
+			},
+		))
+		log.Println(" [OnNewBizDataFromPlatform] SendBizData2Platform STATUS_SCHED_CMD_ACKED schedId = ", schedId)
+
+		newTask := api.PluginTask{
+			Id:         schedId,
+			TaskId:     taskId,
+			Msg:        "test",
+			Cmd:        body.Para11,
+			Valid:      true,
+			TimeoutPre: body.Para02,
+			TimeoutRun: body.Para03,
+		}
+		HandlerDockerTask(newTask)
+	} else if body.TypeId == link.BIZ_TYPE_STOP_DOCKER_TASK {
+		schedId := body.SchedId
+		taskId := body.TaskId
+		log.Println("[OnNewBizData]  schedId = ", schedId)
+
+		time.Sleep(time.Millisecond * 200)
+		SendBizData2Platform(link.GetPackageBytes(
+			time.Now().UnixMilli(),
+			"1.0",
+			link.PACKAGE_TYPE_BIZ,
+			link.BizData{
+				TypeId:  link.BIZ_TYPE_STOPTASK,
+				SchedId: schedId,
+				TaskId:  taskId,
+			},
+		))
+		log.Println(" [OnNewBizDataFromPlatform] SendBizData2Platform STATUS_SCHED_CMD_ACKED schedId = ", schedId)
+		// todo: 在此执行关闭容器操作
+	} else {
+		log.Println("WARNING: unknown cmd ...")
 	}
+
 }
 
 func SendBizData2Platform(bytes []byte) {
@@ -192,9 +290,14 @@ func SendBizData2Platform(bytes []byte) {
 }
 
 func init() {
-	platform := config.GetPlatform()
-	log.Println("platform: ", platform)
-	if platform {
+	firstParty := config.GetFirstParty()
+	log.Println("firstParty: ", firstParty)
+	if firstParty {
+		e := docker_vol.CreateVolumeFromFile(context.Background(), config_workflow.VOL_TOOL, config_workflow.SCRIPT_FILENAME, config_workflow.SCRIPT_CONTENT)
+		if e != nil {
+			log.Fatal("CreateVolumeFromFile e: ", e)
+		}
+
 		dsn, e := config.GetMinioDsn()
 		if e != nil {
 			log.Fatal("GetMinioDsn: ", dsn)
@@ -212,18 +315,25 @@ func init() {
 		password := parts[1][:lastIndex]
 		address := parts[1][lastIndex+1:]
 		log.Printf("username: %s , password: %s, address: %s\n", username, password, address)
+
+		e = util_minio.Init(context.Background(), address, username, password, config_workflow.BUCKET_NAME, false)
+		if e != nil {
+			log.Fatal("util_minio.Init: ", e)
+		}
 	}
 }
-
-//e = util_minio.Init(context.Background(), endPoint, id, sec, "bucket001", false)
-//if e != nil {
-//	log.Fatal("util_minio.Init: ", e)
-//}
 
 var pluginChan = make(chan api.PluginTask)
 
 func main() {
 	log.Println("main() ")
+	para01 := api.FALSE
+
+	firstParty := config.GetFirstParty()
+	log.Println("firstParty: ", firstParty)
+	if firstParty {
+		para01 = api.TRUE
+	}
 
 	go func() {
 		e := StartPluginService()
@@ -259,13 +369,13 @@ func main() {
 	}
 	log.Println("schedServer: ", schedServer)
 
-	//hostName, _ := os.Hostname()
 	instance := config.GetRunningInstance()
 	link.NewClientConnection(
 		link.Config{
 			Ver:      "v1.0",
 			Auth:     config_sched.AuthTokenForDev,
 			HostName: instance,
+			Para01:   para01,
 			HostAddr: schedServer, //fmt.Sprintf("%s%s", schedServer, config_sched.SCHEDULER_LISTEN_PORT),
 		},
 		//notify,
@@ -290,11 +400,11 @@ func StartPluginService() (ee error) {
 	r.GET(config.PLUGIN_SERVICE_ROUTER, getPluginTaskCmd)
 	r.POST(config.PLUGIN_SERVICE_ROUTER_ID, postPluginTaskStatus)
 
-	//return r.Run(config.PLUGIN_SERVICE_PORT)
+	return r.Run(config.PLUGIN_SERVICE_PORT)
 
-	rand.Seed(time.Now().UnixMilli())
-	addr := fmt.Sprintf(":%d", 8090+rand.Intn(100))
-	return r.Run(addr)
+	//rand.Seed(time.Now().UnixMilli())
+	//addr := fmt.Sprintf(":%d", 8090+rand.Intn(100))
+	//return r.Run(addr)
 }
 
 func getPluginTaskCmd(c *gin.Context) {

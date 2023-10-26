@@ -54,3 +54,8 @@ const (
 const (
 //TOPIC_ALL = "topic_all"
 )
+
+const (
+	TASK_TYPE_RUN_IN_DOCKER = 1001 // 以 workflow 内 docker 形式调度的任务
+	TASK_TYPE_RUN_IN_LINUX  = 1002 // 以 link 为调度目标的任务
+)

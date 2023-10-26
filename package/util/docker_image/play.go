@@ -2,7 +2,6 @@ package docker_image
 
 import (
 	"context"
-	"fmt"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
 	"github.com/pkg/errors"
@@ -64,32 +63,4 @@ func IsImageExists(ctx context.Context, imageName string) (x bool, e error) {
 	}
 
 	return false, nil
-}
-
-func RemoveImage(ctx context.Context, imageName string) (err error) {
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	if err != nil {
-
-	}
-
-	imageInspect, _, err := cli.ImageInspectWithRaw(context.Background(), imageName)
-	if err != nil {
-		if client.IsErrNotFound(err) {
-			fmt.Printf("Image '%s' not found.\n", imageName)
-		} else {
-			fmt.Printf("Failed to inspect image: %s\n", err)
-		}
-		os.Exit(1)
-	}
-
-	// Delete the image
-	_, err = cli.ImageRemove(context.Background(), imageInspect.Id, types.ImageRemoveOptions{})
-	if err != nil {
-		fmt.Printf("Failed to remove image: %s\n", err)
-		os.Exit(1)
-	}
-
-	fmt.Printf("Image '%s' deleted successfully.\n", imageName)
-
-	return nil
 }

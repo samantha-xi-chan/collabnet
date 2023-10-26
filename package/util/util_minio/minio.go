@@ -2,6 +2,7 @@ package util_minio
 
 import (
 	"context"
+	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 	"log"
 )
@@ -19,10 +20,11 @@ type FileManager struct {
 	err         error
 }
 
-func (f *FileManager) InitFM(ctx context.Context, endpoint string, accessKeyId string, secretAccessKey string, useSSL bool, bucketName string, clean bool) (e error) {
+func (f *FileManager) InitFM(ctx context.Context, endpoint string, accessKeyID string, secretAccessKey string, useSSL bool, bucketName string, clean bool) (e error) {
 	// Initialize minio client object.
+	log.Println("InitFM(")
 	f.minioClient, e = minio.New(endpoint, &minio.Options{
-		Creds:  credentials.NewStaticV4(accessKeyId, secretAccessKey, ""),
+		Creds:  credentials.NewStaticV4(accessKeyID, secretAccessKey, ""),
 		Secure: useSSL,
 	})
 	if e != nil {
@@ -92,6 +94,11 @@ func (f *FileManager) RemoveBucket(ctx context.Context, bucketName string) (e er
 // local dir : remote url
 func (f *FileManager) UploadFile(ctx context.Context, bucketName string, filePath string, objectName string) (e error) {
 	contentType := "application/zip"
+
+	if f.minioClient == nil {
+		log.Fatal("f.minioClient == nil")
+		return
+	}
 
 	// Upload the zip file with FPutObject
 	_, err := f.minioClient.FPutObject(ctx, bucketName, objectName, filePath, minio.PutObjectOptions{ContentType: contentType})

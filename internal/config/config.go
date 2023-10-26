@@ -51,7 +51,7 @@ func GetMqDsn() (string, error) {
 }
 
 func GetMinioDsn() (string, error) {
-	value := os.Getenv("MIN_DSN")
+	value := os.Getenv("MINIO_DSN")
 	if value == "" {
 		v := viper.GetString("depend.minio_dsn")
 		return v, nil
@@ -60,8 +60,8 @@ func GetMinioDsn() (string, error) {
 	}
 }
 
-func GetPlatform() bool {
-	v := viper.GetBool("biz.platform")
+func GetFirstParty() bool { // 仅 node_manager 使用
+	v := viper.GetBool("biz.first_party")
 	return v
 }
 

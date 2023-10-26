@@ -2,6 +2,7 @@ package procutil
 
 import (
 	"bufio"
+	"collab-net-v2/package/util/stl"
 	"fmt"
 	"github.com/pkg/errors"
 	"github.com/shirou/gopsutil/process"
@@ -94,9 +95,6 @@ func GetDockerBin() string {
 }
 
 func StartProcBloRt(stdOut chan string, stdErr chan string, cb Callback, trackLog bool, cmdName string, cmdArg ...string) (funcErrCode int, procErrCode int, e error) {
-	//strArr := strings.Fields(strings.TrimSpace(cmdStr))
-	//log.Println(strArr)
-	debugLogStdout, debugLogStderr, e := config.GetDebugLogStd()
 
 	var wg sync.WaitGroup
 
@@ -132,7 +130,7 @@ func StartProcBloRt(stdOut chan string, stdErr chan string, cb Callback, trackLo
 				str := scanner.Text()
 				stdOut <- str
 
-				if debugLogStdout {
+				if false { // todo: tmp
 					log.Println("StartProcBlo out str : ", str)
 				}
 			}
@@ -153,7 +151,7 @@ func StartProcBloRt(stdOut chan string, stdErr chan string, cb Callback, trackLo
 				str := scanner.Text()
 				stdErr <- str
 
-				if debugLogStderr {
+				if false { // todo: tmp
 					log.Println("StartProcBlo err str : ", str)
 				}
 			}
@@ -193,9 +191,6 @@ func StartProcBloRt(stdOut chan string, stdErr chan string, cb Callback, trackLo
 }
 
 func StartProcBlo(stdOut chan string, stdErr chan string, cb Callback, trackLog bool, cmdName string, cmdArg ...string) (funcErrCode int, procErrCode int, e error) {
-
-	debugLogStdout, _, e := config.GetDebugLogStd()
-
 	cmd := exec.Command(cmdName, cmdArg...)
 
 	if trackLog {
@@ -208,7 +203,7 @@ func StartProcBlo(stdOut chan string, stdErr chan string, cb Callback, trackLog 
 		//log.Printf("Command output:\n%s\n", combinedOutput)
 		lines := strings.Split(string(combinedOutput), "\n")
 		for _, line := range lines {
-			if debugLogStdout {
+			if false { // todo:
 				log.Println(line)
 			}
 			stdOut <- line

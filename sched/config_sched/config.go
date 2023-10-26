@@ -1,6 +1,11 @@
 package config_sched
 
 const (
+	DEFAULT_CMDACK_TIMEOUT = 5  // 单位: 秒
+	DEFAULT_PREACK_TIMEOUT = 20 // 单位: 秒
+)
+
+const (
 	TESTCASE_CNT = 1
 
 	//TEST_TIME_PREPARE    = 5

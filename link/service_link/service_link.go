@@ -23,3 +23,11 @@ func GetLinkItemFromId(ctx context.Context, linkId string) (link repo_link.Link,
 
 	return item, nil
 }
+func GetFirstPartyNodeLinks(ctx context.Context) (links []repo_link.Link, ee error) {
+	links, e := repo_link.GetLinkCtl().GetItemsByKeyValue("first_party", 1)
+	if e != nil {
+		return nil, errors.Wrap(e, "repo_link.GetLinkCtl().GetItemByKeyValue : ")
+	}
+
+	return links, nil
+}

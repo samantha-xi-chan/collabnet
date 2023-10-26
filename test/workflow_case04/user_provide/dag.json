@@ -1,0 +1,113 @@
+{
+  "task": [{
+    "name": "a",
+    "image": "badouralix/curl-jq:latest",
+    "cmd_str": ["http://192.168.31.8:2080/a.sh", "para01", "para02","para03","para0N"],
+    "timeout": 300,
+    "on_fail": "nothing",
+    "resource_quota": {
+      "cpu_perc": 200,
+      "mem_mb": 1000,
+      "disk_mb": 2000
+    },
+    "check_exit_code": true,
+    "exp_exit_code": 0
+  }, {
+    "name": "b",
+    "image": "badouralix/curl-jq:latest",
+    "cmd_str": ["http://192.168.31.8:2080/b.sh", "para01", "para02","para03","para0N"],
+    "timeout": 60,
+    "on_fail": "nothing",
+    "resource_quota": {
+      "cpu_perc": 200,
+      "mem_mb": 1000,
+      "disk_mb": 2000
+    },
+    "check_exit_code": false,
+    "exp_exit_code": 0
+  }, {
+    "name": "c",
+    "image": "badouralix/curl-jq:latest",
+    "cmd_str": ["http://192.168.31.8:2080/c.sh", "para01", "para02","para03","para0N"],
+    "timeout": 60,
+    "on_fail": "nothing",
+    "resource_quota": {
+      "cpu_perc": 200,
+      "mem_mb": 1000,
+      "disk_mb": 2000
+    },
+    "check_exit_code": true,
+    "exp_exit_code": 0
+  }, {
+    "name": "d",
+    "image": "badouralix/curl-jq:latest",
+    "cmd_str": ["http://192.168.31.8:2080/d.sh", "para01", "para02","para03","para0N"],
+    "timeout": 60,
+    "on_fail": "nothing",
+    "resource_quota": {
+      "cpu_perc": 200,
+      "mem_mb": 1000,
+      "disk_mb": 2000
+    },
+    "check_exit_code": true,
+    "exp_exit_code": 0
+  }, {
+    "name": "e",
+    "image": "badouralix/curl-jq:latest",
+    "cmd_str": ["http://192.168.31.8:2080/e.sh", "para01", "para02","para03","para0N"],
+    "timeout": 60,
+    "on_fail": "nothing",
+    "resource_quota": {
+      "cpu_perc": 200,
+      "mem_mb": 1000,
+      "disk_mb": 2000
+    },
+    "check_exit_code": true,
+    "exp_exit_code": 0
+  }, {
+    "name": "f",
+    "image": "badouralix/curl-jq:latest",
+    "cmd_str": ["http://192.168.31.8:2080/f.sh", "f01", "f02","f03","f0N"],
+    "timeout": 60,
+    "on_fail": "nothing",
+    "resource_quota": {
+      "cpu_perc": 200,
+      "mem_mb": 1000,
+      "disk_mb": 2000
+    },
+    "check_exit_code": true,
+    "exp_exit_code": 0
+  }],
+  "edge": [{
+    "start": "a",
+    "end": "b",
+    "resc": "/docker/a/"
+  }, {
+    "start": "a",
+    "end": "c",
+    "resc": "/docker/a/"
+  }, {
+    "start": "c",
+    "end": "d",
+    "resc": "/docker/c/"
+  }, {
+    "start": "b",
+    "end": "d",
+    "resc": "/docker/b/"
+  }, {
+    "start": "b",
+    "end": "e",
+    "resc": "/docker/b/"
+  }, {
+    "start": "d",
+    "end": "f",
+    "resc": "/docker/d/"
+  }, {
+    "start": "f",
+    "resc": "/docker/f/"
+  }, {
+    "start": "e",
+    "resc": "/docker/e/"
+  }],
+  "ver":1
+}

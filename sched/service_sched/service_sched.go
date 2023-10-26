@@ -28,7 +28,7 @@ func SetCallbackFun(f FUN_CALLBACK) {
 	callback = f
 }
 
-func init() {
+func Init() {
 	log.Println("service_sched [init] : ")
 
 	mqDsn, e := config.GetMqDsn()
@@ -272,7 +272,7 @@ func StopSched(taskId string) (ee error) { // todo: send stop cmd to excutors
 	return
 }
 
-func NewSched(taskId string, cmd string, linkId string, cmdackTimeoutSecond int, preTimeoutSecond int, runTimeoutSecond int) (_id string, e error) {
+func NewSched(taskId string, taskType int, cmd string, linkId string, cmdackTimeoutSecond int, preTimeoutSecond int, runTimeoutSecond int) (_id string, e error) {
 	idSched := idgen.GetIdWithPref("sched")
 	repo_sched.GetSchedCtl().CreateItem(repo_sched.Sched{
 		Id:            idSched,
@@ -298,7 +298,7 @@ func NewSched(taskId string, cmd string, linkId string, cmdackTimeoutSecond int,
 			"v1.0",
 			link.PACKAGE_TYPE_BIZ,
 			link.BizData{
-				TypeId:  link.BIZ_TYPE_NEWTASK,
+				TypeId:  taskType,
 				SchedId: idSched,
 				TaskId:  taskId,
 				Para01:  config_sched.SCHED_HEARTBEAT_INTERVAL,
@@ -342,4 +342,23 @@ func GetSched(idSched string) (repo_sched.Sched, error) {
 	}
 
 	return item, nil
+}
+
+func WaitSchedEnd(idSched string) (repo_sched.Sched, error) { // 临时用轮询方案
+	loop := 0
+	for true {
+		loop++
+		log.Println("WaitSchedEnd loop: ", loop)
+		time.Sleep(time.Second * 5)
+		item, e := repo_sched.GetSchedCtl().GetItemById(idSched)
+		if e != nil {
+			return repo_sched.Sched{}, errors.Wrap(e, "repo_sched.GetSchedCtl().GetItemById: ")
+		}
+
+		if item.FwkCode == api_sched.SCHED_FWK_CODE_END {
+			return item, nil
+		}
+	}
+
+	return repo_sched.Sched{}, errors.New("ItShouldNeverAppear")
 }

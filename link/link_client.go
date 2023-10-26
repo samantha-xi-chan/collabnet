@@ -50,6 +50,7 @@ type Config struct {
 	Auth     string
 	HostName string
 	HostAddr string
+	Para01   int
 }
 
 func connectToWebSocketServer(host string) (*websocket.Conn, error) {
@@ -211,7 +212,7 @@ func NewClientConnection(
 						time.Now().UnixMilli(),
 						"1.0",
 						PACKAGE_TYPE_AUTHOK_RECVED,
-						nil,
+						BizInit{Para01: conf.Para01},
 					)
 
 					sm.HandleEvent(EVT_CONNECT_AUTH_OK)
