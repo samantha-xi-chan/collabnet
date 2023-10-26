@@ -23,5 +23,6 @@ func StartService() {
 	}()
 	time.Sleep(time.Millisecond * 200)
 
+	log.Println("going to listen on : ", config_workflow.LISTEN_PORT)
 	control_workflow.StartHttpServer(config_workflow.LISTEN_PORT)
 }

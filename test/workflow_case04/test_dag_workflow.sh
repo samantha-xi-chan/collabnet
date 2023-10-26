@@ -1,6 +1,7 @@
 #!/bin/sh
 
 API_IP="192.168.31.6"
+API_PORT="30081"
 DOWNLOAD_HOST="8_root"
 
 current_dir="$(cd "$(dirname "$0")" && pwd)"
@@ -20,7 +21,6 @@ case "$os_name" in
         ;;
 esac
 
-API_PORT="8081"
 API_URL="http://$API_IP:$API_PORT/api/v1/workflow"
 
 req=$(cat $DAG)
