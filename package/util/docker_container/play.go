@@ -2,6 +2,7 @@ package docker_container
 
 import (
 	"collab-net-v2/api"
+	"collab-net-v2/package/message"
 	"collab-net-v2/package/util/procutil"
 	"collab-net-v2/workflow/config_workflow"
 	"context"
@@ -19,16 +20,16 @@ func WatchContainer(ctx context.Context, taskId string, containerId string, clea
 	stdOut := make(chan string, BUF_SIZE)
 	stdErr := make(chan string, BUF_SIZE)
 
-	//go func() {
-	//	for msg := range stdOut {
-	//		message.GetMsgCtl().UpdateTaskWrapper(taskId, api.TASK_STATUS_RUNNING, msg)
-	//	}
-	//}()
-	//go func() {
-	//	for msg := range stdErr {
-	//		message.GetMsgCtl().UpdateTaskWrapper(taskId, api.TASK_STATUS_RUNNING, msg)
-	//	}
-	//}()
+	go func() {
+		for msg := range stdOut {
+			message.GetMsgCtl().UpdateTaskWrapper(taskId, api.TASK_STATUS_RUNNING, msg)
+		}
+	}()
+	go func() {
+		for msg := range stdErr {
+			message.GetMsgCtl().UpdateTaskWrapper(taskId, api.TASK_STATUS_RUNNING, msg)
+		}
+	}()
 
 	if logRt {
 		funcErrCode, procErrCode, e := procutil.StartProcBloRt(stdOut, stdErr, func(pid int) {

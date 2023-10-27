@@ -408,7 +408,7 @@ func StartPluginService() (ee error) {
 	r.GET(config.PLUGIN_SERVICE_ROUTER, getPluginTaskCmd)
 	r.POST(config.PLUGIN_SERVICE_ROUTER_ID, postPluginTaskStatus)
 
-	return r.Run(config.PLUGIN_SERVICE_PORT)
+	return r.Run(config.PLUGIN_SERVICE_PORT) // todo: 改为 仅监听 local
 
 	//rand.Seed(time.Now().UnixMilli())
 	//addr := fmt.Sprintf(":%d", 8090+rand.Intn(100))

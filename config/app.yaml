@@ -1,11 +1,12 @@
 biz:
   sched_server: "192.168.36.102:30080" #"localhost:80" # "192.168.32.13:80" # node_manager 使用
-  first_party: true  # node_manager 使用,  first_party 表示是否为自营 。 如果不填写默认为 false
+  first_party: true  # 仅提供给 node_manager 使用 （ first_party 表示是否为自营 ， 如果不填写默认为 false ）
 
 depend:
   mysql_dsn: "root:gzn%zkTJ8x!gGZO6@tcp(192.168.31.28:3306)/biz?charset=utf8mb4&parseTime=True&loc=Local" # server 使用
   mq_dsn: "amqp://guest:guest@192.168.31.28:5672" # server 使用
   minio_dsn: "admin:password@192.168.36.102:32000" # node_manager 使用 (仅配套 first_party 为true时 使用)
+  msg_rpc: "192.168.36.102:30051"  # node_manager 使用 (仅配套 first_party 为true时 使用)
 
 debug:
   biz_log_level: 6

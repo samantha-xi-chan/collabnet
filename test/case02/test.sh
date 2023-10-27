@@ -65,12 +65,12 @@ echo $postTaskResp
 taskId=$(echo "$postTaskResp" | jq -r '.data.id')
 echo "taskId: "$taskId
 
-sleep 1
+#sleep 1
 #patchTaskResp=$(curl -X PATCH "http://$taskEndpoint/api/v1/task/$taskId" )
 #echo $patchTaskResp
 #echo "patchTaskResp: "$patchTaskResp
 
-#sleep 5; echo "get tasks: "
-#curl -X GET "http://$serverIp:8081/api/v1/task"; echo ;
-#sleep 5; echo "get tasks: "
-#curl -X GET "http://$serverIp:8081/api/v1/task";  echo "\n\n";
+sleep 5
+curl -X GET "http://$taskEndpoint/api/v1/task/$taskId"; echo ;
+sleep 5; echo "get task: "
+curl -X GET "http://$taskEndpoint/api/v1/task/$taskId"; echo ;

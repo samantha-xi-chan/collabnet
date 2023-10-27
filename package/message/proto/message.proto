@@ -1,0 +1,33 @@
+
+syntax = "proto3";
+package message;
+option go_package = "./api/proto/"; // export  PATH: *.pb.go
+
+
+message UpdateSessionStatusReq {
+  string session_id = 1;
+  int64 timestamp = 2;
+  int32 evt_type = 3;      // 1001. 会话启动    1002.会话结束
+  string payload = 4;
+}
+
+message UpdateSessionStatusResp {
+  int32 err_code = 1;
+  string msg = 2;
+}
+
+message FeedSessionStreamReq {
+  string session_id = 1;
+  int64 timestamp = 2;
+  string payload = 3;
+}
+
+message FeedSessionStreamResp {
+  int32 err_code = 1;
+  string msg = 2;
+}
+
+service Message {
+  rpc UpdateSessionStatus (UpdateSessionStatusReq) returns (UpdateSessionStatusResp) {}
+  rpc FeedSessionStream (FeedSessionStreamReq) returns (FeedSessionStreamResp) {}
+}
