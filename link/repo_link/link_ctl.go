@@ -86,7 +86,7 @@ func (ctl *LinkCtl) GetItemByKeyValueArr(arr []QueryKeyValue) (items []Link, e e
 	for i := 1; i < len(arr); i++ {
 		result = result.Where(arr[i].ColName, arr[i].ColValue)
 	}
-	err := result.Take(&items).Error
+	err := result.Find(&items).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, err
 	} else if err != nil {

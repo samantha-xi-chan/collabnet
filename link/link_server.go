@@ -53,7 +53,7 @@ func SendDataToLinkId(linkId string, bytes []byte) (errCode int, e error) {
 		return 0, nil
 	}
 
-	return -1, nil
+	return INT_INVALID, nil
 }
 
 func OnNewConn(conn *websocket.Conn) {

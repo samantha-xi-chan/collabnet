@@ -6,6 +6,10 @@ import (
 )
 
 const (
+	INT_INVALID = -1
+)
+
+const (
 	STATE_INIT                = 1001
 	STATE_CONNECT_NOK         = 1002
 	STATE_CONNECT_Ok_BIZ_NONE = 1003

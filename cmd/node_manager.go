@@ -4,6 +4,7 @@ import (
 	"collab-net-v2/api"
 	"collab-net-v2/internal/config"
 	"collab-net-v2/link"
+	"collab-net-v2/package/message"
 	"collab-net-v2/package/util/docker_vol"
 	"collab-net-v2/package/util/util_minio"
 	"collab-net-v2/sched/config_sched"
@@ -293,6 +294,13 @@ func init() {
 	firstParty := config.GetFirstParty()
 	log.Println("firstParty: ", firstParty)
 	if firstParty {
+		v, _ := config.GetDependMsgRpc()
+		log.Println("GetDependMsgRpc: ", v)
+		succ := message.GetMsgCtl().Init(v)
+		if !succ {
+			log.Fatal("message.GetMsgCtl().Init(v) error, addr = ", v)
+		}
+
 		e := docker_vol.CreateVolumeFromFile(context.Background(), config_workflow.VOL_TOOL, config_workflow.SCRIPT_FILENAME, config_workflow.SCRIPT_CONTENT)
 		if e != nil {
 			log.Fatal("CreateVolumeFromFile e: ", e)
