@@ -5,6 +5,7 @@ import (
 	"github.com/spf13/viper"
 	"log"
 	"os"
+	"strconv"
 )
 
 const PATH = "config/app.yaml"
@@ -67,6 +68,21 @@ func GetDependMsgRpc() (string, error) {
 func GetFirstParty() bool { // 仅 node_manager 使用
 	v := viper.GetBool("biz.first_party")
 	return v
+}
+
+func GetTaskConcurrent() int { // 仅 server 使用
+	value := os.Getenv("BIZ_TASK_CONCURRENT")
+	if value == "" {
+		return viper.GetInt("biz.task_concurrent")
+	} else {
+		num, err := strconv.Atoi(value)
+		if err != nil {
+			log.Println("strconv.Atoi error: ", err)
+			return 0
+		} else {
+			return num
+		}
+	}
 }
 
 func GetLogServer() string {

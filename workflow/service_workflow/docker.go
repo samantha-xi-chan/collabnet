@@ -165,8 +165,8 @@ func PostContainerBlock(ctx context.Context, req api.PostContainerReq) (containe
 		false,
 		req.Image,
 		arrayB,
-		800,
-		50,
+		6*1000, // todo： 改为全局可配置
+		50,     // todo： 改为全局可配置
 		cpuSet,
 		req.Name, /* container name*/
 

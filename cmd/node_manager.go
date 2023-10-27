@@ -306,6 +306,7 @@ func init() {
 			log.Fatal("CreateVolumeFromFile e: ", e)
 		}
 
+		// todo: 抽象为函数
 		dsn, e := config.GetMinioDsn()
 		if e != nil {
 			log.Fatal("GetMinioDsn: ", dsn)

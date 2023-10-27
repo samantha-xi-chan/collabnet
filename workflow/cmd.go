@@ -18,8 +18,14 @@ func StartService() {
 	log.Println("mqDsn: ", mqDsn)
 	service_workflow.GetMqInstance().Init(mqDsn, config.QUEUE_NAME, config.PRIORITY_MAX)
 
+	taskConcurrent := config.GetTaskConcurrent()
+	if taskConcurrent == 0 {
+		log.Fatal("taskConcurrent == 0")
+	}
+	log.Println("taskConcurrent: ", taskConcurrent)
+
 	go func() {
-		service_workflow.PlayAsConsumerBlock(mqDsn, 1)
+		service_workflow.PlayAsConsumerBlock(mqDsn, taskConcurrent)
 	}()
 	time.Sleep(time.Millisecond * 200)
 

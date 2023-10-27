@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"github.com/pkg/errors"
 	"log"
+	"math/rand"
 	"time"
 )
 
@@ -344,17 +345,26 @@ func PlayAsConsumerBlock(mqUrl string, consumerCnt int) {
 				itemLinks, e := service_link.GetFirstPartyNodeLinks(context.Background())
 				if e != nil {
 					log.Println("service_link.GetFirstPartyNodeLinks: ", e)
+					time.Sleep(time.Second * 1)
 					return false
 				}
 
-				if len(itemLinks) <= 0 {
+				sizeLinks := len(itemLinks)
+
+				if sizeLinks <= 0 {
 					log.Println("len(itemLink) <= 0 , taskid ", itemTask.ID)
+					time.Sleep(time.Second * 1)
 					return false
 				}
 
-				itemLink := itemLinks[0] // todo: it is a test only
+				//itemLink := itemLinks[0] // todo: it is a test only
+				// 随机调度，如果 node数量不太小 随机对业务无不良结果
+				rand.Seed(time.Now().UnixNano())
+				randomNumber := rand.Intn(sizeLinks)
+				itemLink := itemLinks[randomNumber]
+				log.Printf("sizeLinks: %d, randomNumber: %d , itemLink = %#v , itemTask = %#v  \n", sizeLinks, randomNumber, itemLink, itemTask)
 
-				// 准备启动
+				// 启动 登记
 				repo.GetTaskCtl().UpdateItemByID(taskId, map[string]interface{}{
 					"start_at": time.Now().UnixMilli(),
 				})
@@ -404,6 +414,7 @@ func PlayAsConsumerBlock(mqUrl string, consumerCnt int) {
 				err := json.Unmarshal([]byte(itemTask.CmdStr), &stringArray)
 				if err != nil {
 					fmt.Println("taskId = ", taskId, ", 😭 Error:", err)
+					time.Sleep(time.Second * 1)
 					return false
 				}
 				newContainer := api.PostContainerReq{
@@ -433,6 +444,7 @@ func PlayAsConsumerBlock(mqUrl string, consumerCnt int) {
 					itemTask.Timeout)
 				if e != nil {
 					log.Printf("service_sched.NewTask: e=", e)
+					time.Sleep(time.Second * 1)
 					return false
 				}
 				log.Println("[NewTask] idSched=", idSched)
