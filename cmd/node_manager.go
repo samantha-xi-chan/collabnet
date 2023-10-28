@@ -33,13 +33,16 @@ var (
 	writeChanEx = make(chan []byte, 1024)
 )
 
+const VerLink = "Link-1.0"
+const VerSched = "Sched-1.0"
+
 func OnUpdateFromPlugin(id string, status int, para01 int) {
 	log.Printf("[OnUpdateFromPlugin] id=%s, status=%d, para01=%d \n", id, status, para01)
 
 	if status == api.TASK_EVT_START {
 		SendBizData2Platform(link.GetPackageBytes(
 			time.Now().UnixMilli(),
-			"1.0",
+			VerSched,
 			link.PACKAGE_TYPE_BIZ,
 			link.BizData{
 				TypeId:  link.BIZ_TYPE_NEWTASK,
@@ -50,7 +53,7 @@ func OnUpdateFromPlugin(id string, status int, para01 int) {
 
 		SendBizData2Platform(link.GetPackageBytes(
 			time.Now().UnixMilli(),
-			"1.0",
+			VerSched,
 			link.PACKAGE_TYPE_BIZ,
 			link.BizData{
 				TypeId:  link.BIZ_TYPE_NEWTASK,
@@ -61,7 +64,7 @@ func OnUpdateFromPlugin(id string, status int, para01 int) {
 	} else if status == api.TASK_EVT_END {
 		SendBizData2Platform(link.GetPackageBytes(
 			time.Now().UnixMilli(),
-			"1.0",
+			VerSched,
 			link.PACKAGE_TYPE_BIZ,
 			link.BizData{
 				TypeId:   link.BIZ_TYPE_NEWTASK,
@@ -79,7 +82,7 @@ func HandlerDockerTask(task api.PluginTask) (willHandle bool) {
 		time.Sleep(time.Second * 1)
 		SendBizData2Platform(link.GetPackageBytes(
 			time.Now().UnixMilli(),
-			"1.0",
+			VerSched,
 			link.PACKAGE_TYPE_BIZ,
 			link.BizData{
 				TypeId:  link.BIZ_TYPE_NEWTASK,
@@ -126,7 +129,7 @@ func HandlerDockerTask(task api.PluginTask) (willHandle bool) {
 
 					SendBizData2Platform(link.GetPackageBytes(
 						time.Now().UnixMilli(),
-						"1.0",
+						VerSched,
 						link.PACKAGE_TYPE_BIZ,
 						link.BizData{
 							TypeId:  link.BIZ_TYPE_NEWTASK,
@@ -152,7 +155,7 @@ func HandlerDockerTask(task api.PluginTask) (willHandle bool) {
 		log.Println("任务执行 ed", task.TaskId)
 		SendBizData2Platform(link.GetPackageBytes(
 			time.Now().UnixMilli(),
-			"1.0",
+			VerSched,
 			link.PACKAGE_TYPE_BIZ,
 			link.BizData{
 				TypeId:   link.BIZ_TYPE_NEWTASK,
@@ -185,7 +188,7 @@ func OnNewBizDataFromPlatform(bytes []byte) {
 		time.Sleep(time.Millisecond * 200)
 		SendBizData2Platform(link.GetPackageBytes(
 			time.Now().UnixMilli(),
-			"1.0",
+			VerSched,
 			link.PACKAGE_TYPE_BIZ,
 			link.BizData{
 				TypeId:  link.BIZ_TYPE_NEWTASK,
@@ -214,7 +217,7 @@ func OnNewBizDataFromPlatform(bytes []byte) {
 		time.Sleep(time.Millisecond * 200)
 		SendBizData2Platform(link.GetPackageBytes(
 			time.Now().UnixMilli(),
-			"1.0",
+			VerSched,
 			link.PACKAGE_TYPE_BIZ,
 			link.BizData{
 				TypeId:  link.BIZ_TYPE_STOPTASK,
@@ -240,7 +243,7 @@ func OnNewBizDataFromPlatform(bytes []byte) {
 		time.Sleep(time.Millisecond * 200)
 		SendBizData2Platform(link.GetPackageBytes(
 			time.Now().UnixMilli(),
-			"1.0",
+			VerSched,
 			link.PACKAGE_TYPE_BIZ,
 			link.BizData{
 				TypeId:  link.BIZ_TYPE_NEWTASK, // todo: 变为 docker
@@ -269,7 +272,7 @@ func OnNewBizDataFromPlatform(bytes []byte) {
 		time.Sleep(time.Millisecond * 200)
 		SendBizData2Platform(link.GetPackageBytes(
 			time.Now().UnixMilli(),
-			"1.0",
+			VerSched,
 			link.PACKAGE_TYPE_BIZ,
 			link.BizData{
 				TypeId:  link.BIZ_TYPE_STOPTASK,
@@ -381,7 +384,7 @@ func main() {
 	instance := config.GetRunningInstance()
 	link.NewClientConnection(
 		link.Config{
-			Ver:      "v1.0",
+			Ver:      VerLink,
 			Auth:     config_sched.AuthTokenForDev,
 			HostName: instance,
 			Para01:   para01,

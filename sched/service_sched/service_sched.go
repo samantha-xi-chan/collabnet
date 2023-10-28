@@ -78,7 +78,7 @@ func OnTimer(idTimer string, evtType int, holder string, bytes []byte) (ee error
 		return nil
 	}
 	if itemTask.FwkCode == api_sched.SCHED_FWK_CODE_END {
-		log.Println("itemTask.FwkCode == api_sched.SCHED_FWK_CODE_END")
+		log.Println("xfz itemTask.FwkCode == api_sched.SCHED_FWK_CODE_END , item.Reason = ", itemTask.Reason)
 		return nil
 	}
 	if itemTask.TaskEnabled == api_sched.INT_DISABLED { // 业务角度抛弃
@@ -95,18 +95,22 @@ func OnTimer(idTimer string, evtType int, holder string, bytes []byte) (ee error
 		log.Printf("[OnTimer]  STATUS_SCHED_CMD_ACKED ")
 		repo_sched.GetSchedCtl().UpdateItemById(itemTask.Id, map[string]interface{}{
 			"fwk_code": api_sched.SCHED_FWK_CODE_END,
+			"reason":   "evtType == api.SCHED_EVT_TIMEOUT_CMDACK",
 		})
 	} else if evtType == api.SCHED_EVT_TIMEOUT_PREACK {
 		repo_sched.GetSchedCtl().UpdateItemById(itemTask.Id, map[string]interface{}{
 			"fwk_code": api_sched.SCHED_FWK_CODE_END,
+			"reason":   "evtType == api.SCHED_EVT_TIMEOUT_PREACK",
 		})
 	} else if evtType == api.SCHED_EVT_TIMEOUT_HB {
 		repo_sched.GetSchedCtl().UpdateItemById(itemTask.Id, map[string]interface{}{
 			"fwk_code": api_sched.SCHED_FWK_CODE_END,
+			"reason":   " evtType == api.SCHED_EVT_TIMEOUT_HB",
 		})
 	} else if evtType == api.SCHED_EVT_TIMEOUT_RUN {
 		repo_sched.GetSchedCtl().UpdateItemById(itemTask.Id, map[string]interface{}{
 			"fwk_code": api_sched.SCHED_FWK_CODE_END,
+			"reason":   "evtType == api.SCHED_EVT_TIMEOUT_RUN",
 		})
 
 		service_time.DisableTimer(itemTask.HbTimer)
@@ -133,7 +137,7 @@ func OnBizDataFromRegisterEndpoint(endpoint string, bytes []byte) (e error) { //
 		log.Println("[OnBizDataFromRegisterEndpoint]    Error decoding JSON:", err, " string(bytes): ", string(bytes))
 		return
 	}
-	log.Println("[OnBizDataFromRegisterEndpoint]    [<-readChan] body : ", body)
+	log.Println("                 [OnBizDataFromRegisterEndpoint]    [<-readChan] body : ", body)
 	idSched := body.SchedId
 
 	itemTask, e := repo_sched.GetSchedCtl().GetItemById(idSched)
@@ -143,7 +147,7 @@ func OnBizDataFromRegisterEndpoint(endpoint string, bytes []byte) (e error) { //
 	}
 
 	if itemTask.FwkCode == api_sched.SCHED_FWK_CODE_END {
-		log.Println("iitemTask.FwkCode == api_sched.SCHED_FWK_CODE_END")
+		log.Println(" sff itemTask.FwkCode == api_sched.SCHED_FWK_CODE_END , item.Reason = ", itemTask.Reason)
 		return nil
 	}
 	if itemTask.TaskEnabled == api_sched.INT_DISABLED { // 业务角度抛弃
@@ -204,6 +208,7 @@ func OnBizDataFromRegisterEndpoint(endpoint string, bytes []byte) (e error) { //
 			"best_prog": api.STATUS_SCHED_RUN_END,
 			"fwk_code":  api_sched.SCHED_FWK_CODE_END,
 			"biz_code":  body.Para0101,
+			"reason":    "",
 		})
 
 		service_time.DisableTimer(itemTask.HbTimer)
@@ -254,7 +259,7 @@ func StopSched(taskId string) (ee error) { // todo: send stop cmd to excutors
 	log.Println("StopSched code", code)
 
 	if item.FwkCode == api_sched.SCHED_FWK_CODE_END {
-		log.Println("item.FwkCode == api_sched.SCHED_FWK_CODE_END")
+		log.Println("x f item.FwkCode == api_sched.SCHED_FWK_CODE_END, item.Reason = ", item.Reason)
 		return
 	}
 
@@ -312,6 +317,7 @@ func NewSched(taskId string, taskType int, cmd string, linkId string, cmdackTime
 		repo_sched.GetSchedCtl().UpdateItemById(idSched, map[string]interface{}{
 			"best_prog": api.STATUS_SCHED_ANALYZE,
 			"fwk_code":  api_sched.SCHED_FWK_CODE_END,
+			"reason":    "link.SendDataToLinkId e != nil || code != 0",
 		})
 		callback(taskId, api.TASK_EVT_REJECT, nil)
 		return idSched, nil
@@ -356,6 +362,7 @@ func WaitSchedEnd(idSched string) (repo_sched.Sched, error) { // 临时用轮询
 		}
 
 		if item.FwkCode == api_sched.SCHED_FWK_CODE_END {
+			log.Println(" werew item.FwkCode == api_sched.SCHED_FWK_CODE_END , item.Reason = ", item.Reason)
 			return item, nil
 		}
 	}

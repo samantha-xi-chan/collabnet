@@ -47,6 +47,7 @@ type Sched struct {
 	PreTimer    string `json:"pre_timer"`
 	HbTimer     string `json:"hb_timer"`
 	RunTimer    string `json:"run_timer"`
+	Reason      string `json:"reason"`
 }
 
 func (ctl *SchedCtl) CreateItem(item Sched) (err error) {

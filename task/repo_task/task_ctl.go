@@ -37,7 +37,7 @@ type TaskInfo struct {
 	TaskEnabled int    `json:"task_enabled"`
 	FinishAt    int64  `json:"finish_at"`
 	BestProg    int    `json:"best_prog"`
-	FwkCode     int    `json:"fwk_code"`
+	FwkCode     int    `json:"fwk_code"` // 业务查询返回
 }
 
 func (ctl *TaskCtl) CreateItem(item Task) (err error) {

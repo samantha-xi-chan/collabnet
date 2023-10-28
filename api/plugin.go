@@ -24,7 +24,7 @@ const (
 	TASK_EVT_PREACK    = 61021072 // 指令准备工作完成
 	TASK_EVT_HEARTBEAT = 61021077 // 指令运行过程中的心跳
 	TASK_EVT_STOPPED   = 61021998 // 指令停止
-	TASK_EVT_END       = 61021999 // 指令结束（包含成功与失败）
+	TASK_EVT_END       = 61021999 // 指令执行结束（包含成功与失败）
 )
 
 const ( // 内部可能在此不断重试 所以状态会不断循环迁移
