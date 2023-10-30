@@ -109,7 +109,7 @@ func PostWorkflow(ctx context.Context, req api_workflow.PostWorkflowReq) (api_wo
 	}
 
 	if localTaskId != "" {
-		GetMqInstance().PostMsg(config.QUEUE_NAME, localTaskId, config.PRIORITY_4)
+		GetMqInstance().PostMsgToQueue(config.QUEUE_NAME, localTaskId, config.PRIORITY_4)
 		// v2 scope: message.GetMsgCtl().UpdateTaskWrapper(workflowId, api.SESSION_STATUS_INIT, fmt.Sprintf(" - Queueing TaskId: %s ", localTaskId)) // todo: demo
 	}
 
@@ -219,8 +219,15 @@ func OnTaskStatusChange(ctx context.Context, taskId string, status int, exitCode
 			}
 
 			if size == 0 {
-				GetMqInstance().PostMsg(config.QUEUE_NAME, edge.EndTaskId, config.PRIORITY_9)
-				// v2 scope: message.GetMsgCtl().UpdateTaskWrapper(item.WorkflowId, api.SESSION_STATUS_INIT, fmt.Sprintf("Queueing TaskId: %s ", edge.EndTaskId)) // demo
+				item, e := repo.GetTaskCtl().GetItemByID(taskId)
+				if e != nil {
+					ee = errors.Wrap(e, "repo.GetTaskCtl().GetItemByID : ")
+					return
+				}
+				if item.Status != api.TASK_STATUS_QUEUEING {
+					GetMqInstance().PostMsgToQueue(config.QUEUE_NAME, edge.EndTaskId, config.PRIORITY_9)
+					// v2 scope: message.GetMsgCtl().UpdateTaskWrapper(item.WorkflowId, api.SESSION_STATUS_INIT, fmt.Sprintf("Queueing TaskId: %s ", edge.EndTaskId)) // demo
+				}
 			}
 		}
 	} else if exitCode != 0 && item.CheckExitCode == api.TRUE {
@@ -367,6 +374,7 @@ func PlayAsConsumerBlock(mqUrl string, consumerCnt int) {
 				// 启动 登记
 				repo.GetTaskCtl().UpdateItemByID(taskId, map[string]interface{}{
 					"start_at": time.Now().UnixMilli(),
+					"status":   api.TASK_STATUS_RUNNING,
 				})
 
 				// 准备任务的技术实现维度的参数

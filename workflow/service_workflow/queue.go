@@ -1,7 +1,9 @@
 package service_workflow
 
 import (
+	"collab-net-v2/api"
 	"collab-net-v2/package/util/util_mq"
+	repo "collab-net-v2/workflow/repo_workflow"
 	"log"
 	"sync"
 )
@@ -29,8 +31,11 @@ func (s *MySingleton) GetData() int {
 	return s.data
 }
 
-func (s *MySingleton) PostMsg(queueName string, msg string, priority int64) int {
+func (s *MySingleton) PostMsgToQueue(queueName string, msg string, priority int64) int {
 
+	repo.GetTaskCtl().UpdateItemByID(msg, map[string]interface{}{
+		"status": api.TASK_STATUS_QUEUEING,
+	})
 	s.mq.Publish(queueName, []byte(msg), uint8(4))
 
 	return 0

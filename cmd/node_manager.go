@@ -175,7 +175,11 @@ func HandlerDockerTask(task api.PluginTask) (willHandle bool) {
 		))
 
 		exitCode, e = service_workflow.StartContainerAndWait(context.Background(), containerId, containerReq)
+		errString := ""
 		quit <- true
+		if e != nil {
+			errString = e.Error()
+		}
 
 		log.Println("任务执行 ed", task.TaskId)
 		SendBizData2Platform(link.GetPackageBytes(
@@ -187,7 +191,7 @@ func HandlerDockerTask(task api.PluginTask) (willHandle bool) {
 				SchedId:  task.Id,
 				Para01:   api.TASK_EVT_END,
 				Para0101: exitCode, // exitCode: 0表示成功
-				Para0102: e.Error(),
+				Para0102: errString,
 			},
 		))
 	}()
