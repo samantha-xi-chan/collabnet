@@ -24,7 +24,6 @@ type TaskInput struct {
 	Timeout int      `json:"timeout"`
 
 	CheckExitCode bool `json:"check_exit_code"` /* 1 as true, 0 as false */
-	//ExitCode      int           `json:"exit_code"`
 
 	ExpExitCode   int           `json:"exp_exit_code"`
 	ResourceQuota ResourceQuota `json:"resource_quota"`
@@ -47,11 +46,11 @@ type PostWorkflowResp struct {
 	QueryGetTask []TaskResp `json:"task"`
 }
 
-type PatchTaskReq struct {
-	TaskId   string `json:"task_id"`
-	Status   int    `json:"status"`
-	ExitCode int    `json:"exit_code"`
-}
+//type PatchTaskReq struct {
+//	TaskId   string `json:"task_id"`
+//	Status   int    `json:"status"`
+//	ExitCode int    `json:"exit_code"`
+//}
 type PatchTaskResp struct {
 }
 

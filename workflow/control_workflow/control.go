@@ -20,7 +20,7 @@ func StartHttpServer(listenAddr string) {
 	task := r.Group("/api/v1/task")
 	{
 		task.GET("", GetTask)
-		task.PATCH("", PatchTask)
+		//task.PATCH("", PatchTask)
 	}
 	workflow := r.Group("/api/v1/workflow")
 	{
@@ -70,39 +70,39 @@ func GetTask(c *gin.Context) {
 	return
 }
 
-func PatchTask(c *gin.Context) {
-	ctx := context.Background()
-
-	var dto api_workflow.PatchTaskReq
-	if err := c.BindJSON(&dto); err != nil {
-		logrus.Error("bad request in Post(): ", err)
-		c.JSON(http.StatusOK, api.HttpRespBody{
-			Code: api.ERR_FORMAT,
-			Msg:  "ERR_FORMAT",
-		})
-		return
-	}
-
-	log.Println("PatchTaskReq: ", dto)
-
-	e := service_workflow.OnTaskStatusChange(ctx, dto.TaskId, dto.Status, dto.ExitCode)
-	if e != nil {
-		logrus.Error("bad request in Post(): ", e)
-		c.JSON(http.StatusOK, api.HttpRespBody{
-			Code: api.ERR_INTERNAL,
-			Msg:  "ERR_INTERNAL",
-		})
-		return
-	}
-
-	//
-	c.JSON(http.StatusOK, api.HttpRespBody{
-		Code: 0,
-		Msg:  "ok",
-		Data: api_workflow.PatchTaskResp{},
-	})
-	return
-}
+//func PatchTask(c *gin.Context) {
+//	ctx := context.Background()
+//
+//	var dto api_workflow.PatchTaskReq
+//	if err := c.BindJSON(&dto); err != nil {
+//		logrus.Error("bad request in Post(): ", err)
+//		c.JSON(http.StatusOK, api.HttpRespBody{
+//			Code: api.ERR_FORMAT,
+//			Msg:  "ERR_FORMAT",
+//		})
+//		return
+//	}
+//
+//	log.Println("PatchTaskReq: ", dto)
+//
+//	e := service_workflow.OnTaskStatusChange(ctx, dto.TaskId, dto.Status, dto.ExitCode)
+//	if e != nil {
+//		logrus.Error("bad request in Post(): ", e)
+//		c.JSON(http.StatusOK, api.HttpRespBody{
+//			Code: api.ERR_INTERNAL,
+//			Msg:  "ERR_INTERNAL",
+//		})
+//		return
+//	}
+//
+//	//
+//	c.JSON(http.StatusOK, api.HttpRespBody{
+//		Code: 0,
+//		Msg:  "ok",
+//		Data: api_workflow.PatchTaskResp{},
+//	})
+//	return
+//}
 
 func PatchWorkflow(c *gin.Context) {
 	workflowId := c.Param("workflow_id")

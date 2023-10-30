@@ -17,6 +17,6 @@ echo "created by NAME: "$NAME >> $OUTPUT
 #done
 
 
-echo "b going to sleep 3" | tee -a $OUTPUT
-sleep 3
+echo "b going to sleep 1" | tee -a $OUTPUT
+sleep 1
 echo "a end of sleep " | tee -a $OUTPUT

@@ -253,38 +253,38 @@ func GetWorkflowStatusByTaskId(taskId string) (status int, x error) {
 	return itemWf.Status, nil
 }
 
-func RecordTaskAndWorkflowFinish(taskId string, wfId string, errStr string) (x error) {
-	log.Println("RecordTaskAndWorkflowFinish ")
-	e := repo.GetTaskCtl().UpdateItemByID(taskId, map[string]interface{}{
-		"status":    api.TASK_STATUS_END,
-		"exit_code": api.EXIT_CODE_UNKNOWN,
-		"error":     errStr,
-	})
-	if e != nil {
-		return errors.Wrap(e, "repo.GetTaskCtl().UpdateItemByID ")
-	}
-
-	if wfId == "" {
-		itemTask, e := repo.GetTaskCtl().GetItemByID(taskId)
-		if e != nil {
-			return errors.Wrap(e, "repo.GetTaskCtl().GetItemByID ")
-		}
-
-		wfId = itemTask.WorkflowId
-	}
-
-	if wfId == "" {
-		return errors.New("wfId empty")
-	}
-
-	errWf := fmt.Sprintf("error: taskid=%s, errStr: %s", taskId, errStr)
-	repo.GetWorkflowCtl().UpdateItemByID(wfId, map[string]interface{}{
-		"status": api.TASK_STATUS_END,
-		"error":  errWf,
-	})
-
-	return nil
-}
+//func RecordTaskAndWorkflowFinish(taskId string, wfId string, errStr string) (x error) {
+//	log.Println("RecordTaskAndWorkflowFinish ")
+//	e := repo.GetTaskCtl().UpdateItemByID(taskId, map[string]interface{}{
+//		"status":    api.TASK_STATUS_END,
+//		"exit_code": api.EXIT_CODE_UNKNOWN,
+//		"error":     errStr,
+//	})
+//	if e != nil {
+//		return errors.Wrap(e, "repo.GetTaskCtl().UpdateItemByID ")
+//	}
+//
+//	if wfId == "" {
+//		itemTask, e := repo.GetTaskCtl().GetItemByID(taskId)
+//		if e != nil {
+//			return errors.Wrap(e, "repo.GetTaskCtl().GetItemByID ")
+//		}
+//
+//		wfId = itemTask.WorkflowId
+//	}
+//
+//	if wfId == "" {
+//		return errors.New("wfId empty")
+//	}
+//
+//	errWf := fmt.Sprintf("error: taskid=%s, errStr: %s", taskId, errStr)
+//	repo.GetWorkflowCtl().UpdateItemByID(wfId, map[string]interface{}{
+//		"status": api.TASK_STATUS_END,
+//		"error":  errWf,
+//	})
+//
+//	return nil
+//}
 
 func PlayAsConsumerBlock(mqUrl string, consumerCnt int) {
 	mq := util_mq.RabbitMQManager{}

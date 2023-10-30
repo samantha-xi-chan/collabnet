@@ -215,7 +215,7 @@ func OnBizDataFromRegisterEndpoint(endpoint string, bytes []byte) (e error) { //
 
 		callback(idSched, api.TASK_EVT_END, nil)
 	} else {
-		log.Println("OnBizDataFromRegisterEndpoint unknown else")
+		log.Println("OnBizDataFromRegisterEndpoint unknown, body.Para01 = ", body.Para01)
 	}
 
 	return

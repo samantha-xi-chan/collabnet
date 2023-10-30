@@ -40,11 +40,10 @@ type Task struct {
 
 	CheckExitCode int `json:"check_exit_code"` /* 1 as true, 0 as false */
 
-	Define   string `json:"define" `
-	Status   int    `json:"status" gorm:"index:idx_status"   gorm:"default:60021001"` // TASK_STATUS_INIT     = 60021001
-	Error    string `json:"error" `
-	NodeId   string `json:"node_id" `
-	IsActive bool   `json:"is_active" `
+	Define string `json:"define" `
+	Status int    `json:"status" gorm:"index:idx_status"   gorm:"default:60021001"` // TASK_STATUS_INIT     = 60021001
+	Error  string `json:"error" `
+	NodeId string `json:"node_id" `
 
 	ImportObjId string `json:"import_obj_id"`
 	ImportObjAs string `json:"import_obj_as"`
