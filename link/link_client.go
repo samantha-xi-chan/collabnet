@@ -6,6 +6,7 @@ import (
 	"github.com/gorilla/websocket"
 	"log"
 	"math/rand"
+	"net"
 	"net/url"
 	"os"
 	"sync"
@@ -51,6 +52,7 @@ type Config struct {
 	HostName string
 	HostAddr string
 	Para01   int
+	Para02   string
 }
 
 func connectToWebSocketServer(host string) (*websocket.Conn, error) {
@@ -89,6 +91,9 @@ func NewClientConnection(
 				Wait(retryDelayBase, retry, retryDelayMultiplier, maxWaitTimeSecond)
 				continue
 			}
+			localAddr := c.LocalAddr()
+			conf.Para02, _, _ = net.SplitHostPort(localAddr.String())
+			log.Println("本地IP地址:", conf.Para02)
 
 			sm.HandleEvent(EVT_CONNECT_SUCC)
 

@@ -61,7 +61,8 @@ type AuthResp struct {
 }
 
 type BizInit struct { // 暂时做语意角度的开放
-	Para01 int `json:"para01"`
+	Para01 int    `json:"para01"`
+	Para02 string `json:"para02"`
 }
 
 type BizData struct { // 业务角度： 任务新建、任务停止、

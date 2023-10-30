@@ -204,12 +204,13 @@ func OnMessageOfRegisterChan(endpoint string, conn *websocket.Conn, bytesPack []
 		if ok {
 			from = tcpAddr.IP.String()
 		}
+		log.Println("From : ", from)
 
 		repo_link.GetLinkCtl().CreateItem(repo_link.Link{
 			Id:         idLink,
 			HostName:   endpoint,
 			FirstParty: body.Para01,
-			From:       from, //
+			From:       body.Para02, //
 			CreateAt:   time.Now().UnixMilli(),
 			DeleteAt:   0,
 			Online:     api.TRUE,
