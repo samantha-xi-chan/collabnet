@@ -43,12 +43,16 @@ func main() {
 		"method": "main",
 	})
 
-	v, _ := config.GetDependMsgRpc()
+	v := config.GetDependMsgRpc()
+	if v == "" {
+		log.Fatal("config.GetDependMsgRpc()  v=empty ")
+	}
 	log.Println("GetDependMsgRpc: ", v)
-	succ := message.GetMsgCtl().Init(v)
-	if !succ {
+	ok := message.GetMsgCtl().Init(v)
+	if !ok {
 		log.Fatal("message.GetMsgCtl().Init(v) error, addr = ", v)
 	}
+	message.GetMsgCtl().UpdateTaskWrapper("taskid_demo", 1001, "demo msg")
 
 	log.Println("[main] SetTaskCallback")
 	service_task.SetTaskCallback(OnTaskChange)

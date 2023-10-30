@@ -327,7 +327,7 @@ func init() {
 	firstParty := config.GetFirstParty()
 	log.Println("firstParty: ", firstParty)
 	if firstParty {
-		v, _ := config.GetDependMsgRpc()
+		v := config.GetDependMsgRpc()
 		log.Println("GetDependMsgRpc: ", v)
 		succ := message.GetMsgCtl().Init(v)
 		if !succ {

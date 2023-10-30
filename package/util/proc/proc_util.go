@@ -2,7 +2,7 @@ package proc
 
 import (
 	"bufio"
-	"collab-net/package/util/stl"
+	"collab-net-v2/package/util/stl"
 	"fmt"
 	"github.com/pkg/errors"
 	"github.com/shirou/gopsutil/process"

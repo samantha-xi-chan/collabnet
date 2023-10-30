@@ -111,7 +111,7 @@ func PostWorkflow(ctx context.Context, req api_workflow.PostWorkflowReq) (api_wo
 
 	if localTaskId != "" {
 		GetMqInstance().PostMsgToQueue(config.QUEUE_NAME, localTaskId, config.PRIORITY_4)
-		// v2 scope: message.GetMsgCtl().UpdateTaskWrapper(workflowId, api.SESSION_STATUS_INIT, fmt.Sprintf(" - Queueing TaskId: %s ", localTaskId)) // todo: demo
+		message.GetMsgCtl().UpdateTaskWrapper(workflowId, api.SESSION_STATUS_INIT, fmt.Sprintf(" - Queueing TaskId: %s ", localTaskId)) // todo: demo
 	}
 
 	items, total, e := repo.GetTaskCtl().GetItemsByWorkflowId(
@@ -172,7 +172,7 @@ func OnTaskStatusChange(ctx context.Context, taskId string, status int, exitCode
 	log.Println("OnTaskStatusChange,  taskId: ", taskId, "  status: ", status, "  exitCode: ", exitCode)
 	defer log.Println("OnTaskStatusChange ee= ", ee)
 
-	// v2 scope: message.GetMsgCtl().UpdateTaskWrapper(taskId, api.SESSION_STATUS_END, fmt.Sprintf("status: %d, exitCode: %d", status, exitCode)) // demo
+	message.GetMsgCtl().UpdateTaskWrapper(taskId, api.SESSION_STATUS_END, fmt.Sprintf("status: %d, exitCode: %d", status, exitCode)) // demo
 
 	statusWf, e := GetWorkflowStatusByTaskId(taskId)
 	if e != nil {

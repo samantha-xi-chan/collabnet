@@ -60,14 +60,14 @@ func GetMinioDsn() (string, error) {
 	}
 }
 
-func GetDependMsgRpc() (string, error) {
+func GetDependMsgRpc() string {
 	value := os.Getenv("MSG_RPC")
 	if value == "" {
 		v := viper.GetString("depend.msg_rpc")
-		return v, nil
+		return v
 	}
 
-	return value, nil
+	return value
 }
 
 func GetFirstParty() bool { // 仅 node_manager 使用
