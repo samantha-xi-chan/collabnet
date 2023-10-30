@@ -50,6 +50,16 @@ func GetMqDsn() (string, error) {
 	}
 }
 
+func GetRedisDsn() (string, error) {
+	value := os.Getenv("REDIS_DSN")
+	if value == "" {
+		v := viper.GetString("depend.redis_dsn")
+		return v, nil
+	} else {
+		return value, nil
+	}
+}
+
 func GetMinioDsn() (string, error) {
 	value := os.Getenv("MINIO_DSN")
 	if value == "" {

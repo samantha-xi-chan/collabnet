@@ -6,6 +6,7 @@ import (
 	"collab-net-v2/workflow/control_workflow"
 	"collab-net-v2/workflow/repo_workflow"
 	"collab-net-v2/workflow/service_workflow"
+	"context"
 	"log"
 	"time"
 )
@@ -17,6 +18,12 @@ func StartService() {
 	mqDsn, _ := config.GetMqDsn()
 	log.Println("mqDsn: ", mqDsn)
 	service_workflow.GetMqInstance().Init(mqDsn, config.QUEUE_NAME, config.PRIORITY_MAX)
+	redisDsn, _ := config.GetRedisDsn()
+	log.Println("redisDsn: ", redisDsn)
+	e := repo_workflow.InitRedis(context.Background(), redisDsn, 9999, 0)
+	if e != nil {
+		log.Fatal("InitRedis: ", e)
+	}
 
 	taskConcurrent := config.GetTaskConcurrent()
 	if taskConcurrent == 0 {

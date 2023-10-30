@@ -11,14 +11,12 @@ import (
 	"collab-net-v2/package/util/util_mq"
 	"collab-net-v2/sched/config_sched"
 	"collab-net-v2/sched/service_sched"
-	"collab-net-v2/util/distributedlock"
 	"collab-net-v2/workflow/api_workflow"
 	"collab-net-v2/workflow/config_workflow"
 	repo "collab-net-v2/workflow/repo_workflow"
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/go-redis/redis/v8"
 	"github.com/pkg/errors"
 	"log"
 	"math/rand"
@@ -229,7 +227,7 @@ func OnTaskStatusChange(ctx context.Context, taskId string, status int, exitCode
 				}
 
 				taskIdToEnq := edge.EndTaskId
-				_, err := AcquireEnQueue(context.Background(), taskIdToEnq, func(id string) int {
+				_, err := repo.GetRedisMgr().AcquireEnQueue(context.Background(), taskIdToEnq, func(id string) int {
 					GetMqInstance().PostMsgToQueue(config.QUEUE_NAME, id, config.PRIORITY_9)
 					message.GetMsgCtl().UpdateTaskWrapper(item.WorkflowId, api.SESSION_STATUS_INIT, fmt.Sprintf("Queueing TaskId: %s ", id))
 					return 0
@@ -483,53 +481,4 @@ func PlayAsConsumerBlock(mqUrl string, consumerCnt int) {
 	log.Println("waiting select")
 	select {}
 }
-
-func AcquireEnQueue(ctx context.Context, lockKey string, myfun func(string) int) (x bool, err error) {
-	client := redis.NewClient(&redis.Options{
-		Addr:     "redis-service:6379", // Replace with the address of your Redis server
-		Password: "",                   // No password if not set
-		DB:       0,                    // Use default DB
-	})
-
-	// Ping the Redis server to check the connection
-	pong, err := client.Ping(ctx).Result()
-	if err != nil {
-		fmt.Println("Error pinging Redis server:", err)
-		return
-	}
-	fmt.Println("Redis server responded:", pong)
-
-	// 创建分布式锁
-	lock := distributedlock.New(client)
-
-	// 锁的过期时间
-	expiration := 5 * time.Second
-
-	// 尝试获取锁
-	success, err := lock.AcquireLock(lockKey, expiration)
-	if err != nil {
-		fmt.Println("Error acquiring lock:", err)
-		return
-	}
-
-	if success {
-		// 成功获取锁，执行临界区代码
-		fmt.Println("Lock acquired!")
-		// ... 执行临界区代码 ...
-		myfun(lockKey)
-
-		// 释放锁
-		err := lock.ReleaseLock(lockKey)
-		if err != nil {
-			fmt.Println("Error releasing lock:", err)
-		}
-	} else {
-		// 未能获取锁
-		fmt.Println("Failed to acquire lock.")
-	}
-
-	// 关闭 Redis 客户端连接
-	client.Close()
-
-	return success, nil
-}
+s
