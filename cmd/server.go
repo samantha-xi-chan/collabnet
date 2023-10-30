@@ -4,6 +4,7 @@ import (
 	"collab-net-v2/internal/config"
 	"collab-net-v2/link/config_link"
 	"collab-net-v2/link/control_link"
+	"collab-net-v2/package/message"
 	"collab-net-v2/sched/service_sched"
 	"collab-net-v2/task/config_task"
 	"collab-net-v2/task/control_task"
@@ -41,6 +42,13 @@ func main() {
 	log := logger.WithFields(logrus.Fields{
 		"method": "main",
 	})
+
+	v, _ := config.GetDependMsgRpc()
+	log.Println("GetDependMsgRpc: ", v)
+	succ := message.GetMsgCtl().Init(v)
+	if !succ {
+		log.Fatal("message.GetMsgCtl().Init(v) error, addr = ", v)
+	}
 
 	log.Println("[main] SetTaskCallback")
 	service_task.SetTaskCallback(OnTaskChange)
