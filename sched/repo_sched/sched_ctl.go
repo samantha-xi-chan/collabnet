@@ -114,6 +114,8 @@ func (ctl *SchedCtl) GetItemByKeyValueArr(arr []QueryKeyValue) (item Sched, e er
 }
 
 func (ctl *SchedCtl) GetItemById(id string) (i Sched, e error) { // todo: optimize
+	log.Println("SchedCtl GetItemById: id = ", id) // debug only
+
 	var item Sched
 	err := db.Where("id = ?", id).Take(&item).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {

@@ -159,7 +159,6 @@ func OnBizDataFromRegisterEndpoint(endpoint string, bytes []byte) (e error) { //
 		return nil
 	}
 
-	// api.TASK_EVT_PREACK , api.SCHED_EVT_TIMEOUT_PREACK
 	if body.Para01 == api.TASK_EVT_CMDACK {
 		service_time.DisableTimer(itemTask.CmdackTimer)
 		idPreTimer, e := service_time.NewTimer(itemTask.PreTimeout, api.SCHED_EVT_TIMEOUT_PREACK, idSched, "pre_ack_timeout", "")
@@ -245,7 +244,7 @@ func StopSched(taskId string) (ee error) { // todo: send stop cmd to excutors
 		item.LinkId,
 		link.GetPackageBytes(
 			time.Now().UnixMilli(),
-			"v1.0",
+			config.VerSched,
 			link.PACKAGE_TYPE_BIZ,
 			link.BizData{
 				TypeId:  link.BIZ_TYPE_STOPTASK,
@@ -300,7 +299,7 @@ func NewSched(taskId string, taskType int, cmd string, linkId string, cmdackTime
 		linkId,
 		link.GetPackageBytes(
 			time.Now().UnixMilli(),
-			"v1.0",
+			config.VerSched,
 			link.PACKAGE_TYPE_BIZ,
 			link.BizData{
 				TypeId:  taskType,

@@ -10,4 +10,7 @@ const (
 	PRIORITY_MAX = 10
 	PRIORITY_9   = 9
 	PRIORITY_4   = 4
+
+	VerLink  = "Link-1.0"
+	VerSched = "Sched-1.0"
 )
