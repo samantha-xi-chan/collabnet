@@ -229,16 +229,13 @@ func OnTaskStatusChange(ctx context.Context, taskId string, status int, exitCode
 				}
 
 				taskIdToEnq := edge.EndTaskId
-				bAcq, err := AcquireEnQueue(context.Background(), taskIdToEnq)
+				_, err := AcquireEnQueue(context.Background(), taskIdToEnq, func(s string) int {
+					GetMqInstance().PostMsgToQueue(config.QUEUE_NAME, taskIdToEnq, config.PRIORITY_9)
+					message.GetMsgCtl().UpdateTaskWrapper(item.WorkflowId, api.SESSION_STATUS_INIT, fmt.Sprintf("Queueing TaskId: %s ", taskIdToEnq))
+					return 0
+				})
 				if err != nil {
 					return
-				}
-
-				if bAcq {
-					GetMqInstance().PostMsgToQueue(config.QUEUE_NAME, edge.EndTaskId, config.PRIORITY_9)
-					message.GetMsgCtl().UpdateTaskWrapper(item.WorkflowId, api.SESSION_STATUS_INIT, fmt.Sprintf("Queueing TaskId: %s ", taskIdToEnq))
-				} else {
-					message.GetMsgCtl().UpdateTaskWrapper(item.WorkflowId, api.SESSION_STATUS_INIT, fmt.Sprintf("AcquireEnQueue TaskId: %s failed", taskIdToEnq))
 				}
 			}
 		}
@@ -487,7 +484,7 @@ func PlayAsConsumerBlock(mqUrl string, consumerCnt int) {
 	select {}
 }
 
-func AcquireEnQueue(ctx context.Context, lockKey string) (x bool, err error) {
+func AcquireEnQueue(ctx context.Context, lockKey string, myfun func(string) int) (x bool, err error) {
 	client := redis.NewClient(&redis.Options{
 		Addr:     "192.168.34.178:30012", // Replace with the address of your Redis server
 		Password: "",                     // No password if not set
@@ -519,6 +516,7 @@ func AcquireEnQueue(ctx context.Context, lockKey string) (x bool, err error) {
 		// 成功获取锁，执行临界区代码
 		fmt.Println("Lock acquired!")
 		// ... 执行临界区代码 ...
+		myfun(lockKey)
 
 		// 释放锁
 		err := lock.ReleaseLock(lockKey)
