@@ -27,6 +27,7 @@ type Sched struct {
 	TaskEnabled int    `json:"task_enabled"` /* 上层任务是否仍然Enabled */
 
 	LinkId     string `json:"link_id"`
+	Carrier    string `json:"carrier"`
 	CreateAt   int64  `json:"create_at"`
 	CmdackAt   int64  `json:"cmdack_at"`
 	PreparedAt int64  `json:"prepared_at"`

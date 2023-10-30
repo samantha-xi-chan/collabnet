@@ -73,7 +73,7 @@ func WatchContainer(ctx context.Context, taskId string, containerId string, clea
 	return exitCode, nil
 }
 
-func StartContainer(ctx context.Context,
+func CreateContainer(ctx context.Context,
 	taskId string, callbackAddr string,
 	block bool,
 	imageName string, cmdStringArr []string, memLimMb int64, cpuPercent int, cpuSetCpus string, containerName string,
@@ -136,17 +136,26 @@ func StartContainer(ctx context.Context,
 	containerId := resp.ID
 	log.Print("ContainerCreate resp: ", resp)
 
-	err = cli.ContainerStart(
+	return containerId, nil
+}
+
+func StartContainerVV(ctx context.Context, containerId string) (err error) {
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		err = errors.Wrap(err, "NewClientWithOpts: ")
+		return
+	}
+	defer func() {
+		if err := cli.Close(); err != nil {
+			log.Printf("Failed to close Docker client: %v\n", err)
+		}
+	}()
+
+	return cli.ContainerStart(
 		ctx,
 		containerId,
 		types.ContainerStartOptions{},
 	)
-	if err != nil {
-		log.Println("ContainerStart: ", err)
-		return "", err
-	}
-
-	return containerId, nil
 }
 
 func IsContainerRunning(containerNameOrID string) (bRunning bool, e error) {

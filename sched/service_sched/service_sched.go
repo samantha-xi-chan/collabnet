@@ -207,13 +207,20 @@ func OnBizDataFromRegisterEndpoint(endpoint string, bytes []byte) (e error) { //
 			"best_prog": api.STATUS_SCHED_RUN_END,
 			"fwk_code":  api_sched.SCHED_FWK_CODE_END,
 			"biz_code":  body.Para0101,
-			"reason":    "",
+			"reason":    body.Para0102,
 		})
 
 		service_time.DisableTimer(itemTask.HbTimer)
 		service_time.DisableTimer(itemTask.RunTimer)
 
 		callback(idSched, api.TASK_EVT_END, nil)
+	} else if body.Para01 == api.TASK_EVT_REPORT {
+		repo_sched.GetSchedCtl().UpdateItemById(idSched, map[string]interface{}{
+			"active_at": time.Now().UnixMilli(),
+			"carrier":   body.Para0102,
+		})
+
+		callback(idSched, api.TASK_EVT_REPORT, nil)
 	} else {
 		log.Println("OnBizDataFromRegisterEndpoint unknown, body.Para01 = ", body.Para01)
 	}

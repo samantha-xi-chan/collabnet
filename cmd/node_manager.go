@@ -142,11 +142,39 @@ func HandlerDockerTask(task api.PluginTask) (willHandle bool) {
 			}
 		}()
 
-		// 启动任务
-		_, exitCode, e := service_workflow.PostContainerBlock(context.Background(), containerReq)
+		exitCode := 0
+		containerId, e := service_workflow.CreateContainerWrapper(context.Background(), containerReq)
 		if e != nil {
-			exitCode = 101 // todo: 特殊错误 进入编码表
+			SendBizData2Platform(link.GetPackageBytes(
+				time.Now().UnixMilli(),
+				config.VerSched,
+				link.PACKAGE_TYPE_BIZ,
+				link.BizData{
+					TypeId:   link.BIZ_TYPE_NEWTASK,
+					SchedId:  task.Id,
+					Para01:   api.TASK_EVT_END,
+					Para0101: api.ERR_CREAT_CONTAINER,
+					Para0102: e.Error(),
+				},
+			))
+
+			return
 		}
+
+		log.Println("任务执行 容器创建OK， containerId = ", containerId)
+		SendBizData2Platform(link.GetPackageBytes(
+			time.Now().UnixMilli(),
+			config.VerSched,
+			link.PACKAGE_TYPE_BIZ,
+			link.BizData{
+				TypeId:   link.BIZ_TYPE_NEWTASK,
+				SchedId:  task.Id,
+				Para01:   api.TASK_EVT_REPORT,
+				Para0102: containerId,
+			},
+		))
+
+		exitCode, e = service_workflow.StartContainerAndWait(context.Background(), containerId, containerReq)
 		quit <- true
 
 		log.Println("任务执行 ed", task.TaskId)
@@ -159,6 +187,7 @@ func HandlerDockerTask(task api.PluginTask) (willHandle bool) {
 				SchedId:  task.Id,
 				Para01:   api.TASK_EVT_END,
 				Para0101: exitCode, // exitCode: 0表示成功
+				Para0102: e.Error(),
 			},
 		))
 	}()
