@@ -6,6 +6,7 @@ import (
 	"collab-net-v2/link"
 	"collab-net-v2/link/service_link"
 	"collab-net-v2/package/grammar"
+	"collab-net-v2/package/message"
 	"collab-net-v2/package/util/idgen"
 	"collab-net-v2/package/util/util_mq"
 	"collab-net-v2/sched/config_sched"
@@ -226,7 +227,7 @@ func OnTaskStatusChange(ctx context.Context, taskId string, status int, exitCode
 				}
 				if item.Status != api.TASK_STATUS_QUEUEING {
 					GetMqInstance().PostMsgToQueue(config.QUEUE_NAME, edge.EndTaskId, config.PRIORITY_9)
-					// v2 scope: message.GetMsgCtl().UpdateTaskWrapper(item.WorkflowId, api.SESSION_STATUS_INIT, fmt.Sprintf("Queueing TaskId: %s ", edge.EndTaskId)) // demo
+					message.GetMsgCtl().UpdateTaskWrapper(item.WorkflowId, api.SESSION_STATUS_INIT, fmt.Sprintf("Queueing TaskId: %s ", edge.EndTaskId))
 				}
 			}
 		}
