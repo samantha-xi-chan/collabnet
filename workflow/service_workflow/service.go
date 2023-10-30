@@ -481,4 +481,3 @@ func PlayAsConsumerBlock(mqUrl string, consumerCnt int) {
 	log.Println("waiting select")
 	select {}
 }
-s
