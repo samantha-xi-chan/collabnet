@@ -229,9 +229,9 @@ func OnTaskStatusChange(ctx context.Context, taskId string, status int, exitCode
 				}
 
 				taskIdToEnq := edge.EndTaskId
-				_, err := AcquireEnQueue(context.Background(), taskIdToEnq, func(s string) int {
-					GetMqInstance().PostMsgToQueue(config.QUEUE_NAME, taskIdToEnq, config.PRIORITY_9)
-					message.GetMsgCtl().UpdateTaskWrapper(item.WorkflowId, api.SESSION_STATUS_INIT, fmt.Sprintf("Queueing TaskId: %s ", taskIdToEnq))
+				_, err := AcquireEnQueue(context.Background(), taskIdToEnq, func(id string) int {
+					GetMqInstance().PostMsgToQueue(config.QUEUE_NAME, id, config.PRIORITY_9)
+					message.GetMsgCtl().UpdateTaskWrapper(item.WorkflowId, api.SESSION_STATUS_INIT, fmt.Sprintf("Queueing TaskId: %s ", id))
 					return 0
 				})
 				if err != nil {
@@ -486,9 +486,9 @@ func PlayAsConsumerBlock(mqUrl string, consumerCnt int) {
 
 func AcquireEnQueue(ctx context.Context, lockKey string, myfun func(string) int) (x bool, err error) {
 	client := redis.NewClient(&redis.Options{
-		Addr:     "192.168.34.178:30012", // Replace with the address of your Redis server
-		Password: "",                     // No password if not set
-		DB:       0,                      // Use default DB
+		Addr:     "redis-service:6379", // Replace with the address of your Redis server
+		Password: "",                   // No password if not set
+		DB:       0,                    // Use default DB
 	})
 
 	// Ping the Redis server to check the connection

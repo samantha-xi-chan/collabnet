@@ -46,15 +46,15 @@ fi
 echo
 echo "wfId: " $wfId
 
-sleep 2
-
-API_URL="http://$API_IP:$API_PORT/api/v1/task?workflow_id=$wfId"
-resultGetTask=$(curl -X GET "$API_URL"  -H "request-id: $RANDOM")
-if [ $? -ne 0 ]; then
-  echo "Error: Failed to post the HTTP request"
-  exit 1
-fi
-echo $resultGetTask
+#sleep 2
+#
+#API_URL="http://$API_IP:$API_PORT/api/v1/task?workflow_id=$wfId"
+#resultGetTask=$(curl -X GET "$API_URL"  -H "request-id: $RANDOM")
+#if [ $? -ne 0 ]; then
+#  echo "Error: Failed to post the HTTP request"
+#  exit 1
+#fi
+#echo $resultGetTask
 
 
 #    "import_obj_id":"task_1694855605076icxk",
