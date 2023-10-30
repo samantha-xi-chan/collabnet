@@ -11,12 +11,14 @@ import (
 	"collab-net-v2/package/util/util_mq"
 	"collab-net-v2/sched/config_sched"
 	"collab-net-v2/sched/service_sched"
+	"collab-net-v2/util/distributedlock"
 	"collab-net-v2/workflow/api_workflow"
 	"collab-net-v2/workflow/config_workflow"
 	repo "collab-net-v2/workflow/repo_workflow"
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/go-redis/redis/v8"
 	"github.com/pkg/errors"
 	"log"
 	"math/rand"
@@ -225,9 +227,13 @@ func OnTaskStatusChange(ctx context.Context, taskId string, status int, exitCode
 					ee = errors.Wrap(e, "repo.GetTaskCtl().GetItemByID : ")
 					return
 				}
-				if item.Status != api.TASK_STATUS_QUEUEING {
+
+				bAcq := AcquireEnQueue(taskId)
+				if bAcq {
 					GetMqInstance().PostMsgToQueue(config.QUEUE_NAME, edge.EndTaskId, config.PRIORITY_9)
 					message.GetMsgCtl().UpdateTaskWrapper(item.WorkflowId, api.SESSION_STATUS_INIT, fmt.Sprintf("Queueing TaskId: %s ", edge.EndTaskId))
+				} else {
+					message.GetMsgCtl().UpdateTaskWrapper(item.WorkflowId, api.SESSION_STATUS_INIT, fmt.Sprintf("AcquireEnQueue TaskId: %s failed", edge.EndTaskId))
 				}
 			}
 		}
@@ -474,4 +480,46 @@ func PlayAsConsumerBlock(mqUrl string, consumerCnt int) {
 
 	log.Println("waiting select")
 	select {}
+}
+
+func AcquireEnQueue(id string) (x bool) {
+	// 初始化 Redis 客户端
+	client := redis.NewClient(&redis.Options{
+		Addr: "redis-service:6379",
+	})
+
+	// 创建分布式锁
+	lock := distributedlock.New(client)
+
+	// 锁的键
+	lockKey := id
+	// 锁的过期时间
+	expiration := 5 * time.Second
+
+	// 尝试获取锁
+	success, err := lock.AcquireLock(lockKey, expiration)
+	if err != nil {
+		fmt.Println("Error acquiring lock:", err)
+		return
+	}
+
+	if success {
+		// 成功获取锁，执行临界区代码
+		fmt.Println("Lock acquired!")
+		// ... 执行临界区代码 ...
+
+		// 释放锁
+		err := lock.ReleaseLock(lockKey)
+		if err != nil {
+			fmt.Println("Error releasing lock:", err)
+		}
+	} else {
+		// 未能获取锁
+		fmt.Println("Failed to acquire lock.")
+	}
+
+	// 关闭 Redis 客户端连接
+	client.Close()
+
+	return success
 }
