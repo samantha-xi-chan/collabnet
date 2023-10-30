@@ -228,12 +228,17 @@ func OnTaskStatusChange(ctx context.Context, taskId string, status int, exitCode
 					return
 				}
 
-				bAcq := AcquireEnQueue(taskId)
+				taskIdToEnq := edge.EndTaskId
+				bAcq, err := AcquireEnQueue(context.Background(), taskIdToEnq)
+				if err != nil {
+					return
+				}
+
 				if bAcq {
 					GetMqInstance().PostMsgToQueue(config.QUEUE_NAME, edge.EndTaskId, config.PRIORITY_9)
-					message.GetMsgCtl().UpdateTaskWrapper(item.WorkflowId, api.SESSION_STATUS_INIT, fmt.Sprintf("Queueing TaskId: %s ", edge.EndTaskId))
+					message.GetMsgCtl().UpdateTaskWrapper(item.WorkflowId, api.SESSION_STATUS_INIT, fmt.Sprintf("Queueing TaskId: %s ", taskIdToEnq))
 				} else {
-					message.GetMsgCtl().UpdateTaskWrapper(item.WorkflowId, api.SESSION_STATUS_INIT, fmt.Sprintf("AcquireEnQueue TaskId: %s failed", edge.EndTaskId))
+					message.GetMsgCtl().UpdateTaskWrapper(item.WorkflowId, api.SESSION_STATUS_INIT, fmt.Sprintf("AcquireEnQueue TaskId: %s failed", taskIdToEnq))
 				}
 			}
 		}
@@ -482,17 +487,24 @@ func PlayAsConsumerBlock(mqUrl string, consumerCnt int) {
 	select {}
 }
 
-func AcquireEnQueue(id string) (x bool) {
-	// 初始化 Redis 客户端
+func AcquireEnQueue(ctx context.Context, lockKey string) (x bool, err error) {
 	client := redis.NewClient(&redis.Options{
-		Addr: "redis-service:6379",
+		Addr:     "192.168.34.178:30012", // Replace with the address of your Redis server
+		Password: "",                     // No password if not set
+		DB:       0,                      // Use default DB
 	})
+
+	// Ping the Redis server to check the connection
+	pong, err := client.Ping(ctx).Result()
+	if err != nil {
+		fmt.Println("Error pinging Redis server:", err)
+		return
+	}
+	fmt.Println("Redis server responded:", pong)
 
 	// 创建分布式锁
 	lock := distributedlock.New(client)
 
-	// 锁的键
-	lockKey := id
 	// 锁的过期时间
 	expiration := 5 * time.Second
 
@@ -521,5 +533,5 @@ func AcquireEnQueue(id string) (x bool) {
 	// 关闭 Redis 客户端连接
 	client.Close()
 
-	return success
+	return success, nil
 }
