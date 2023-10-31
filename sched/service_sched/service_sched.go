@@ -63,7 +63,7 @@ func OnConnChange(endpoint string, _type int) (e error) {
 }
 
 func OnTimerWrapper(idTimer string, _type int, holder string, bytes []byte) (ee error) {
-	log.Printf("[OnTimerWrapper] holder %s,  idTimer: %s, bytes: %s", holder, idTimer, string(bytes))
+	log.Printf("[OnTimerWrapper ╥﹏╥...] holder %s,  idTimer: %s, bytes: %s", holder, idTimer, string(bytes))
 	go func() {
 		OnTimer(idTimer, _type, holder, bytes)
 	}()
@@ -71,7 +71,7 @@ func OnTimerWrapper(idTimer string, _type int, holder string, bytes []byte) (ee 
 }
 
 func OnTimer(idTimer string, evtType int, holder string, bytes []byte) (ee error) { // 定时器 事件
-	log.Printf("[OnTimer]holder %s,  idTimer: %s, evtType: %d, bytes: %s\n", holder, idTimer, evtType, string(bytes))
+	log.Printf("[OnTimer ╥﹏╥... ]holder %s,  idTimer: %s, evtType: %d, bytes: %s\n", holder, idTimer, evtType, string(bytes))
 	itemTask, e := repo_sched.GetSchedCtl().GetItemById(holder)
 	if e != nil {
 		log.Println("repo_sched.GetSchedCtl().GetItemById e :", e)
@@ -201,6 +201,7 @@ func OnBizDataFromRegisterEndpoint(endpoint string, bytes []byte) (e error) { //
 	} else if body.Para01 == api.TASK_EVT_END {
 		//idTimer, _ := service_time.NewTimer(itemTask.PreTimeout, api.STATUS_SCHED_PRE_ACKED, idSched, "prepare_timeout")
 
+		log.Println("(＾∀＾) body.Para01 == api.TASK_EVT_END")
 		repo_sched.GetSchedCtl().UpdateItemById(idSched, map[string]interface{}{
 			"active_at": time.Now().UnixMilli(),
 			"finish_at": time.Now().UnixMilli(),

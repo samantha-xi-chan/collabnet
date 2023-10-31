@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"collab-net-v2/api"
 	"collab-net-v2/internal/config"
+	"math/rand"
 
 	"encoding/json"
 	"fmt"
@@ -30,31 +31,33 @@ func main() {
 		log.Println("当前收到的任务编号是:  ", dto.Id, ", TaskId = ", dto.TaskId, ", 任务是否仍然有效： ", dto.Valid)
 		if dto.Valid {
 			log.Println("  任务内容是： ", dto.Cmd, ", 任务准备的超时时间(秒)是： ", dto.TimeoutPre, ", 任务运行的超时时间(秒)是： ", dto.TimeoutRun)
-		}
 
-		if !dto.Valid {
+			go func() {
+				// 判断内容  如果当前任务的属性为 有效 则发 任务开始执行的http, 解析出 任务的执行时长条件要求，
+				notifyTaskStatus(dto.Id, api.TASK_EVT_START, 0)
+
+				// 此处是任务执行 用 sleep 代替, 执行过程中需要发送心跳, 这个demo表示 任务执行耗时 3秒
+				for i := 0; i < 3; i++ {
+					// 这里是任务执行（例如 执行安全测试）
+					time.Sleep(time.Millisecond * 500)
+					notifyTaskStatus(dto.Id, api.TASK_EVT_HEARTBEAT, 0)
+					time.Sleep(time.Millisecond * 500)
+				}
+
+				rand.Seed(time.Now().UnixNano())
+				randomNumber := rand.Intn(10)
+				notifyTaskStatus(dto.Id, api.TASK_EVT_END, randomNumber) // 返回 [0,9] 随机值 作为 exitCode
+			}()
+
+			log.Printf("处理任务 %s,  继续接收新任务\n", dto.Id)
+			continue
+		} else {
 			log.Println("业务代码此时应该 关闭如果正在运行的编号为  ", dto.Id, "的任务，并发送任务结束的通知")
 			notifyTaskStatus(dto.Id, api.TASK_EVT_END, 0)
-			//return
-		} else {
-			log.Println("继续等待新任务")
+
+			log.Printf("关闭任务 %s,  继续接收新任务\n", dto.Id)
 			continue
 		}
-
-		go func() {
-			// 判断内容  如果当前任务的属性为 有效 则发 任务开始执行的http, 解析出 任务的执行时长条件要求，
-			notifyTaskStatus(dto.Id, api.TASK_EVT_START, 0)
-
-			// 此处是任务执行 用 sleep 代替, 执行过程中需要发送心跳, 这个demo表示 任务执行耗时 3秒
-			for i := 0; i < 3; i++ {
-				// 这里是任务执行（例如 执行安全测试）
-				time.Sleep(time.Millisecond * 500)
-				notifyTaskStatus(dto.Id, api.TASK_EVT_HEARTBEAT, 0)
-				time.Sleep(time.Millisecond * 500)
-			}
-
-			notifyTaskStatus(dto.Id, api.TASK_EVT_END, 1) // 1 是脚本的exitCode
-		}()
 	}
 }
 
