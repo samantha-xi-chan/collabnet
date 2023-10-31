@@ -163,7 +163,7 @@ func CreateContainerWrapper(ctx context.Context, req api.PostContainerReq) (cont
 		false,
 		req.Image,
 		arrayB,
-		6*1000, // todo： 改为全局可配置
+		8*1000, // todo： 改为全局可配置
 		50,     // todo： 改为全局可配置
 		cpuSet,
 		req.Name, /* container name*/

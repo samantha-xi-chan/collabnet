@@ -121,7 +121,7 @@ func CreateContainer(ctx context.Context,
 				Type:   "json-file",
 				Config: map[string]string{"max-file": "2", "max-size": "20m"},
 			},
-			ShmSize: 512 * 1024 * 1024, // in bytes
+			ShmSize: 1024 * 1024 * 1024, // in bytes
 
 			Binds: binds,
 		},
