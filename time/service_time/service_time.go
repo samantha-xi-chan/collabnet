@@ -108,7 +108,7 @@ func NewTimer(timeoutSecond int, _type int, holder string, desc string, callback
 	log.Printf("[NewTimer] timeoutSecond=%d , _type = %d, holder = %s, desc = %s , callbackAddr = %s \n", timeoutSecond, _type, holder, desc, callbackAddr)
 
 	idTimer := idgen.GetIdWithPref("time")
-	log.Print("NewTimer idTimer: ", idTimer)
+	log.Print("        [NewTimer]  idTimer: ", idTimer)
 	idOnce := idgen.GetIdWithPref(fmt.Sprintf("once_%s_", desc))
 
 	repo_time.GetTimeCtl().CreateItem(repo_time.Time{

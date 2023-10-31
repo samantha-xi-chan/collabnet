@@ -27,7 +27,7 @@ func PostWorkflow(ctx context.Context, req api_workflow.PostWorkflowReq) (api_wo
 	log.Println("PostWorkflowReq: ", req)
 	localTaskId := ""
 
-	workflowId := idgen.GetIdWithPref("wf")
+	workflowId := idgen.GetIdWithPref("wf_")
 	jsonStr, _ := json.Marshal(req)
 	repo.GetWorkflowCtl().CreateItem(repo.Workflow{
 		ID:       workflowId,

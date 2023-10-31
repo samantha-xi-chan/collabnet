@@ -6,7 +6,8 @@ const (
 )
 
 const (
-	INT_INVALID = -1
+	BIZ_CODE_INVALID = -1001
+	FWK_CODE_INVALID = -1011
 )
 
 const ( // 一旦到达  86431099，认为经过 1-N 次尝试，最终 失败/成功。不翻身。
