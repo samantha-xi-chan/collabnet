@@ -5,7 +5,6 @@ import (
 	"collab-net-v2/internal/config"
 	"collab-net-v2/link"
 	"collab-net-v2/package/util/idgen"
-	"collab-net-v2/sched/api_sched"
 	"collab-net-v2/sched/config_sched"
 	repo_sched "collab-net-v2/sched/repo_sched"
 	"collab-net-v2/time/service_time"
@@ -77,16 +76,16 @@ func OnTimer(idTimer string, evtType int, holder string, bytes []byte) (ee error
 		log.Println("repo_sched.GetSchedCtl().GetItemById e :", e)
 		return nil
 	}
-	if itemTask.FwkCode == api_sched.SCHED_FWK_CODE_END {
-		log.Println("xfz itemTask.FwkCode == api_sched.SCHED_FWK_CODE_END , item.Reason = ", itemTask.Reason)
+	if itemTask.FwkCode == api.STATUS_SCHED_FINISHED {
+		log.Println("xfz itemTask.FwkCode == api.SCHED_FWK_CODE_END , item.Reason = ", itemTask.Reason)
 		return nil
 	}
-	if itemTask.TaskEnabled == api_sched.INT_DISABLED { // 业务角度抛弃
-		log.Println("itemTask.TaskEnabled == api_sched.INT_DISABLED")
+	if itemTask.TaskEnabled == api.INT_DISABLED { // 业务角度抛弃
+		log.Println("itemTask.TaskEnabled == api.INT_DISABLED")
 		return nil
 	}
-	if itemTask.Enabled == api_sched.INT_DISABLED { // 技术角度抛弃
-		log.Println("itemTask.Enabled == api_sched.INT_DISABLED")
+	if itemTask.Enabled == api.INT_DISABLED { // 技术角度抛弃
+		log.Println("itemTask.Enabled == api.INT_DISABLED")
 		return nil
 	}
 
@@ -94,22 +93,22 @@ func OnTimer(idTimer string, evtType int, holder string, bytes []byte) (ee error
 	if evtType == api.SCHED_EVT_TIMEOUT_CMDACK {
 		log.Printf("[OnTimer]  STATUS_SCHED_CMD_ACKED ")
 		repo_sched.GetSchedCtl().UpdateItemById(itemTask.Id, map[string]interface{}{
-			"fwk_code": api_sched.SCHED_FWK_CODE_END,
+			"fwk_code": api.STATUS_SCHED_FINISHED,
 			"reason":   "evtType == api.SCHED_EVT_TIMEOUT_CMDACK",
 		})
 	} else if evtType == api.SCHED_EVT_TIMEOUT_PREACK {
 		repo_sched.GetSchedCtl().UpdateItemById(itemTask.Id, map[string]interface{}{
-			"fwk_code": api_sched.SCHED_FWK_CODE_END,
+			"fwk_code": api.STATUS_SCHED_FINISHED,
 			"reason":   "evtType == api.SCHED_EVT_TIMEOUT_PREACK",
 		})
 	} else if evtType == api.SCHED_EVT_TIMEOUT_HB {
 		repo_sched.GetSchedCtl().UpdateItemById(itemTask.Id, map[string]interface{}{
-			"fwk_code": api_sched.SCHED_FWK_CODE_END,
+			"fwk_code": api.STATUS_SCHED_FINISHED,
 			"reason":   " evtType == api.SCHED_EVT_TIMEOUT_HB",
 		})
 	} else if evtType == api.SCHED_EVT_TIMEOUT_RUN {
 		repo_sched.GetSchedCtl().UpdateItemById(itemTask.Id, map[string]interface{}{
-			"fwk_code": api_sched.SCHED_FWK_CODE_END,
+			"fwk_code": api.STATUS_SCHED_FINISHED,
 			"reason":   "evtType == api.SCHED_EVT_TIMEOUT_RUN",
 		})
 
@@ -146,16 +145,16 @@ func OnBizDataFromRegisterEndpoint(endpoint string, bytes []byte) (e error) { //
 		return
 	}
 
-	if itemTask.FwkCode == api_sched.SCHED_FWK_CODE_END {
-		log.Println(" sff itemTask.FwkCode == api_sched.SCHED_FWK_CODE_END , item.Reason = ", itemTask.Reason)
+	if itemTask.FwkCode == api.STATUS_SCHED_FINISHED {
+		log.Println(" sff itemTask.FwkCode == api.SCHED_FWK_CODE_END , item.Reason = ", itemTask.Reason)
 		return nil
 	}
-	if itemTask.TaskEnabled == api_sched.INT_DISABLED { // 业务角度抛弃
-		log.Println("itemTask.TaskEnabled == api_sched.INT_DISABLED")
+	if itemTask.TaskEnabled == api.INT_DISABLED { // 业务角度抛弃
+		log.Println("itemTask.TaskEnabled == api.INT_DISABLED")
 		return nil
 	}
-	if itemTask.Enabled == api_sched.INT_DISABLED { // 技术角度抛弃
-		log.Println("itemTask.Enabled == api_sched.INT_DISABLED")
+	if itemTask.Enabled == api.INT_DISABLED { // 技术角度抛弃
+		log.Println("itemTask.Enabled == api.INT_DISABLED")
 		return nil
 	}
 
@@ -206,7 +205,7 @@ func OnBizDataFromRegisterEndpoint(endpoint string, bytes []byte) (e error) { //
 			"active_at": time.Now().UnixMilli(),
 			"finish_at": time.Now().UnixMilli(),
 			"best_prog": api.STATUS_SCHED_RUN_END,
-			"fwk_code":  api_sched.SCHED_FWK_CODE_END,
+			"fwk_code":  api.STATUS_SCHED_FINISHED,
 			"biz_code":  body.Para0101,
 			"reason":    body.Para0102,
 		})
@@ -237,7 +236,7 @@ func StopSched(taskId string) (ee error) { // todo: send stop cmd to excutors
 	})
 	arr = append(arr, repo_sched.QueryKeyValue{
 		"enabled",
-		api_sched.INT_ENABLED,
+		api.INT_ENABLED,
 	})
 	item, e := repo_sched.GetSchedCtl().GetItemByKeyValueArr(arr)
 	if e != nil {
@@ -265,8 +264,8 @@ func StopSched(taskId string) (ee error) { // todo: send stop cmd to excutors
 	}
 	log.Println("StopSched code", code)
 
-	if item.FwkCode == api_sched.SCHED_FWK_CODE_END {
-		log.Println("x f item.FwkCode == api_sched.SCHED_FWK_CODE_END, item.Reason = ", item.Reason)
+	if item.FwkCode == api.STATUS_SCHED_FINISHED {
+		log.Println("x f item.FwkCode == api.SCHED_FWK_CODE_END, item.Reason = ", item.Reason)
 		return
 	}
 
@@ -275,7 +274,7 @@ func StopSched(taskId string) (ee error) { // todo: send stop cmd to excutors
 	repo_sched.GetSchedCtl().UpdateItemById(
 		item.Id,
 		map[string]interface{}{
-			"task_enabled": api_sched.INT_DISABLED,
+			"task_enabled": api.INT_DISABLED,
 		},
 	)
 
@@ -289,18 +288,18 @@ func NewSched(taskId string, taskType int, cmd string, linkId string, cmdackTime
 	repo_sched.GetSchedCtl().CreateItem(repo_sched.Sched{
 		Id:            idSched,
 		TaskId:        taskId,
-		TaskEnabled:   api_sched.INT_ENABLED,
+		TaskEnabled:   api.INT_ENABLED,
 		BestProg:      api.STATUS_SCHED_INIT,
 		LinkId:        linkId,
 		CreateAt:      time.Now().UnixMilli(),
 		ActiveAt:      time.Now().UnixMilli(),
-		Enabled:       api_sched.INT_ENABLED,
+		Enabled:       api.INT_ENABLED,
 		CmdackTimeout: cmdackTimeoutSecond,
 		PreTimeout:    preTimeoutSecond,
 		HbTimeout:     config_sched.SCHED_HEARTBEAT_TIMEOUT,
 		RunTimeout:    runTimeoutSecond,
-		BizCode:       api_sched.BIZ_CODE_INVALID,
-		FwkCode:       api_sched.FWK_CODE_INVALID,
+		BizCode:       api.BIZ_CODE_INVALID,
+		FwkCode:       api.STATUS_SCHED_INIT,
 	})
 
 	code, e := link.SendDataToLinkId(
@@ -323,7 +322,7 @@ func NewSched(taskId string, taskType int, cmd string, linkId string, cmdackTime
 
 		repo_sched.GetSchedCtl().UpdateItemById(idSched, map[string]interface{}{
 			"best_prog": api.STATUS_SCHED_ANALYZE,
-			"fwk_code":  api_sched.SCHED_FWK_CODE_END,
+			"fwk_code":  api.STATUS_SCHED_FINISHED,
 			"reason":    "link.SendDataToLinkId e != nil || code != 0",
 		})
 		callback(taskId, api.TASK_EVT_REJECT, nil)
@@ -335,6 +334,7 @@ func NewSched(taskId string, taskType int, cmd string, linkId string, cmdackTime
 		"active_at":    time.Now().UnixMilli(),
 		"best_prog":    api.STATUS_SCHED_SENT,
 		"cmdack_timer": idCmdackTimer,
+		"fwk_code":     api.STATUS_SCHED_SENT,
 	})
 
 	item, e := repo_sched.GetSchedCtl().GetItemById(idSched)
@@ -362,14 +362,14 @@ func WaitSchedEnd(idSched string) (repo_sched.Sched, error) { // 临时用轮询
 	for true {
 		loop++
 		log.Println("WaitSchedEnd loop: ", loop)
-		time.Sleep(time.Second * 5)
+		time.Sleep(time.Second * 1)
 		item, e := repo_sched.GetSchedCtl().GetItemById(idSched)
 		if e != nil {
 			return repo_sched.Sched{}, errors.Wrap(e, "repo_sched.GetSchedCtl().GetItemById: ")
 		}
 
-		if item.FwkCode == api_sched.SCHED_FWK_CODE_END {
-			log.Println(" werew item.FwkCode == api_sched.SCHED_FWK_CODE_END , item.Reason = ", item.Reason)
+		if item.FwkCode == api.STATUS_SCHED_FINISHED {
+			log.Println(" werew item.FwkCode == api.SCHED_FWK_CODE_END , item.Reason = ", item.Reason)
 			return item, nil
 		}
 	}
