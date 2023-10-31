@@ -66,7 +66,8 @@ sleep 2
 patchTaskResp=$(curl -X PATCH "http://$taskEndpoint/api/v1/task/$taskId" )
 echo $patchTaskResp
 echo "patchTaskResp: "$patchTaskResp
-#
+
+
 #sleep 5
 #curl -X GET "http://$taskEndpoint/api/v1/task/$taskId"; echo ;
 #sleep 5; echo "get task: "

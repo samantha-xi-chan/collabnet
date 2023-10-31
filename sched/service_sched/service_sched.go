@@ -108,7 +108,7 @@ func OnTimer(idTimer string, evtType int, holder string, bytes []byte) (ee error
 		})
 	} else if evtType == api.SCHED_EVT_TIMEOUT_RUN {
 		repo_sched.GetSchedCtl().UpdateItemById(itemTask.Id, map[string]interface{}{
-			"fwk_code": api.FWK_CODE_ERR_RUN_ACK,
+			"fwk_code": api.FWK_CODE_ERR_RUN_TIMEOUT,
 			"reason":   "evtType == api.SCHED_EVT_TIMEOUT_RUN",
 		})
 
