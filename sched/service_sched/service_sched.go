@@ -93,22 +93,22 @@ func OnTimer(idTimer string, evtType int, holder string, bytes []byte) (ee error
 	if evtType == api.SCHED_EVT_TIMEOUT_CMDACK {
 		log.Printf("[OnTimer]  STATUS_SCHED_CMD_ACKED ")
 		repo_sched.GetSchedCtl().UpdateItemById(itemTask.Id, map[string]interface{}{
-			"fwk_code": api.STATUS_SCHED_FINISHED,
+			"fwk_code": api.FWK_CODE_ERR_CMD_ACK,
 			"reason":   "evtType == api.SCHED_EVT_TIMEOUT_CMDACK",
 		})
 	} else if evtType == api.SCHED_EVT_TIMEOUT_PREACK {
 		repo_sched.GetSchedCtl().UpdateItemById(itemTask.Id, map[string]interface{}{
-			"fwk_code": api.STATUS_SCHED_FINISHED,
+			"fwk_code": api.FWK_CODE_ERR_PRE_ACK,
 			"reason":   "evtType == api.SCHED_EVT_TIMEOUT_PREACK",
 		})
 	} else if evtType == api.SCHED_EVT_TIMEOUT_HB {
 		repo_sched.GetSchedCtl().UpdateItemById(itemTask.Id, map[string]interface{}{
-			"fwk_code": api.STATUS_SCHED_FINISHED,
+			"fwk_code": api.FWK_CODE_ERR_HEARBEAT,
 			"reason":   " evtType == api.SCHED_EVT_TIMEOUT_HB",
 		})
 	} else if evtType == api.SCHED_EVT_TIMEOUT_RUN {
 		repo_sched.GetSchedCtl().UpdateItemById(itemTask.Id, map[string]interface{}{
-			"fwk_code": api.STATUS_SCHED_FINISHED,
+			"fwk_code": api.FWK_CODE_ERR_RUN_ACK,
 			"reason":   "evtType == api.SCHED_EVT_TIMEOUT_RUN",
 		})
 
@@ -205,7 +205,7 @@ func OnBizDataFromRegisterEndpoint(endpoint string, bytes []byte) (e error) { //
 			"active_at": time.Now().UnixMilli(),
 			"finish_at": time.Now().UnixMilli(),
 			"best_prog": api.STATUS_SCHED_RUN_END,
-			"fwk_code":  api.STATUS_SCHED_FINISHED,
+			"fwk_code":  api.FWK_CODE_ERR_OK,
 			"biz_code":  body.Para0101,
 			"reason":    body.Para0102,
 		})
@@ -299,7 +299,7 @@ func NewSched(taskId string, taskType int, cmd string, linkId string, cmdackTime
 		HbTimeout:     config_sched.SCHED_HEARTBEAT_TIMEOUT,
 		RunTimeout:    runTimeoutSecond,
 		BizCode:       api.BIZ_CODE_INVALID,
-		FwkCode:       api.STATUS_SCHED_INIT,
+		FwkCode:       api.FWK_CODE_ERR_DEFAULT,
 	})
 
 	code, e := link.SendDataToLinkId(
@@ -322,7 +322,7 @@ func NewSched(taskId string, taskType int, cmd string, linkId string, cmdackTime
 
 		repo_sched.GetSchedCtl().UpdateItemById(idSched, map[string]interface{}{
 			"best_prog": api.STATUS_SCHED_ANALYZE,
-			"fwk_code":  api.STATUS_SCHED_FINISHED,
+			"fwk_code":  api.FWK_CODE_ERR_SEND,
 			"reason":    "link.SendDataToLinkId e != nil || code != 0",
 		})
 		callback(taskId, api.TASK_EVT_REJECT, nil)
@@ -334,7 +334,6 @@ func NewSched(taskId string, taskType int, cmd string, linkId string, cmdackTime
 		"active_at":    time.Now().UnixMilli(),
 		"best_prog":    api.STATUS_SCHED_SENT,
 		"cmdack_timer": idCmdackTimer,
-		"fwk_code":     api.STATUS_SCHED_SENT,
 	})
 
 	item, e := repo_sched.GetSchedCtl().GetItemById(idSched)

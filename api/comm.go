@@ -53,8 +53,23 @@ const ( // 内部可能在此不断重试 所以状态会不断循环迁移
 	STATUS_SCHED_CMD_ACKED = 86031031 // 指令已收回执
 	STATUS_SCHED_PRE_ACKED = 86031041 // 准备动作完成
 	STATUS_SCHED_RUNNING   = 86031051 // 运行中
-	STATUS_SCHED_RUN_END   = 86031099 // 运行结束(包含正常结束、异常结束)
-	STATUS_SCHED_FINISHED  = 86031100 // 整个生命周期已结束 // 一旦到达  86431099，认为经过 1-N 次尝试，最终 失败/成功。不翻身。
+	STATUS_SCHED_RUN_END   = 86031097 // 运行结束(包含正常结束、异常结束)
+	STATUS_SCHED_FINISHED  = 86031099 // 整个生命周期已结束， 一旦到达 此 status，认为经过 1-N 次尝试，最终 失败/成功。不翻身。
+)
+
+const (
+	FWK_CODE_ERR_OK          = 0
+	FWK_CODE_ERR_DEFAULT     = 86041000 // 默认值，无业务含义
+	FWK_CODE_ERR_ANALYZE     = 86041001 // 指令分析未通过
+	FWK_CODE_ERR_SEND        = 86041011 // 发送失败
+	FWK_CODE_ERR_CMD_ACK     = 86041021 // 未收到接收回执
+	FWK_CODE_ERR_PRE_ACK     = 86041031 // 未收到准备回执
+	FWK_CODE_ERR_RUN_ACK     = 86041041 // 未收到已启动通知
+	FWK_CODE_ERR_HEARBEAT    = 86041051 // 指令心跳异常
+	FWK_CODE_ERR_RUN_TIMEOUT = 86041061 // 指令运行超期未发送结束通知
+	FWK_CODE_ERR_POST_EVT    = 86041071 // 善后工作异常
+	FWK_CODE_ERR_PLATFORM_   = 86041080 // 平台内部异常
+	FWK_CODE_ERR_OTHER       = 86041090 // 其他调度异常
 )
 
 const ( // timeout , bad senario
@@ -76,7 +91,3 @@ const (
 const (
 	BIZ_CODE_INVALID = -1001
 )
-
-//const (
-//	SCHED_FWK_CODE_END = 86431099
-//)

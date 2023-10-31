@@ -35,7 +35,7 @@ type Sched struct {
 	ActiveAt   int64  `json:"active_at"`
 
 	Enabled  int `json:"enabled"`   /* 是否已和task脱钩, 包含重试场景和业务角度放弃某个task导致脱钩 */
-	BestProg int `json:"best_prog"` /* 生命周期的最好阶段 */
+	BestProg int `json:"best_prog"` /* 生命周期的最好阶段, 仅仅用于 debug使用 */
 	BizCode  int `json:"biz_code"`  /* 业务角度的ExitCode */
 	FwkCode  int `json:"fwk_code"`  /* 调度框架角度的ExitCode */
 
