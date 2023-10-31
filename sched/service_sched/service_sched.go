@@ -361,14 +361,19 @@ func WaitSchedEnd(idSched string) (repo_sched.Sched, error) { // 临时用轮询
 	for true {
 		loop++
 		log.Println("WaitSchedEnd loop: ", loop)
-		time.Sleep(time.Second * 1)
+		time.Sleep(time.Second * 5)
 		item, e := repo_sched.GetSchedCtl().GetItemById(idSched)
 		if e != nil {
 			return repo_sched.Sched{}, errors.Wrap(e, "repo_sched.GetSchedCtl().GetItemById: ")
 		}
 
-		if item.FwkCode == api.STATUS_SCHED_FINISHED {
+		if item.BestProg >= api.STATUS_SCHED_RUN_END {
 			log.Println(" werew item.FwkCode == api.SCHED_FWK_CODE_END , item.Reason = ", item.Reason)
+			return item, nil
+		}
+
+		if item.TaskEnabled == api.FALSE {
+			log.Println(" item.TaskEnabled == api.FALSE", item.Reason)
 			return item, nil
 		}
 	}
