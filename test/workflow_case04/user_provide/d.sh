@@ -17,7 +17,6 @@ echo "created by NAME: "$NAME >> $OUTPUT
 #  i=$((i + 1))
 #done
 
-sleep  1
 
 
 

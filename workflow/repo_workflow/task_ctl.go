@@ -128,6 +128,23 @@ func (ctl *TaskCtl) UpdateItemByID(id string, fieldsToUpdate map[string]interfac
 	return nil
 }
 
+func (ctl *TaskCtl) UpdateItemEnqueue(id string) (rowsAffected int64, e error) {
+	updateQuery := "UPDATE compute_task SET status = ? WHERE id = ? AND status = ? "
+	result := db.Exec(updateQuery, api.TASK_STATUS_QUEUEING, id, api.TASK_STATUS_INIT)
+
+	if result.Error != nil {
+		return 0, errors.Wrap(result.Error, "db.Exec: ")
+	}
+
+	rowsAffected = result.RowsAffected
+	//log.Printf("影响的行数：%d\n", rowsAffected)
+	if rowsAffected == 0 {
+		log.Println("rarely happen: UpdateItemEnqueue, id = ", id)
+	}
+
+	return
+}
+
 func (ctl *TaskCtl) GetNextTasksByTaskId(taskId string) (items []Task, total int64, e error) {
 	//step := db.Model(&Task{})
 	step := db.Where(" TRUE ")

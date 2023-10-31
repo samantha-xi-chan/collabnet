@@ -14,10 +14,3 @@ echo "created by NAME: "$NAME  | tee -a $OUTPUT
 #done
 
 echo "a going to sleep 1" | tee -a $OUTPUT
-sleep 1
-echo "a going to sleep a 1" | tee -a $OUTPUT
-sleep 1
-echo "a going to sleep b 1" | tee -a $OUTPUT
-sleep 1
-echo "a end of sleep 1" | tee -a $OUTPUT
-#exit 2

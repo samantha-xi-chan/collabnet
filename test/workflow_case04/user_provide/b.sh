@@ -18,5 +18,3 @@ echo "created by NAME: "$NAME >> $OUTPUT
 
 
 echo "b going to sleep 1" | tee -a $OUTPUT
-sleep 1
-echo "a end of sleep " | tee -a $OUTPUT

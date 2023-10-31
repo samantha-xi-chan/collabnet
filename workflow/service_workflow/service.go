@@ -111,7 +111,7 @@ func PostWorkflow(ctx context.Context, req api_workflow.PostWorkflowReq) (api_wo
 
 	if localTaskId != "" {
 		GetMqInstance().PostMsgToQueue(config.QUEUE_NAME, localTaskId, config.PRIORITY_4)
-		message.GetMsgCtl().UpdateTaskWrapper(workflowId, api.SESSION_STATUS_INIT, fmt.Sprintf(" - Queueing TaskId: %s ", localTaskId)) // todo: demo
+		message.GetMsgCtl().UpdateTaskWrapper(workflowId, api.SESSION_STATUS_INIT, fmt.Sprintf(" - Queueing TaskId: %s ", localTaskId)) // for debug only
 	}
 
 	items, total, e := repo.GetTaskCtl().GetItemsByWorkflowId(
@@ -228,8 +228,16 @@ func OnTaskStatusChange(ctx context.Context, taskId string, status int, exitCode
 
 				taskIdToEnq := edge.EndTaskId
 				_, err := repo.GetRedisMgr().AcquireEnQueue(context.Background(), taskIdToEnq, func(id string) int {
-					GetMqInstance().PostMsgToQueue(config.QUEUE_NAME, id, config.PRIORITY_9)
-					message.GetMsgCtl().UpdateTaskWrapper(item.WorkflowId, api.SESSION_STATUS_INIT, fmt.Sprintf("Queueing TaskId: %s ", id))
+					affected, e := repo.GetTaskCtl().UpdateItemEnqueue(id)
+					if e != nil {
+						return 0
+					}
+					if affected == 1 {
+						GetMqInstance().PostMsgToQueue(config.QUEUE_NAME, id, config.PRIORITY_9)
+						message.GetMsgCtl().UpdateTaskWrapper(item.WorkflowId, api.SESSION_STATUS_INIT, fmt.Sprintf("Queueing TaskId: %s ", id))
+					} else {
+						message.GetMsgCtl().UpdateTaskWrapper(item.WorkflowId, api.SESSION_STATUS_INIT, fmt.Sprintf("Queueing TaskId: %s Conflict", id))
+					}
 					return 0
 				})
 				if err != nil {
@@ -377,6 +385,11 @@ func PlayAsConsumerBlock(mqUrl string, consumerCnt int) {
 				randomNumber := rand.Intn(sizeLinks)
 				itemLink := itemLinks[randomNumber]
 				log.Printf("sizeLinks: %d, randomNumber: %d , itemLink = %#v , itemTask = %#v  \n", sizeLinks, randomNumber, itemLink, itemTask)
+
+				if itemTask.Status != api.TASK_STATUS_QUEUEING { // ERROR
+					log.Println("itemTask.Status != api.TASK_STATUS_QUEUEING")
+					return true
+				}
 
 				// 启动 登记
 				repo.GetTaskCtl().UpdateItemByID(taskId, map[string]interface{}{

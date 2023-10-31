@@ -15,5 +15,3 @@ echo "created by NAME: "$NAME >> $OUTPUT
 #  echo "参数 $i: $arg"
 #  i=$((i + 1))
 #done
-
-sleep  1
