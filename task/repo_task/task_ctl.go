@@ -34,7 +34,7 @@ type Task struct {
 type TaskInfo struct {
 	Id          string `json:"id"`
 	CreateAt    int64  `json:"create_at"`
-	TaskEnabled int    `json:"task_enabled"`
+	TaskEnabled int    `json:"task_enabled"` // 业务查询返回
 	FinishAt    int64  `json:"finish_at"`
 	BestProg    int    `json:"best_prog"`
 	FwkCode     int    `json:"fwk_code"` // 业务查询返回
