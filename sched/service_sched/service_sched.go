@@ -298,8 +298,8 @@ func NewSched(taskId string, taskType int, cmd string, linkId string, cmdackTime
 		PreTimeout:    preTimeoutSecond,
 		HbTimeout:     config_sched.SCHED_HEARTBEAT_TIMEOUT,
 		RunTimeout:    runTimeoutSecond,
-		BizCode:       api_sched.INT_INVALID,
-		FwkCode:       api_sched.INT_INVALID,
+		BizCode:       api_sched.BIZ_CODE_INVALID,
+		FwkCode:       api_sched.FWK_CODE_INVALID,
 	})
 
 	code, e := link.SendDataToLinkId(
