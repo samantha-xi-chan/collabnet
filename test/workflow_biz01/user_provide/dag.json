@@ -1,0 +1,74 @@
+{
+  "task": [
+    {
+      "name": "predownload",
+      "image": "registry.clouditera.com/cicd/curl:v1.2",
+      "cmd_str": [
+        "base64:CnNldCAtZXgKIyDojrflj5bkvKDlhaXlj4LmlbAKdXJsPSQxCmF1dGg9JDIKYnJhbmNoPSQzCmRzdD0kNApkb3dubG9hZF91cmw9JDUKYnVpbGRzY3JpcHQ9JDYKdXBsb2FkX3VybD0kNwpwcm9qcmFuZG9tPSQ4CgplY2hvICR1cmwKZWNobyAkYXV0aAplY2hvICRicmFuY2gKZWNobyAkZHN0CmVjaG8gJGRvd25sb2FkX3VybAplY2hvICRidWlsZHNjcmlwdAplY2hvICR1cGxvYWRfdXJsCgpET1dOTE9BRD0kdXJsCgojIOWFi+mahiBHaXQg5LuT5bqT5bm25YiH5o2i5Yiw5oyH5a6a5YiG5pSvCiAgI2dpdCBjbG9uZSAiJHVybCIgIiRkc3QiICYmIGNkICIkZHN0IiAmJiBnaXQgY2hlY2tvdXQgIiRicmFuY2giCmdpdCBjbG9uZSAtLWJyYW5jaCAkYnJhbmNoICRET1dOTE9BRCAkZHN0CnNsZWVwIDUKCiMg5qOA5p+l5YWL6ZqG5piv5ZCm5oiQ5YqfCmlmIFsgJD8gLWVxIDAgXTsgdGhlbgogIGVjaG8gIkdpdCByZXBvc2l0b3J5IGNsb25lZCBzdWNjZXNzZnVsbHkuIgplbHNlCiAgZWNobyAiRmFpbGVkIHRvIGNsb25lIEdpdCByZXBvc2l0b3J5LiIKICBleGl0IDEKZmkKCmFwdCB1cGRhdGUgJiYgYXB0IGluc3RhbGwgLXkgemlwCiMg5rqQ56CB5YyF5o+Q5L6bCmNkIC9jbG91ZF9wcm9qICYmIHppcCAtciAiJHByb2pyYW5kb20uemlwIiAkcHJvanJhbmRvbQpzbGVlcCAxMApjdXJsIC1YIFBPU1QgLUYgImZpbGU9QCRwcm9qcmFuZG9tLnppcCIgImh0dHA6Ly8kdXBsb2FkX3VybC9hcGkvdjEvcmVzdWx0cy9jbG91ZHByb2oiCnNsZWVwIDMKY2QgLwoKCiMg6KaG55uW546HCm1rZGlyIC1wIC9wcm9qX2NvdmVyYWdlCmNwIC1yICRkc3QvKiAvcHJval9jb3ZlcmFnZS8KbWtkaXIgLXAgJGRzdC9wcm9qX2NvdmVyYWdlCm12IC9wcm9qX2NvdmVyYWdlLyogJGRzdC9wcm9qX2NvdmVyYWdlCgoKIyDliJvlu7rlrrnlmajmjILovb3pg6jliIYKbWtkaXIgZG9ja2VyaW4KIyDkuIvovb3pg6jnvbLohJrmnKwKZG93bmxvYWRfdXJsPSQ1CgojIOajgOafpeWPguaVsOaYr+WQpuS4uuepugppZiBbIC16ICIkZG93bmxvYWRfdXJsIiBdOyB0aGVuCiAgZWNobyAiVXNhZ2U6ICQwIDxkb3dubG9hZF91cmw+IgogIGV4aXQgMQpmaQoKIyDkvb/nlKggY3VybCDkuIvovb3mlofku7YKY3VybCAtTCAiJGRvd25sb2FkX3VybCIgLW8gIiRkc3QvJGJ1aWxkc2NyaXB0IgoKIyDmo4Dmn6XkuIvovb3mmK/lkKbmiJDlip8KaWYgWyAkPyAtZXEgMCBdOyB0aGVuCiAgZWNobyAiRmlsZSBkb3dubG9hZGVkIHN1Y2Nlc3NmdWxseS4iCmVsc2UKICBlY2hvICJGYWlsZWQgdG8gZG93bmxvYWQgZmlsZS4iCiAgZXhpdCAxCmZpCgpta2RpciAtcCAvZG93bmxvYWQKCm12ICRkc3QvKiAvZG93bmxvYWQvCm1rZGlyIC1wIC9wcmVidWlsZCAmJiBtdiAvZG93bmxvYWQvKiAvcHJlYnVpbGQvCg==",
+        "https://github.com/google/atheris.git",
+        "userpass",
+        "master",
+        "/cloud_proj/pythonproj",
+        "http://192.168.34.8:8840/api/v1/download_urls/test_file.py?bucket=files",
+        "test_file.py",
+        "192.168.34.8:2100",
+        "pythonproj"
+      ],
+      "timeout": 120,
+      "on_fail": "nothing",
+      "import_obj_id": "",
+      "import_obj_as": "",
+      "check_exit_code": true,
+      "exp_exit_code": 0
+    },
+    {
+      "name": "download",
+      "image": "registry.clouditera.com/cicd/curl:v1.2",
+      "cmd_str": [
+        "base64:c2V0IC1leCAKY3AgLXJwIC9wcmVidWlsZC8qIC9kb3dubG9hZApta2RpciAtcCAvZG93bmxvYWQvZG9ja2VyaW4KY3VybCAtTCAiJDEiIC1vICIvZG93bmxvYWQvZG9ja2VyaW4kMiIKc2xlZXAgNQpjdXJsIC1MICIkMyIgLW8gIi9kb3dubG9hZC9kb2NrZXJpbiQ0IgpscyAvZG93bmxvYWQvZG9ja2VyaW4K",
+        "http://192.168.34.8:8840/api/v1/download_urls/test_file.py?bucket=files",
+        "/test_file.py",
+        "http://192.168.34.8:8840/api/v1/download_urls/pt1698388919843dfas?bucket=files",
+        "/pt1698388919843dfas"
+      ],
+      "timeout": 120,
+      "on_fail": "nothing",
+      "import_obj_id": "",
+      "import_obj_as": "",
+      "check_exit_code": true,
+      "exp_exit_code": 0
+    },
+    {
+      "name": "testtask",
+      "image": "registry.clouditera.com/fuzz/cargofuzz:v1",
+      "cmd_str": [
+        "base64:c2V0IC1leCAKZXhwb3J0IEZVWlpfVEVTVF9NT0RFPTEwMDMKZXhwb3J0IEZVWlpfUFJPSl9MQU5HPTIwMDIxMDA0CmV4cG9ydCBGVVpaX1BST0pfU1JDPS9jbG91ZF9wcm9qLwpleHBvcnQgU0VSVkVSX0FERFJFU1M9MTkyLjE2OC4zNC44OjIxMDAKZXhwb3J0IEZVWlpfUFJPSkVDVF9JRD1wcjE2OTg2NjYyMDkwMzdtY2xtCmV4cG9ydCBGVVpaX1RBU0tfSUQ9dHQxNjk4NzQwODI5ODg5bmFtZwpleHBvcnQgRlVaWl9URVNUX0lEPXRlc3RfZmlsZQpleHBvcnQgRlVaWl9UQVJHRVRfU1JDPS9kb2NrZXJpbi90ZXN0X2ZpbGUucHkKZXhwb3J0IEZVWlpfVEFSR0VUX0JVSUxEX1NDUklQVF9TUkM9L2RvY2tlcmluL3B0MTY5ODM4ODkxOTg0M2RmYXMKZXhwb3J0IEZVWlpfV09SS19ESVI9L2RvY2tlcmluCmV4cG9ydCBGVVpaX1BST0pFQ1RfTkFNRT0iZXpiIgpleHBvcnQgRlVaWl9UQVJHRVRfTElCUz1bXQpleHBvcnQgRlVaWl9DT01QSUxFUj1HQ0MKZXhwb3J0IEZVWlpfRlVaWkVSPWF0aGVyaXMKZXhwb3J0IEZVWlpfUFJPSl9TUkM9L2Nsb3VkX3Byb2ovcHl0aG9ucHJvai9leGFtcGxlX2Z1enplcnMKZXhwb3J0IEZVWlpfVEFSR0VUPS9kb2NrZXJpbi9jbG91ZGl0ZXJhCmFwdCB1cGRhdGUgJiYgYXB0IGluc3RhbGwgLXkgY3VybCB6aXAgdW56aXAKc2xlZXAgNQpFQVNZX0RPV05MT0FEX1VSTD0iaHR0cDovLzE5Mi4xNjguMzQuODo4ODQwL2FwaS92MS9kb3dubG9hZF91cmxzL2Vhc3lmdXp6U0RLLnppcD9idWNrZXQ9ZmlsZXMiCmN1cmwgLW8gIi90bXAvZWFzeWZ1enpTREsuemlwIiAiJEVBU1lfRE9XTkxPQURfVVJMIgp1bnppcCAvdG1wL2Vhc3lmdXp6U0RLLnppcCAtZCAvb3B0LyA+IC9kZXYvbnVsbApXUkFQX0RPV05MT0FEX1VSTD0iaHR0cDovLzE5Mi4xNjguMzQuODo4ODQwL2FwaS92MS9kb3dubG9hZF91cmxzL2Z1enplcnNfd3JhcHB5LnppcD9idWNrZXQ9ZmlsZXMiCmN1cmwgLW8gIi90bXAvZnV6emVyc193cmFwLnppcCIgIiRXUkFQX0RPV05MT0FEX1VSTCIKdW56aXAgL3RtcC9mdXp6ZXJzX3dyYXAuemlwIC1kIC8gPiAvZGV2L251bGwKbHMgL3RtcC9mdXp6ZXJzX3dyYXAuemlwCmxzIC9vcHQvZWFzeWZ1enpTREsKQ0xBU1NJRllfRE9XTkxPQURfVVJMPSJodHRwOi8vMTkyLjE2OC4zNC44Ojg4NDAvYXBpL3YxL2Rvd25sb2FkX3VybHMvY2xhc3NpZnkuemlwP2J1Y2tldD1maWxlcyIKY3VybCAtbyAiL3RtcC9jbGFzc2lmeS56aXAiICIkQ0xBU1NJRllfRE9XTkxPQURfVVJMIgp1bnppcCAvdG1wL2NsYXNzaWZ5LnppcCAtZCAvb3B0L2FuYWx5c2lzX2VuZ2luZS8gPiAvZGV2L251bGwKc2xlZXAgNQpscyAvb3B0L2FuYWx5c2lzX2VuZ2luZS9jbGFzc2lmeQpta2RpciAtcCAkRlVaWl9QUk9KX1NSQwpjcCAtcnAgL3ByZXRhc2svKiAvY2xvdWRfcHJvai9weXRob25wcm9qCm1rZGlyIC1wIC9kb2NrZXJpbi9kb2NrZXJpbgpjcCAtciAvZG93bmxvYWQvZG9ja2VyaW4vKiAvZG9ja2VyaW4vCmNwIC1yIC9kb3dubG9hZC9kb2NrZXJpbi8qIC9kb2NrZXJpbi9kb2NrZXJpbi8KcHl0aG9uMyAvZnV6emVyc193cmFwL21haW4ucHkKZWNobyAidGVzdHRhc2sgdGFzay4iCg==",
+        "/test_file.py",
+        "para1"
+      ],
+      "timeout": 7200,
+      "on_fail": "",
+      "import_obj_id": "",
+      "import_obj_as": "/pretask",
+      "check_exit_code": true,
+      "exp_exit_code": 0
+    }
+  ],
+  "edge": [
+    {
+      "start": "predownload",
+      "end": "download",
+      "resc": "/prebuild"
+    },
+    {
+      "start": "download",
+      "end": "testtask",
+      "resc": "/download"
+    },
+    {
+      "start": "testtask",
+      "end": "",
+      "resc": "/dockerin"
+    }
+  ]
+}
