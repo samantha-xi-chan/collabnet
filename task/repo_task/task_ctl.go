@@ -37,6 +37,7 @@ type TaskInfo struct {
 	TaskEnabled int    `json:"task_enabled"` // 业务查询返回
 	FinishAt    int64  `json:"finish_at"`
 	BestProg    int    `json:"best_prog"`
+	BizCode     int    `json:"biz_code"` // 业务查询返回
 	FwkCode     int    `json:"fwk_code"` // 业务查询返回
 }
 
@@ -92,14 +93,14 @@ func (ctl *TaskCtl) GetItemById(id string) (i Task, e error) { // todo: optimize
 }
 
 func (ctl *TaskCtl) GetTasks() (tasks []TaskInfo, e error) { // todo: optimize
-	rawSQL := `SELECT t.id , t.create_at, s.task_enabled, s.finish_at, s.best_prog , s.fwk_code AS fwk_code FROM task t JOIN sched s ON s.task_id = t.id AND s.enabled = 1`
+	rawSQL := `SELECT t.id , t.create_at, s.task_enabled, s.finish_at, s.best_prog , s.biz_code, s.fwk_code AS fwk_code FROM task t JOIN sched s ON s.task_id = t.id AND s.enabled = 1`
 	db.Raw(rawSQL).Scan(&tasks)
 	log.Println("[GetTasks] tasks: ", tasks)
 	return
 }
 
 func (ctl *TaskCtl) GetTaskById(id string) (tasks []TaskInfo, e error) { // todo: optimize
-	rawSQL := `SELECT t.id , t.create_at, s.task_enabled, s.finish_at, s.best_prog , s.fwk_code AS fwk_code FROM task t JOIN sched s ON s.task_id = t.id AND s.task_id = ? AND s.enabled = 1`
+	rawSQL := `SELECT t.id , t.create_at, s.task_enabled, s.finish_at, s.best_prog , s.biz_code, s.fwk_code AS fwk_code FROM task t JOIN sched s ON s.task_id = t.id AND s.task_id = ? AND s.enabled = 1`
 	db.Raw(rawSQL, id).Scan(&tasks)
 	log.Println("[GetTasks] tasks: ", tasks)
 	return
