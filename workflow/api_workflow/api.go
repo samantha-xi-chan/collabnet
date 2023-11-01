@@ -89,10 +89,12 @@ type TaskResp struct {
 
 	ExitCode int `json:"exit_code"`
 
-	ObjId  string `json:"obj_id"`
-	NodeId string `json:"node_id"`
+	ObjId string `json:"obj_id"`
 
-	ContainerId string `json:"container_id"`
+	//NodeId      string `json:"node_id"`
+	//ContainerId string `json:"container_id"`
+	HostName string `json:"host_name"`
+	Carrier  string `json:"carrier"`
 }
 
 type QueryGetTaskResp struct {

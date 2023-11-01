@@ -114,7 +114,7 @@ func PostWorkflow(ctx context.Context, req api_workflow.PostWorkflowReq) (api_wo
 		message.GetMsgCtl().UpdateTaskWrapper(workflowId, api.SESSION_STATUS_INIT, fmt.Sprintf(" - Queueing TaskId: %s ", localTaskId)) // for debug only
 	}
 
-	items, total, e := repo_workflow.GetTaskCtl().GetItemsByWorkflowId(
+	items, total, e := repo_workflow.GetTaskCtl().GetItemsByWorkflowIdV18(
 		workflowId,
 	)
 	if e != nil {
@@ -133,7 +133,7 @@ func StopWorkflow(ctx context.Context, workflowId string) (ee error) { // only 1
 		"enabled": api.FALSE,
 	})
 
-	items, total, e := repo_workflow.GetTaskCtl().GetItemsByWorkflowId(
+	items, total, e := repo_workflow.GetTaskCtl().GetItemsByWorkflowIdV18(
 		workflowId,
 	)
 	if e != nil {
@@ -144,7 +144,7 @@ func StopWorkflow(ctx context.Context, workflowId string) (ee error) { // only 1
 
 	for i := 0; i < int(total); i++ {
 		item := items[i]
-		log.Printf("task in workflow: taskId = %s, ContainerId = %s, status=%d \n", item.Id, item.ContainerId, item.Status)
+		log.Printf("task in workflow: taskId = %s, status=%d \n", item.Id, item.Status)
 
 		if item.Status == api.TASK_STATUS_RUNNING {
 			StopTaskByBiz(item.Id)

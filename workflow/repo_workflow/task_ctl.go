@@ -159,7 +159,7 @@ func (ctl *TaskCtl) GetNextTasksByTaskId(taskId string) (items []Task, total int
 	return items, total, nil
 }
 
-func (ctl *TaskCtl) GetItemsByWorkflowId(wfId string) (x []api_workflow.TaskResp, total int64, e error) {
+func (ctl *TaskCtl) GetItemsByWorkflowIdDeprecated(wfId string) (x []api_workflow.TaskResp, total int64, e error) {
 
 	var tasks []api_workflow.TaskResp
 	db.Table("compute_task").
@@ -178,6 +178,27 @@ func (ctl *TaskCtl) GetItemsByWorkflowId(wfId string) (x []api_workflow.TaskResp
 		    `
 			err = db.Raw(sql, wfId).Scan(&tasks).Error
 	*/
+
+	/*
+	   SELECT DISTINCT (ct_sub.id), ct_sub.name, ct_sub.start_at, ct_sub.end_at, ct_sub.status, ct_sub.check_exit_code, ce.obj_id
+	   FROM (SELECT * FROM compute_task WHERE workflow_id = 'wf_1698824209416jbie') AS ct_sub
+	   JOIN compute_edge AS ce
+	   ON ct_sub.id = ce.start_task_id
+
+	*/
+
+	return tasks, total, nil
+}
+
+func (ctl *TaskCtl) GetItemsByWorkflowIdV18(wfId string) (x []api_workflow.TaskResp, total int64, e error) {
+	var tasks []api_workflow.TaskResp
+	db.Table("compute_task").
+		Select("DISTINCT compute_task.id, compute_task.name, compute_task.start_at, compute_task.end_at, compute_task.status, link.host_name , sched.carrier , compute_task.exit_code, ce.obj_id").
+		Joins("JOIN compute_edge AS ce JOIN sched JOIN link  ON compute_task.id = ce.start_task_id  AND sched.task_id = ct_sub.id AND sched.link_id = link.id ").
+		Where("compute_task.workflow_id = ?", wfId).
+		Find(&tasks).Limit(-1).
+		Offset(-1).
+		Count(&total)
 
 	return tasks, total, nil
 }

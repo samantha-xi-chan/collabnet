@@ -45,7 +45,7 @@ func GetTask(c *gin.Context) {
 		return
 	}
 
-	items, total, e := repo.GetTaskCtl().GetItemsByWorkflowId(
+	items, total, e := repo.GetTaskCtl().GetItemsByWorkflowIdV18(
 		query.WorkflowId,
 	)
 	if e != nil {
@@ -140,7 +140,7 @@ func GetWorkflow(c *gin.Context) {
 		return
 	}
 
-	items, total, e := repo.GetTaskCtl().GetItemsByWorkflowId(
+	items, total, e := repo.GetTaskCtl().GetItemsByWorkflowIdV18(
 		workflowId,
 	)
 	if e != nil {
