@@ -52,7 +52,7 @@ type Config struct {
 	HostName string
 	HostAddr string
 	Para01   int
-	Para02   string
+	Para02   string // 临时方案 用于存放 客户端IP地址
 }
 
 func connectToWebSocketServer(host string) (*websocket.Conn, error) {
@@ -93,7 +93,7 @@ func NewClientConnection(
 			}
 			localAddr := c.LocalAddr()
 			conf.Para02, _, _ = net.SplitHostPort(localAddr.String())
-			log.Println("本地IP地址:", conf.Para02)
+			log.Println("c.LocalAddr:", conf.Para02)
 
 			sm.HandleEvent(EVT_CONNECT_SUCC)
 
@@ -217,7 +217,10 @@ func NewClientConnection(
 						time.Now().UnixMilli(),
 						"1.0",
 						PACKAGE_TYPE_AUTHOK_RECVED,
-						BizInit{Para01: conf.Para01},
+						BizInit{
+							Para01: conf.Para01,
+							Para02: conf.Para02,
+						},
 					)
 
 					sm.HandleEvent(EVT_CONNECT_AUTH_OK)
