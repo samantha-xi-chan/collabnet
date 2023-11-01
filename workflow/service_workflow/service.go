@@ -13,7 +13,7 @@ import (
 	"collab-net-v2/sched/service_sched"
 	"collab-net-v2/workflow/api_workflow"
 	"collab-net-v2/workflow/config_workflow"
-	repo "collab-net-v2/workflow/repo_workflow"
+	"collab-net-v2/workflow/repo_workflow"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -29,7 +29,7 @@ func PostWorkflow(ctx context.Context, req api_workflow.PostWorkflowReq) (api_wo
 
 	workflowId := idgen.GetIdWithPref("wf_")
 	jsonStr, _ := json.Marshal(req)
-	repo.GetWorkflowCtl().CreateItem(repo.Workflow{
+	repo_workflow.GetWorkflowCtl().CreateItem(repo_workflow.Workflow{
 		ID:       workflowId,
 		Name:     workflowId,
 		Desc:     "",
@@ -46,7 +46,7 @@ func PostWorkflow(ctx context.Context, req api_workflow.PostWorkflowReq) (api_wo
 		}
 
 		taskId := idgen.GetIdWithPref("task_")
-		repo.GetTaskCtl().CreateItem(repo.Task{
+		repo_workflow.GetTaskCtl().CreateItem(repo_workflow.Task{
 			ID:         taskId,
 			Name:       task.Name,
 			CreateAt:   time.Now().UnixMilli(),
@@ -79,7 +79,7 @@ func PostWorkflow(ctx context.Context, req api_workflow.PostWorkflowReq) (api_wo
 		id := idgen.GetIdWithPref("edge")
 		log.Println("idx: ", idx, ", edge: ", edge)
 
-		startTask, e := repo.GetTaskCtl().GetItemFromWorkflowAndName(workflowId, edge.Start)
+		startTask, e := repo_workflow.GetTaskCtl().GetItemFromWorkflowAndName(workflowId, edge.Start)
 		if e != nil {
 			log.Println("GetItemFromWorkflowAndName err: ", e)
 			continue
@@ -87,7 +87,7 @@ func PostWorkflow(ctx context.Context, req api_workflow.PostWorkflowReq) (api_wo
 
 		var endTaskId string
 		if edge.End != "" {
-			endTask, e := repo.GetTaskCtl().GetItemFromWorkflowAndName(workflowId, edge.End)
+			endTask, e := repo_workflow.GetTaskCtl().GetItemFromWorkflowAndName(workflowId, edge.End)
 			if e != nil {
 				log.Println("GetItemFromWorkflowAndName err: ", e)
 				continue
@@ -97,7 +97,7 @@ func PostWorkflow(ctx context.Context, req api_workflow.PostWorkflowReq) (api_wo
 			endTaskId = api.RAMDOM_NAME_TASK_END
 		}
 
-		repo.GetEdgeCtl().CreateItem(repo.Edge{
+		repo_workflow.GetEdgeCtl().CreateItem(repo_workflow.Edge{
 			ID:          id,
 			CreateAt:    time.Now().UnixMilli(),
 			Name:        fmt.Sprintf("%s -> %s", edge.Start, edge.End),
@@ -114,7 +114,7 @@ func PostWorkflow(ctx context.Context, req api_workflow.PostWorkflowReq) (api_wo
 		message.GetMsgCtl().UpdateTaskWrapper(workflowId, api.SESSION_STATUS_INIT, fmt.Sprintf(" - Queueing TaskId: %s ", localTaskId)) // for debug only
 	}
 
-	items, total, e := repo.GetTaskCtl().GetItemsByWorkflowId(
+	items, total, e := repo_workflow.GetTaskCtl().GetItemsByWorkflowId(
 		workflowId,
 	)
 	if e != nil {
@@ -130,7 +130,7 @@ func PostWorkflow(ctx context.Context, req api_workflow.PostWorkflowReq) (api_wo
 
 func StopWorkflow(ctx context.Context, workflowId string) (ee error) { // only 1 task supported
 
-	items, total, e := repo.GetTaskCtl().GetItemsByWorkflowId(
+	items, total, e := repo_workflow.GetTaskCtl().GetItemsByWorkflowId(
 		workflowId,
 	)
 	if e != nil {
@@ -143,26 +143,32 @@ func StopWorkflow(ctx context.Context, workflowId string) (ee error) { // only 1
 		item := items[i]
 		log.Printf("task in workflow: taskId = %s, ContainerId = %s, status=%d \n", item.Id, item.ContainerId, item.Status)
 
-		if item.Status == api.TASK_STATUS_RUNNING && item.ContainerId != "" { // item.NodeId != "" &&
-			/*
-				nodeItem, e := repo.GetNodeCtl().GetItemByID(item.NodeId)
-				if e != nil {
-					return errors.Wrap(e, "repo.GetNodeCtl().GetItemByID: ")
-				}
+		if item.Status == api.TASK_STATUS_RUNNING {
+			StopTaskByBiz(item.Id)
 
-				ee := rpc.HttpStopContainer(nodeItem.Url, item.ContainerId)
-				if ee != nil {
-					log.Println("HttpStopContainer e:", ee)
-					continue
-				}
-
-				// update status
-				repo.GetTaskCtl().UpdateItemByID(item.Id, map[string]interface{}{
-					"status": api.TASK_STATUS_PAUSED,
-				})
-
-			*/
+			// update status
+			repo_workflow.GetTaskCtl().UpdateItemByID(item.Id, map[string]interface{}{
+				"status": api.TASK_STATUS_PAUSED,
+			})
 		}
+		/*
+			if item.Status == api.TASK_STATUS_RUNNING && item.ContainerId != "" {
+					nodeItem, e := repo.GetNodeCtl().GetItemByID(item.NodeId)
+					if e != nil {
+						return errors.Wrap(e, "repo.GetNodeCtl().GetItemByID: ")
+					}
+
+					ee := rpc.HttpStopContainer(nodeItem.Url, item.ContainerId)
+					if ee != nil {
+						log.Println("HttpStopContainer e:", ee)
+						continue
+					}
+
+					// update status
+					repo.GetTaskCtl().UpdateItemByID(item.Id, map[string]interface{}{
+						"status": api.TASK_STATUS_PAUSED,
+					})
+		*/
 	}
 
 	return nil
@@ -186,7 +192,7 @@ func OnTaskStatusChange(ctx context.Context, taskId string, status int, exitCode
 		return
 	}
 
-	item, e := repo.GetTaskCtl().GetItemByID(taskId)
+	item, e := repo_workflow.GetTaskCtl().GetItemByID(taskId)
 	if e != nil {
 		ee = errors.Wrap(e, "repo.GetTaskCtl().GetItemByID : ")
 		return
@@ -200,7 +206,7 @@ func OnTaskStatusChange(ctx context.Context, taskId string, status int, exitCode
 	if exitCode == 0 || (exitCode != 0 && item.CheckExitCode == api.FALSE) { // 任务成功 或 任务虽不成功 但是不介意
 		log.Println("exitCode == 0 || (exitCode != 0 && item.CheckExitCode == api.FALSE) ,taskId =  ", taskId)
 		// 找到可触发的后续0-N个任务
-		items, e := repo.GetEdgeCtl().GetItemsByStartTaskId(taskId)
+		items, e := repo_workflow.GetEdgeCtl().GetItemsByStartTaskId(taskId)
 		if e != nil {
 			log.Println("GetEndFromStart e: ", e)
 		}
@@ -214,21 +220,21 @@ func OnTaskStatusChange(ctx context.Context, taskId string, status int, exitCode
 				continue
 			}
 
-			size, e := repo.GetEdgeCtl().GetUnfinishedUpstremTaskId(edge.EndTaskId)
+			size, e := repo_workflow.GetEdgeCtl().GetUnfinishedUpstremTaskId(edge.EndTaskId)
 			if e != nil {
 				log.Println("GetUnfinishedUpstremTaskId e: ", e)
 			}
 
 			if size == 0 {
-				item, e := repo.GetTaskCtl().GetItemByID(taskId)
+				item, e := repo_workflow.GetTaskCtl().GetItemByID(taskId)
 				if e != nil {
 					ee = errors.Wrap(e, "repo.GetTaskCtl().GetItemByID : ")
 					return
 				}
 
 				taskIdToEnq := edge.EndTaskId
-				_, err := repo.GetRedisMgr().AcquireEnQueue(context.Background(), taskIdToEnq, func(id string) int {
-					affected, e := repo.GetTaskCtl().UpdateItemEnqueue(id)
+				_, err := repo_workflow.GetRedisMgr().AcquireEnQueue(context.Background(), taskIdToEnq, func(id string) int {
+					affected, e := repo_workflow.GetTaskCtl().UpdateItemEnqueue(id)
 					if e != nil {
 						return 0
 					}
@@ -249,7 +255,7 @@ func OnTaskStatusChange(ctx context.Context, taskId string, status int, exitCode
 		log.Println("exitCode != 0 && item.CheckExitCode == api.TRUE ,taskId =  ", taskId)
 		wfId := item.WorkflowId
 		log.Println("wfId: ", wfId)
-		repo.GetWorkflowCtl().UpdateItemByID(wfId, map[string]interface{}{
+		repo_workflow.GetWorkflowCtl().UpdateItemByID(wfId, map[string]interface{}{
 			"status": api.TASK_STATUS_END,
 		})
 	} else {
@@ -261,13 +267,13 @@ func OnTaskStatusChange(ctx context.Context, taskId string, status int, exitCode
 
 func GetWorkflowStatusByTaskId(taskId string) (status int, x error) {
 	log.Println("GetWorkflowStatusByTaskId taskId = ", taskId)
-	itemTask, e := repo.GetTaskCtl().GetItemByID(taskId)
+	itemTask, e := repo_workflow.GetTaskCtl().GetItemByID(taskId)
 	if e != nil {
 		return 0, errors.Wrap(e, "repo.GetTaskCtl().GetItemByID ")
 	}
 
 	wfId := itemTask.WorkflowId
-	itemWf, e := repo.GetWorkflowCtl().GetItemByID(wfId)
+	itemWf, e := repo_workflow.GetWorkflowCtl().GetItemByID(wfId)
 	if e != nil {
 		return 0, errors.Wrap(e, "repo.GetWorkflowCtl().GetItemByID ")
 	}
@@ -308,7 +314,7 @@ func GetWorkflowStatusByTaskId(taskId string) (status int, x error) {
 //	return nil
 //}
 
-func PlayAsConsumerBlock(mqUrl string, consumerCnt int) {
+func PlayAsConsumerBlock(mqUrl string, consumerCnt int, cleanTaskCtx bool) {
 	mq := util_mq.RabbitMQManager{}
 	defer mq.Release()
 
@@ -349,7 +355,7 @@ func PlayAsConsumerBlock(mqUrl string, consumerCnt int) {
 			func(body []byte) bool {
 				taskId := string(body)
 
-				itemTask, e := repo.GetTaskCtl().GetItemByID(taskId)
+				itemTask, e := repo_workflow.GetTaskCtl().GetItemByID(taskId)
 				if e != nil { // todo: 若记录未找到 则处理掉， 理应作为 warning
 					log.Println("taskId = ", taskId, ", 😄 e: ", e)
 					return true
@@ -392,14 +398,14 @@ func PlayAsConsumerBlock(mqUrl string, consumerCnt int) {
 				}
 
 				// 启动 登记
-				repo.GetTaskCtl().UpdateItemByID(taskId, map[string]interface{}{
+				repo_workflow.GetTaskCtl().UpdateItemByID(taskId, map[string]interface{}{
 					"start_at": time.Now().UnixMilli(),
 					"status":   api.TASK_STATUS_RUNNING,
 				})
 
 				// 准备任务的技术实现维度的参数
 				var bindIn []api.Bind
-				itemsIn, e := repo.GetEdgeCtl().GetItemsByEndTaskId(taskId)
+				itemsIn, e := repo_workflow.GetEdgeCtl().GetItemsByEndTaskId(taskId)
 				if e != nil {
 					log.Println("taskId = ", taskId, ", e: ", e) // warning
 					return true
@@ -420,7 +426,7 @@ func PlayAsConsumerBlock(mqUrl string, consumerCnt int) {
 				}
 
 				var bindOut []api.Bind
-				itemsOut, e := repo.GetEdgeCtl().GetItemsByStartTaskId(taskId)
+				itemsOut, e := repo_workflow.GetEdgeCtl().GetItemsByStartTaskId(taskId)
 				if e != nil {
 					log.Println("taskId = ", taskId, ", e: ", e) // warning
 					return true
@@ -450,8 +456,8 @@ func PlayAsConsumerBlock(mqUrl string, consumerCnt int) {
 					BucketName:     config_workflow.BUCKET_NAME,
 					CbAddr:         "",
 					LogRt:          true,
-					CleanContainer: false,
-					Name:           "cont_" + taskId,
+					CleanContainer: cleanTaskCtx,
+					Name:           fmt.Sprintf("%s_%d", taskId, time.Now().UnixMilli()),
 					Image:          itemTask.Image,
 					CmdStr:         stringArray,
 					BindIn:         bindIn,
@@ -479,7 +485,7 @@ func PlayAsConsumerBlock(mqUrl string, consumerCnt int) {
 
 				itemSched, _ := service_sched.WaitSchedEnd(idSched) // 临时用轮询方案, 遗留bug sched 执行完成 不代表任务完成
 
-				repo.GetTaskCtl().UpdateItemByID(taskId, map[string]interface{}{
+				repo_workflow.GetTaskCtl().UpdateItemByID(taskId, map[string]interface{}{
 					"exit_code": itemSched.BizCode,
 					"end_at":    time.Now().UnixMilli(),
 					"status":    api.TASK_STATUS_END,
