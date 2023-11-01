@@ -47,20 +47,20 @@ fi
 echo
 echo "wfId: " $wfId
 
-sleep 10
-
-# 查询 workflow
-API_URL="http://$API_IP:$API_PORT/api/v1/task?workflow_id=$wfId"
-resultGetTask=$(curl -X GET "$API_URL"  -H "request-id: $RANDOM")
-if [ $? -ne 0 ]; then
-  echo "Error: Failed to post the HTTP request"
-  exit 1
-fi
-echo $resultGetTask
+#sleep 3
+#
+## 查询 workflow
+#API_URL="http://$API_IP:$API_PORT/api/v1/task?workflow_id=$wfId"
+#resultGetTask=$(curl -X GET "$API_URL"  -H "request-id: $RANDOM")
+#if [ $? -ne 0 ]; then
+#  echo "Error: Failed to post the HTTP request"
+#  exit 1
+#fi
+#echo $resultGetTask
 
 # 关闭 workflow
-API_URL="http://$API_IP:$API_PORT/api/v1/workflow/wf1695727729450ajvs"
-echo $API_URL
-result=$(curl -X PATCH "$API_URL"  -H "request-id: $RANDOM")
-
-echo "PATCH result: "$result
+#API_URL="http://$API_IP:$API_PORT/api/v1/workflow/$wfId"
+#echo $API_URL
+#result=$(curl -X PATCH "$API_URL"  -H "request-id: $RANDOM")
+#
+#echo "PATCH result: "$result

@@ -117,6 +117,8 @@ func OnTimer(idTimer string, evtType int, holder string, bytes []byte) (ee error
 		log.Println("OnTimer unknown")
 	}
 
+	StopSched(holder) // 一刀切：任何超时 关闭 sched的执行
+
 	return
 }
 

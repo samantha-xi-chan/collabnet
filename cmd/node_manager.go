@@ -88,21 +88,6 @@ func HandlerDockerTask(task api.PluginTask) (willHandle bool) {
 			},
 		))
 
-		// 普通的命令行执行
-		/*
-			cmd := exec.Command("bash", "-c", task.Cmd)
-
-			// 设置命令的输出和错误输出
-			cmd.Stdout = os.Stdout
-			cmd.Stderr = os.Stderr
-
-			// 执行命令
-			err := cmd.Run()
-			if err != nil {
-				fmt.Printf("Command execution failed: %v\n", err)
-			}
-		*/
-
 		// 启动 docker 执行命令
 		log.Println("task.Cmd: ", task.Cmd)
 
