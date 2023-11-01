@@ -117,7 +117,7 @@ func OnTimer(idTimer string, evtType int, holder string, bytes []byte) (ee error
 		log.Println("OnTimer unknown")
 	}
 
-	StopSched(holder) // 一刀切：任何超时 关闭 sched的执行
+	StopSchedById(holder) // 一刀切：任何超时 关闭 sched的执行
 
 	return
 }
@@ -230,7 +230,7 @@ func OnBizDataFromRegisterEndpoint(endpoint string, bytes []byte) (e error) { //
 	return
 }
 
-func StopSched(taskId string) (ee error) { // todo: send stop cmd to excutors
+func StopSchedByTaskId(taskId string) (ee error) { // todo: send stop cmd to excutors
 	var arr []repo_sched.QueryKeyValue
 	arr = append(arr, repo_sched.QueryKeyValue{
 		"task_id",
@@ -273,7 +273,52 @@ func StopSched(taskId string) (ee error) { // todo: send stop cmd to excutors
 	}
 
 	// todo: add timer ...
+	repo_sched.GetSchedCtl().UpdateItemById(
+		item.Id,
+		map[string]interface{}{
+			"task_enabled": api.FALSE,
+		},
+	)
 
+	callback(item.Id, api.TASK_EVT_STOPPED, nil)
+
+	return
+}
+
+func StopSchedById(id string) (ee error) {
+	item, e := repo_sched.GetSchedCtl().GetItemById(id)
+	if e != nil {
+		log.Println("repo_sched.GetSchedCtl().GetItemById, e=", e)
+		return
+	}
+
+	log.Println("[StopSched]  GetItemByKeyValueArr", item)
+
+	// todo: 发送消息到 node 节点
+	code, e := link.SendDataToLinkId(
+		item.LinkId,
+		link.GetPackageBytes(
+			time.Now().UnixMilli(),
+			config.VerSched,
+			link.PACKAGE_TYPE_BIZ,
+			link.PlatformBiiData{
+				ActionType: link.ACTION_TYPE_STOPTASK,
+				TaskType:   item.TaskType,
+				SchedId:    item.Id,
+				TaskId:     item.TaskId,
+			}))
+	if e != nil {
+		// 记录关键错误
+		log.Println("StopSched e ", e)
+	}
+	log.Println("StopSched code", code)
+
+	if item.FwkCode == api.STATUS_SCHED_FINISHED {
+		log.Println("x f item.FwkCode == api.SCHED_FWK_CODE_END, item.Reason = ", item.Reason)
+		return
+	}
+
+	// todo: add timer ...
 	repo_sched.GetSchedCtl().UpdateItemById(
 		item.Id,
 		map[string]interface{}{

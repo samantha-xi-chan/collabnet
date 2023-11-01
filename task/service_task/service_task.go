@@ -88,7 +88,7 @@ func NewTask(name string, cmd string, linkId string, cmdackTimeoutSecond int, pr
 
 func PatchTask(idTask string) (ee error) {
 
-	service_sched.StopSched(idTask)
+	service_sched.StopSchedByTaskId(idTask)
 
 	return nil
 }

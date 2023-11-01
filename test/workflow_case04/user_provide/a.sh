@@ -13,5 +13,8 @@ echo "created by NAME: "$NAME  | tee -a $OUTPUT
 #  i=$((i + 1))
 #done
 
-echo "a going to sleep 1" | tee -a $OUTPUT
-sleep 30
+TimeSecond=40
+
+echo "a going to sleep: " $TimeSecond | tee -a $OUTPUT
+sleep $TimeSecond
+echo "end of  sleep :" $TimeSecond | tee -a $OUTPUT
