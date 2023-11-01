@@ -61,10 +61,9 @@ func OnConnChange(endpoint string, _type int) (e error) {
 	return nil
 }
 
-func OnTimerWrapper(idTimer string, _type int, holder string, bytes []byte) (ee error) {
-	log.Printf("[OnTimerWrapper ╥﹏╥...] holder %s,  idTimer: %s, bytes: %s", holder, idTimer, string(bytes))
+func OnTimerWrapper(idTimer string, evtType int, holder string, bytes []byte) (ee error) {
 	go func() {
-		OnTimer(idTimer, _type, holder, bytes)
+		OnTimer(idTimer, evtType, holder, bytes)
 	}()
 	return nil
 }
@@ -268,7 +267,7 @@ func StopSchedByTaskId(taskId string) (ee error) { // todo: send stop cmd to exc
 	log.Println("StopSched code", code)
 
 	if item.FwkCode == api.STATUS_SCHED_FINISHED {
-		log.Println("x f item.FwkCode == api.SCHED_FWK_CODE_END, item.Reason = ", item.Reason)
+		log.Println("StopSchedByTaskId item.FwkCode == api.SCHED_FWK_CODE_END, item.Reason = ", item.Reason)
 		return
 	}
 
@@ -314,7 +313,7 @@ func StopSchedById(id string) (ee error) {
 	log.Println("StopSched code", code)
 
 	if item.FwkCode == api.STATUS_SCHED_FINISHED {
-		log.Println("x f item.FwkCode == api.SCHED_FWK_CODE_END, item.Reason = ", item.Reason)
+		log.Println("StopSchedById  item.FwkCode == api.SCHED_FWK_CODE_END, item.Reason = ", item.Reason)
 		return
 	}
 
@@ -418,7 +417,7 @@ func WaitSchedEnd(idSched string) (repo_sched.Sched, error) { // 临时用轮询
 		}
 
 		if item.BestProg >= api.STATUS_SCHED_RUN_END {
-			log.Println(" werew item.FwkCode == api.SCHED_FWK_CODE_END , item.Reason = ", item.Reason)
+			log.Println(" WaitSchedEnd item.FwkCode == api.SCHED_FWK_CODE_END , item.Reason = ", item.Reason)
 			return item, nil
 		}
 
