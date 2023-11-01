@@ -76,6 +76,8 @@ func CreateContainerWrapper(ctx context.Context, req api.PostContainerReq, conta
 	if err != nil {
 		return "", err
 	}
+
+	containerId = containerId[:12]
 	log.Println("docker_container.CreateContainer, containerId = ", containerId)
 
 	return containerId, nil

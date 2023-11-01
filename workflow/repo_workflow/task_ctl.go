@@ -190,7 +190,7 @@ func (ctl *TaskCtl) GetItemsByWorkflowIdDeprecated(wfId string) (x []api_workflo
 	return tasks, total, nil
 }
 
-func (ctl *TaskCtl) GetItemsByWorkflowIdV18(wfId string) (x []api_workflow.TaskResp, total int64, e error) {
+func (ctl *TaskCtl) GetItemsByWorkflowIdV18(wfId string) (x []api_workflow.TaskResp, total int64, e error) { // todo: ORDER BY create_at
 	var tasks []api_workflow.TaskResp
 	db.Table("compute_task").
 		Select("DISTINCT compute_task.id, compute_task.name, compute_task.start_at, compute_task.end_at, compute_task.status, link.host_name , sched.carrier , compute_task.exit_code, ce.obj_id").
@@ -199,6 +199,13 @@ func (ctl *TaskCtl) GetItemsByWorkflowIdV18(wfId string) (x []api_workflow.TaskR
 		Find(&tasks).Limit(-1).
 		Offset(-1).
 		Count(&total)
+
+	/*
+		SELECT DISTINCT ct.id, ct.name, ct.start_at, ct.end_at, ct.status, link.host_name , sched.carrier , ct.exit_code, ce.obj_id
+		FROM `compute_task` AS ct JOIN compute_edge AS ce JOIN sched JOIN link
+		ON ct.id = ce.start_task_id  AND sched.task_id = ct.id AND sched.link_id = link.id
+		WHERE ct.workflow_id = 'wf_1698825735413xzkd'
+	*/
 
 	return tasks, total, nil
 }
