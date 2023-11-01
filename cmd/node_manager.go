@@ -5,6 +5,7 @@ import (
 	"collab-net-v2/internal/config"
 	"collab-net-v2/link"
 	"collab-net-v2/package/message"
+	"collab-net-v2/package/util/docker_container"
 	"collab-net-v2/package/util/docker_vol"
 	"collab-net-v2/package/util/util_minio"
 	"collab-net-v2/sched/config_sched"
@@ -41,10 +42,11 @@ func OnUpdateFromPlugin(id string, status int, para01 int) {
 			time.Now().UnixMilli(),
 			config.VerSched,
 			link.PACKAGE_TYPE_BIZ,
-			link.BizData{
-				TypeId:  link.BIZ_TYPE_NEWTASK,
-				SchedId: id,
-				Para01:  api.TASK_EVT_PREACK,
+			link.PlatformBiiData{
+				ActionType: link.ACTION_TYPE_NEWTASK,
+				TaskType:   link.TASK_TYPE_RAW,
+				SchedId:    id,
+				Para01:     api.TASK_EVT_PREACK,
 			},
 		))
 
@@ -52,10 +54,11 @@ func OnUpdateFromPlugin(id string, status int, para01 int) {
 			time.Now().UnixMilli(),
 			config.VerSched,
 			link.PACKAGE_TYPE_BIZ,
-			link.BizData{
-				TypeId:  link.BIZ_TYPE_NEWTASK,
-				SchedId: id,
-				Para01:  api.TASK_EVT_HEARTBEAT,
+			link.PlatformBiiData{
+				ActionType: link.ACTION_TYPE_NEWTASK,
+				TaskType:   link.TASK_TYPE_RAW,
+				SchedId:    id,
+				Para01:     api.TASK_EVT_HEARTBEAT,
 			},
 		))
 	} else if status == api.TASK_EVT_END {
@@ -63,11 +66,12 @@ func OnUpdateFromPlugin(id string, status int, para01 int) {
 			time.Now().UnixMilli(),
 			config.VerSched,
 			link.PACKAGE_TYPE_BIZ,
-			link.BizData{
-				TypeId:   link.BIZ_TYPE_NEWTASK,
-				SchedId:  id,
-				Para01:   api.TASK_EVT_END,
-				Para0101: para01,
+			link.PlatformBiiData{
+				ActionType: link.ACTION_TYPE_NEWTASK,
+				TaskType:   link.TASK_TYPE_RAW,
+				SchedId:    id,
+				Para01:     api.TASK_EVT_END,
+				Para0101:   para01,
 			},
 		))
 	}
@@ -81,10 +85,11 @@ func HandlerDockerTask(task api.PluginTask) (willHandle bool) {
 			time.Now().UnixMilli(),
 			config.VerSched,
 			link.PACKAGE_TYPE_BIZ,
-			link.BizData{
-				TypeId:  link.BIZ_TYPE_NEWTASK,
-				SchedId: task.Id,
-				Para01:  api.TASK_EVT_PREACK,
+			link.PlatformBiiData{
+				ActionType: link.ACTION_TYPE_NEWTASK,
+				TaskType:   link.TASK_TYPE_DOCKER,
+				SchedId:    task.Id,
+				Para01:     api.TASK_EVT_PREACK,
 			},
 		))
 
@@ -97,6 +102,8 @@ func HandlerDockerTask(task api.PluginTask) (willHandle bool) {
 			fmt.Println("JSON deserialization error:", err)
 			return
 		}
+
+		schedId := task.Id
 
 		quit := make(chan bool)
 
@@ -113,10 +120,11 @@ func HandlerDockerTask(task api.PluginTask) (willHandle bool) {
 						time.Now().UnixMilli(),
 						config.VerSched,
 						link.PACKAGE_TYPE_BIZ,
-						link.BizData{
-							TypeId:  link.BIZ_TYPE_NEWTASK,
-							SchedId: task.Id,
-							Para01:  api.TASK_EVT_HEARTBEAT,
+						link.PlatformBiiData{
+							ActionType: link.ACTION_TYPE_NEWTASK,
+							TaskType:   link.TASK_TYPE_DOCKER,
+							SchedId:    task.Id,
+							Para01:     api.TASK_EVT_HEARTBEAT,
 						},
 					))
 
@@ -128,18 +136,19 @@ func HandlerDockerTask(task api.PluginTask) (willHandle bool) {
 		}()
 
 		exitCode := 0
-		containerId, e := service_workflow.CreateContainerWrapper(context.Background(), containerReq)
+		containerId, e := service_workflow.CreateContainerWrapper(context.Background(), containerReq, schedId)
 		if e != nil {
 			SendBizData2Platform(link.GetPackageBytes(
 				time.Now().UnixMilli(),
 				config.VerSched,
 				link.PACKAGE_TYPE_BIZ,
-				link.BizData{
-					TypeId:   link.BIZ_TYPE_NEWTASK,
-					SchedId:  task.Id,
-					Para01:   api.TASK_EVT_END,
-					Para0101: api.ERR_CREAT_CONTAINER,
-					Para0102: e.Error(),
+				link.PlatformBiiData{
+					ActionType: link.ACTION_TYPE_NEWTASK,
+					TaskType:   link.TASK_TYPE_DOCKER,
+					SchedId:    schedId,
+					Para01:     api.TASK_EVT_END,
+					Para0101:   api.ERR_CREAT_CONTAINER,
+					Para0102:   e.Error(),
 				},
 			))
 
@@ -151,11 +160,12 @@ func HandlerDockerTask(task api.PluginTask) (willHandle bool) {
 			time.Now().UnixMilli(),
 			config.VerSched,
 			link.PACKAGE_TYPE_BIZ,
-			link.BizData{
-				TypeId:   link.BIZ_TYPE_NEWTASK,
-				SchedId:  task.Id,
-				Para01:   api.TASK_EVT_REPORT,
-				Para0102: containerId,
+			link.PlatformBiiData{
+				ActionType: link.ACTION_TYPE_NEWTASK,
+				TaskType:   link.TASK_TYPE_DOCKER,
+				SchedId:    task.Id,
+				Para01:     api.TASK_EVT_REPORT,
+				Para0102:   containerId,
 			},
 		))
 
@@ -171,12 +181,13 @@ func HandlerDockerTask(task api.PluginTask) (willHandle bool) {
 			time.Now().UnixMilli(),
 			config.VerSched,
 			link.PACKAGE_TYPE_BIZ,
-			link.BizData{
-				TypeId:   link.BIZ_TYPE_NEWTASK,
-				SchedId:  task.Id,
-				Para01:   api.TASK_EVT_END,
-				Para0101: exitCode, // exitCode: 0表示成功
-				Para0102: errString,
+			link.PlatformBiiData{
+				ActionType: link.ACTION_TYPE_NEWTASK,
+				TaskType:   link.TASK_TYPE_DOCKER,
+				SchedId:    task.Id,
+				Para01:     api.TASK_EVT_END,
+				Para0101:   exitCode, // exitCode: 0表示成功
+				Para0102:   errString,
 			},
 		))
 	}()
@@ -188,14 +199,14 @@ func OnNewBizDataFromPlatform(bytes []byte) {
 	onNewBizData := string(bytes)
 	log.Println("OnNewBizData: ", onNewBizData)
 
-	var body link.BizData
+	var body link.PlatformBiiData
 	err = json.Unmarshal(bytes, &body)
 	if err != nil {
 		log.Println("[OnNewBizData] json.Unmarshal")
 		return
 	}
 
-	if body.TypeId == link.BIZ_TYPE_NEWTASK {
+	if body.ActionType == link.ACTION_TYPE_NEWTASK && body.TaskType == link.TASK_TYPE_RAW {
 		schedId := body.SchedId
 		taskId := body.TaskId
 		log.Println("[OnNewBizData]  schedId = ", schedId)
@@ -205,11 +216,12 @@ func OnNewBizDataFromPlatform(bytes []byte) {
 			time.Now().UnixMilli(),
 			config.VerSched,
 			link.PACKAGE_TYPE_BIZ,
-			link.BizData{
-				TypeId:  link.BIZ_TYPE_NEWTASK,
-				SchedId: schedId,
-				TaskId:  taskId,
-				Para01:  api.TASK_EVT_CMDACK,
+			link.PlatformBiiData{
+				ActionType: link.ACTION_TYPE_NEWTASK,
+				TaskType:   link.TASK_TYPE_RAW,
+				SchedId:    schedId,
+				TaskId:     taskId,
+				Para01:     api.TASK_EVT_CMDACK,
 			},
 		))
 		log.Println(" [OnNewBizDataFromPlatform] SendBizData2Platform STATUS_SCHED_CMD_ACKED schedId = ", schedId)
@@ -224,7 +236,7 @@ func OnNewBizDataFromPlatform(bytes []byte) {
 			TimeoutRun: body.Para03,
 		}
 		pluginChan <- newTask
-	} else if body.TypeId == link.BIZ_TYPE_STOPTASK {
+	} else if body.ActionType == link.ACTION_TYPE_STOPTASK && body.TaskType == link.TASK_TYPE_RAW {
 		schedId := body.SchedId
 		taskId := body.TaskId
 		log.Println("[OnNewBizData]  schedId = ", schedId)
@@ -234,10 +246,11 @@ func OnNewBizDataFromPlatform(bytes []byte) {
 			time.Now().UnixMilli(),
 			config.VerSched,
 			link.PACKAGE_TYPE_BIZ,
-			link.BizData{
-				TypeId:  link.BIZ_TYPE_STOPTASK,
-				SchedId: schedId,
-				TaskId:  taskId,
+			link.PlatformBiiData{
+				ActionType: link.ACTION_TYPE_STOPTASK,
+				TaskType:   link.TASK_TYPE_RAW,
+				SchedId:    schedId,
+				TaskId:     taskId,
 			},
 		))
 		log.Println(" [OnNewBizDataFromPlatform] SendBizData2Platform STATUS_SCHED_CMD_ACKED schedId = ", schedId)
@@ -250,7 +263,7 @@ func OnNewBizDataFromPlatform(bytes []byte) {
 			Valid:  false,
 		}
 		pluginChan <- stopTask
-	} else if body.TypeId == link.BIZ_TYPE_NEW_DOCKER_TASK {
+	} else if body.ActionType == link.ACTION_TYPE_NEWTASK && body.TaskType == link.TASK_TYPE_DOCKER {
 		schedId := body.SchedId
 		taskId := body.TaskId
 		log.Println("[OnNewBizData]  schedId = ", schedId)
@@ -260,11 +273,12 @@ func OnNewBizDataFromPlatform(bytes []byte) {
 			time.Now().UnixMilli(),
 			config.VerSched,
 			link.PACKAGE_TYPE_BIZ,
-			link.BizData{
-				TypeId:  link.BIZ_TYPE_NEWTASK, // todo: 变为 docker
-				SchedId: schedId,
-				TaskId:  taskId,
-				Para01:  api.TASK_EVT_CMDACK,
+			link.PlatformBiiData{
+				ActionType: link.ACTION_TYPE_NEWTASK,
+				TaskType:   link.TASK_TYPE_DOCKER,
+				SchedId:    schedId,
+				TaskId:     taskId,
+				Para01:     api.TASK_EVT_CMDACK,
 			},
 		))
 		log.Println(" [OnNewBizDataFromPlatform] SendBizData2Platform STATUS_SCHED_CMD_ACKED schedId = ", schedId)
@@ -279,7 +293,7 @@ func OnNewBizDataFromPlatform(bytes []byte) {
 			TimeoutRun: body.Para03,
 		}
 		HandlerDockerTask(newTask)
-	} else if body.TypeId == link.BIZ_TYPE_STOP_DOCKER_TASK {
+	} else if body.ActionType == link.ACTION_TYPE_STOPTASK && body.TaskType == link.TASK_TYPE_DOCKER {
 		schedId := body.SchedId
 		taskId := body.TaskId
 		log.Println("[OnNewBizData]  schedId = ", schedId)
@@ -289,16 +303,18 @@ func OnNewBizDataFromPlatform(bytes []byte) {
 			time.Now().UnixMilli(),
 			config.VerSched,
 			link.PACKAGE_TYPE_BIZ,
-			link.BizData{
-				TypeId:  link.BIZ_TYPE_STOPTASK,
-				SchedId: schedId,
-				TaskId:  taskId,
+			link.PlatformBiiData{
+				ActionType: link.ACTION_TYPE_STOPTASK,
+				TaskType:   link.TASK_TYPE_DOCKER,
+				SchedId:    schedId,
+				TaskId:     taskId,
 			},
 		))
 		log.Println(" [OnNewBizDataFromPlatform] SendBizData2Platform STATUS_SCHED_CMD_ACKED schedId = ", schedId)
-		// todo: 在此执行关闭容器操作
+
+		docker_container.StopContainerByName(schedId)
 	} else {
-		log.Println("WARNING: unknown cmd, body.TypeId = ", body.TypeId)
+		log.Println("WARNING: unknown cmd, ", body.ActionType, " ", body.TaskType)
 	}
 
 }

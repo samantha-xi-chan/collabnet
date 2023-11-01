@@ -13,7 +13,7 @@ type PostContainerReq struct {
 	LogRt          bool   `json:"log_rt"`
 	CleanContainer bool   `json:"clean_container"`
 
-	Name   string   `json:"name"`
+	//Name   string   `json:"name"`
 	Image  string   `json:"image"`
 	CmdStr []string `json:"cmd_str"`
 

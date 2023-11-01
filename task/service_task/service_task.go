@@ -1,5 +1,7 @@
 package service_task
 
+// raw task only , in v1.8
+
 import (
 	"collab-net-v2/internal/config"
 	"collab-net-v2/link"
@@ -63,7 +65,9 @@ func NewTask(name string, cmd string, linkId string, cmdackTimeoutSecond int, pr
 		return "", errors.New("item.Online != 1")
 	}
 
-	idSched, e := service_sched.NewSched(idTask, link.BIZ_TYPE_NEWTASK, cmd, linkId, cmdackTimeoutSecond, preTimeoutSecond, runTimeoutSecond)
+	idSched, e := service_sched.NewSched(idTask,
+		link.ACTION_TYPE_NEWTASK, link.TASK_TYPE_RAW,
+		cmd, linkId, cmdackTimeoutSecond, preTimeoutSecond, runTimeoutSecond)
 	if e != nil {
 		log.Printf("service_sched.NewTask: e=", e)
 		return "", e

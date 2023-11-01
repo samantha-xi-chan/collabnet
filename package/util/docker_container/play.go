@@ -13,6 +13,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"log"
+	"strings"
 )
 
 func WatchContainer(ctx context.Context, taskId string, containerId string, cleanContainer bool, logRt bool) (exitCode_ int, e error) {
@@ -196,6 +197,37 @@ func StopContainer(containerId string) (e error) {
 	}
 
 	log.Println("Container Stopped, ", containerId)
+	return nil
+}
+
+func StopContainerByName(containerName string) (e error) {
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		return errors.Wrap(err, "cli.ContainerList()")
+	}
+
+	containers, err := cli.ContainerList(context.Background(), types.ContainerListOptions{
+		All: false,
+	})
+	if err != nil {
+		return errors.Wrap(err, "ContainerList: ")
+	}
+
+	for _, item := range containers {
+		fmt.Printf("containerName：%s\n", item.Names)
+		if strings.Contains(item.Names[0], containerName) {
+			log.Println("trying to invoke ContainerStop: ", containerName, " ", item.ID)
+			err = cli.ContainerStop(context.Background(), item.ID, container.StopOptions{
+				Signal:  "",
+				Timeout: nil,
+			})
+			if err != nil {
+				return errors.Wrap(err, "cli.ContainerStop(): ")
+			}
+		}
+
+	} // end  of for
+
 	return nil
 }
 

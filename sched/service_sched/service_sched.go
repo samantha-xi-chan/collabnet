@@ -132,7 +132,7 @@ func OnBizDataFromRegisterEndpointWrapper(endpoint string, bytes []byte) (e erro
 func OnBizDataFromRegisterEndpoint(endpoint string, bytes []byte) (e error) { // 网络 事件
 	log.Printf("[OnBizDataFromRegisterEndpoint] endpoint: %s, bytes: %s", endpoint, string(bytes))
 
-	var body link.BizData
+	var body link.PlatformBiiData
 	err := json.Unmarshal(bytes, &body)
 	if err != nil {
 		log.Println("[OnBizDataFromRegisterEndpoint]    Error decoding JSON:", err, " string(bytes): ", string(bytes))
@@ -255,10 +255,11 @@ func StopSched(taskId string) (ee error) { // todo: send stop cmd to excutors
 			time.Now().UnixMilli(),
 			config.VerSched,
 			link.PACKAGE_TYPE_BIZ,
-			link.BizData{
-				TypeId:  link.BIZ_TYPE_STOPTASK,
-				SchedId: item.Id,
-				TaskId:  taskId,
+			link.PlatformBiiData{
+				ActionType: link.ACTION_TYPE_STOPTASK,
+				TaskType:   item.TaskType,
+				SchedId:    item.Id,
+				TaskId:     taskId,
 			}))
 	if e != nil {
 		// 记录关键错误
@@ -285,11 +286,12 @@ func StopSched(taskId string) (ee error) { // todo: send stop cmd to excutors
 	return
 }
 
-func NewSched(taskId string, taskType int, cmd string, linkId string, cmdackTimeoutSecond int, preTimeoutSecond int, runTimeoutSecond int) (_id string, e error) {
+func NewSched(taskId string, actionType int, taskType int, cmd string, linkId string, cmdackTimeoutSecond int, preTimeoutSecond int, runTimeoutSecond int) (_id string, e error) {
 	idSched := idgen.GetIdWithPref("sched")
 	repo_sched.GetSchedCtl().CreateItem(repo_sched.Sched{
 		Id:            idSched,
 		TaskId:        taskId,
+		TaskType:      taskType,
 		TaskEnabled:   api.TRUE,
 		BestProg:      api.STATUS_SCHED_INIT,
 		LinkId:        linkId,
@@ -310,14 +312,15 @@ func NewSched(taskId string, taskType int, cmd string, linkId string, cmdackTime
 			time.Now().UnixMilli(),
 			config.VerSched,
 			link.PACKAGE_TYPE_BIZ,
-			link.BizData{
-				TypeId:  taskType,
-				SchedId: idSched,
-				TaskId:  taskId,
-				Para01:  config_sched.SCHED_HEARTBEAT_INTERVAL,
-				Para02:  preTimeoutSecond,
-				Para03:  runTimeoutSecond,
-				Para11:  cmd,
+			link.PlatformBiiData{
+				ActionType: actionType,
+				TaskType:   taskType,
+				SchedId:    idSched,
+				TaskId:     taskId,
+				Para01:     config_sched.SCHED_HEARTBEAT_INTERVAL,
+				Para02:     preTimeoutSecond,
+				Para03:     runTimeoutSecond,
+				Para11:     cmd,
 			}))
 	if e != nil || code != 0 {
 		log.Println("link.SendDataToEndpoint failed ")

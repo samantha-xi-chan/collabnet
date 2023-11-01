@@ -36,11 +36,12 @@ const (
 )
 
 const (
-	BIZ_TYPE_NEWTASK  = 13891011 //  启动任务在用，任务结束通知也在用
-	BIZ_TYPE_STOPTASK = 13891021
-
-	BIZ_TYPE_NEW_DOCKER_TASK  = 13891111
-	BIZ_TYPE_STOP_DOCKER_TASK = 13891121
+	ACTION_TYPE_NEWTASK  = 13891011 //  启动任务在用，任务结束通知也在用
+	ACTION_TYPE_STOPTASK = 13891021
+)
+const (
+	TASK_TYPE_RAW    = 13881011
+	TASK_TYPE_DOCKER = 13881021
 )
 
 type Package struct {
@@ -65,8 +66,10 @@ type BizInit struct { // 暂时做语意角度的开放
 	Para02 string `json:"para02"`
 }
 
-type BizData struct { // 业务角度： 任务新建、任务停止、
-	TypeId  int    `json:"type_id"`
+type PlatformBiiData struct { // 业务角度： 任务新建、任务停止、
+	ActionType int `json:"action_type"` // 开启 、 关闭
+	TaskType   int `json:"task_type"`   // raw 、 docker
+
 	SchedId string `json:"sched_id"`
 	TaskId  string `json:"task_id"`
 
@@ -77,11 +80,22 @@ type BizData struct { // 业务角度： 任务新建、任务停止、
 	// 洋葱进去一层
 	Para0101 int    `json:"para0101"`
 	Para0102 string `json:"para0102"`
-
-	//HbInterval int `json:"hb_interval"` /* second */
-	//PreTimeout int `json:"pre_timeout"` /* second */
-	//RunTimeout int `json:"run_timeout"` /* second */
 }
+
+//type BizData struct { // 业务角度： 任务新建、任务停止、
+//	TypeId string `json:"type_id"`
+//
+//	SchedId string `json:"sched_id"`
+//	TaskId  string `json:"task_id"`
+//
+//	Para01 int    `json:"para01"`
+//	Para02 int    `json:"para02"`
+//	Para03 int    `json:"para03"`
+//	Para11 string `json:"para11"`
+//	// 洋葱进去一层
+//	Para0101 int    `json:"para0101"`
+//	Para0102 string `json:"para0102"`
+//}
 
 //type HelloReq struct {
 //	Host string

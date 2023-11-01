@@ -484,11 +484,11 @@ func PlayAsConsumerBlock(mqUrl string, consumerCnt int, cleanTaskCtx bool) {
 					CbAddr:         "",
 					LogRt:          true,
 					CleanContainer: cleanTaskCtx,
-					Name:           fmt.Sprintf("%s_%d", taskId, time.Now().UnixMilli()),
-					Image:          itemTask.Image,
-					CmdStr:         stringArray,
-					BindIn:         bindIn,
-					BindOut:        bindOut,
+					//Name:           fmt.Sprintf("%s_%d", taskId, time.Now().UnixMilli()),
+					Image:   itemTask.Image,
+					CmdStr:  stringArray,
+					BindIn:  bindIn,
+					BindOut: bindOut,
 				}
 				log.Println("newContainer: ", newContainer)
 
@@ -499,7 +499,9 @@ func PlayAsConsumerBlock(mqUrl string, consumerCnt int, cleanTaskCtx bool) {
 				}
 
 				// item.CmdStr
-				idSched, e := service_sched.NewSched(itemTask.ID, link.BIZ_TYPE_NEW_DOCKER_TASK, string(jsonData), itemLink.Id,
+				idSched, e := service_sched.NewSched(itemTask.ID,
+					link.ACTION_TYPE_NEWTASK, link.TASK_TYPE_DOCKER,
+					string(jsonData), itemLink.Id,
 					config_sched.DEFAULT_CMDACK_TIMEOUT,
 					config_sched.DEFAULT_PREACK_TIMEOUT,
 					itemTask.Timeout)

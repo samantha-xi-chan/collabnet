@@ -223,7 +223,7 @@ func NewClientConnection(
 					sm.HandleEvent(EVT_CONNECT_AUTH_OK)
 
 				} else if pack.Type == PACKAGE_TYPE_BIZ {
-					var body BizData
+					var body PlatformBiiData
 					bytes, _ := json.Marshal(pack.Body)
 					err = json.Unmarshal(bytes, &body)
 					if err != nil {
