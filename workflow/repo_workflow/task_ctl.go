@@ -194,7 +194,7 @@ func (ctl *TaskCtl) GetItemsByWorkflowIdV18(wfId string) (x []api_workflow.TaskR
 	var tasks []api_workflow.TaskResp
 	db.Table("compute_task").
 		Select("DISTINCT compute_task.id, compute_task.name, compute_task.start_at, compute_task.end_at, compute_task.status, link.host_name , sched.carrier , compute_task.exit_code, ce.obj_id").
-		Joins("JOIN compute_edge AS ce JOIN sched JOIN link  ON compute_task.id = ce.start_task_id  AND sched.task_id = ct_sub.id AND sched.link_id = link.id ").
+		Joins("JOIN compute_edge AS ce JOIN sched JOIN link  ON compute_task.id = ce.start_task_id  AND sched.task_id = compute_task.id AND sched.link_id = link.id ").
 		Where("compute_task.workflow_id = ?", wfId).
 		Find(&tasks).Limit(-1).
 		Offset(-1).
