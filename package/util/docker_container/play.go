@@ -223,6 +223,8 @@ func StopContainerByName(containerName string) (e error) {
 			})
 			if err != nil {
 				return errors.Wrap(err, "cli.ContainerStop(): ")
+			} else {
+				log.Println(" ContainerStop OK:  ", containerName, " ", item.ID)
 			}
 		}
 

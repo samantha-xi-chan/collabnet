@@ -95,7 +95,7 @@ func StartContainerAndWait(ctx context.Context, containerId string, req api.Post
 		log.Println(" !!! docker_container.WatchContainer, err = ", e)
 		return 0, e
 	}
-	log.Println("exitCode: ", exitCode)
+	log.Println("exitCode: ", exitCode, " , containerId: ", containerId)
 
 	out := []string{}
 	if len(req.BindOut) >= 1 {
@@ -113,5 +113,5 @@ func StartContainerAndWait(ctx context.Context, containerId string, req api.Post
 
 	log.Println("StartContainerAndWait out: ", out)
 
-	return 0, nil
+	return exitCode, nil
 }
