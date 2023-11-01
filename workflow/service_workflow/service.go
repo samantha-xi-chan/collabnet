@@ -32,6 +32,7 @@ func PostWorkflow(ctx context.Context, req api_workflow.PostWorkflowReq) (api_wo
 	repo_workflow.GetWorkflowCtl().CreateItem(repo_workflow.Workflow{
 		ID:       workflowId,
 		Name:     workflowId,
+		Enabled:  api.TRUE,
 		Desc:     "",
 		CreateAt: time.Now().UnixMilli(),
 		CreateBy: 0,
@@ -129,6 +130,9 @@ func PostWorkflow(ctx context.Context, req api_workflow.PostWorkflowReq) (api_wo
 }
 
 func StopWorkflow(ctx context.Context, workflowId string) (ee error) { // only 1 task supported
+	repo_workflow.GetWorkflowCtl().UpdateItemByID(workflowId, map[string]interface{}{
+		"enabled": api.FALSE,
+	})
 
 	items, total, e := repo_workflow.GetTaskCtl().GetItemsByWorkflowId(
 		workflowId,
@@ -180,11 +184,18 @@ func OnTaskStatusChange(ctx context.Context, taskId string, status int, exitCode
 
 	message.GetMsgCtl().UpdateTaskWrapper(taskId, api.SESSION_STATUS_END, fmt.Sprintf("status: %d, exitCode: %d", status, exitCode)) // demo
 
-	statusWf, e := GetWorkflowStatusByTaskId(taskId)
+	itemWorkflow, e := GetWorkflowByTaskId(taskId)
 	if e != nil {
 		ee = errors.Wrap(e, "GetWorkflowStatusByTaskId : ")
 		return
 	}
+
+	if itemWorkflow.Enabled == api.FALSE {
+		log.Println("OnTaskStatusChange: itemWorkflow.Enabled == api.FALSE")
+		return
+	}
+
+	statusWf := itemWorkflow.Status
 	log.Println("GetWorkflowStatusByTaskId: status = ", status)
 
 	if statusWf == api.TASK_STATUS_END {
@@ -279,6 +290,22 @@ func GetWorkflowStatusByTaskId(taskId string) (status int, x error) {
 	}
 
 	return itemWf.Status, nil
+}
+
+func GetWorkflowByTaskId(taskId string) (item repo_workflow.Workflow, x error) {
+	log.Println("GetWorkflowStatusByTaskId taskId = ", taskId)
+	itemTask, e := repo_workflow.GetTaskCtl().GetItemByID(taskId)
+	if e != nil {
+		return item, errors.Wrap(e, "repo.GetTaskCtl().GetItemByID ")
+	}
+
+	wfId := itemTask.WorkflowId
+	itemWf, e := repo_workflow.GetWorkflowCtl().GetItemByID(wfId)
+	if e != nil {
+		return item, errors.Wrap(e, "repo.GetWorkflowCtl().GetItemByID ")
+	}
+
+	return itemWf, nil
 }
 
 //func RecordTaskAndWorkflowFinish(taskId string, wfId string, errStr string) (x error) {

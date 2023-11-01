@@ -15,12 +15,12 @@ func StopTaskByBiz(idTask string) (ee error) {
 	repo_sched.GetSchedCtl().UpdateItemById(
 		idTask,
 		map[string]interface{}{
-			"task_enabled": api.INT_DISABLED,
+			"task_enabled": api.FALSE,
 		},
 	)
 
 	repo_workflow.GetTaskCtl().UpdateItemByID(idTask, map[string]interface{}{
-		"enable": 0,
+		"enable": api.FALSE,
 	})
 
 	return nil

@@ -124,8 +124,6 @@ func PatchWorkflow(c *gin.Context) {
 		return
 	}
 
-	//log.Println("items, total: ", items, total)
-
 	c.JSON(http.StatusOK, api.HttpRespBody{
 		Code: 0,
 		Msg:  "",

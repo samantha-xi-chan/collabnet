@@ -80,11 +80,11 @@ func OnTimer(idTimer string, evtType int, holder string, bytes []byte) (ee error
 		log.Println("xfz itemTask.FwkCode == api.SCHED_FWK_CODE_END , item.Reason = ", itemTask.Reason)
 		return nil
 	}
-	if itemTask.TaskEnabled == api.INT_DISABLED { // 业务角度抛弃
+	if itemTask.TaskEnabled == api.FALSE { // 业务角度抛弃
 		log.Println("itemTask.TaskEnabled == api.INT_DISABLED")
 		return nil
 	}
-	if itemTask.Enabled == api.INT_DISABLED { // 技术角度抛弃
+	if itemTask.Enabled == api.FALSE { // 技术角度抛弃
 		log.Println("itemTask.Enabled == api.INT_DISABLED")
 		return nil
 	}
@@ -149,11 +149,11 @@ func OnBizDataFromRegisterEndpoint(endpoint string, bytes []byte) (e error) { //
 		log.Println(" sff itemTask.FwkCode == api.SCHED_FWK_CODE_END , item.Reason = ", itemTask.Reason)
 		return nil
 	}
-	if itemTask.TaskEnabled == api.INT_DISABLED { // 业务角度抛弃
+	if itemTask.TaskEnabled == api.FALSE { // 业务角度抛弃
 		log.Println("itemTask.TaskEnabled == api.INT_DISABLED")
 		return nil
 	}
-	if itemTask.Enabled == api.INT_DISABLED { // 技术角度抛弃
+	if itemTask.Enabled == api.FALSE { // 技术角度抛弃
 		log.Println("itemTask.Enabled == api.INT_DISABLED")
 		return nil
 	}
@@ -236,7 +236,7 @@ func StopSched(taskId string) (ee error) { // todo: send stop cmd to excutors
 	})
 	arr = append(arr, repo_sched.QueryKeyValue{
 		"enabled",
-		api.INT_ENABLED,
+		api.TRUE,
 	})
 	item, e := repo_sched.GetSchedCtl().GetItemByKeyValueArr(arr)
 	if e != nil {
@@ -274,7 +274,7 @@ func StopSched(taskId string) (ee error) { // todo: send stop cmd to excutors
 	repo_sched.GetSchedCtl().UpdateItemById(
 		item.Id,
 		map[string]interface{}{
-			"task_enabled": api.INT_DISABLED,
+			"task_enabled": api.FALSE,
 		},
 	)
 
@@ -288,12 +288,12 @@ func NewSched(taskId string, taskType int, cmd string, linkId string, cmdackTime
 	repo_sched.GetSchedCtl().CreateItem(repo_sched.Sched{
 		Id:            idSched,
 		TaskId:        taskId,
-		TaskEnabled:   api.INT_ENABLED,
+		TaskEnabled:   api.TRUE,
 		BestProg:      api.STATUS_SCHED_INIT,
 		LinkId:        linkId,
 		CreateAt:      time.Now().UnixMilli(),
 		ActiveAt:      time.Now().UnixMilli(),
-		Enabled:       api.INT_ENABLED,
+		Enabled:       api.TRUE,
 		CmdackTimeout: cmdackTimeoutSecond,
 		PreTimeout:    preTimeoutSecond,
 		HbTimeout:     config_sched.SCHED_HEARTBEAT_TIMEOUT,

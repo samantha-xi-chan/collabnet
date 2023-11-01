@@ -29,7 +29,7 @@ API_URL="http://$API_IP:$API_PORT/api/v1/workflow"
 req=$(cat $DAG)
 #echo "$req"
 
-# curl -X POST "http://192.168.31.8:8081/api/v1/workflow"  -H "request-id: $RANDOM" -d "$req"
+# 创建 workflow
 result=$(curl -X POST "$API_URL"  -H "request-id: $RANDOM" -d "$req")
 if [ $? -ne 0 ]; then
   echo "Error: Failed to post the HTTP request"
@@ -47,16 +47,20 @@ fi
 echo
 echo "wfId: " $wfId
 
-#sleep 2
-#
-#API_URL="http://$API_IP:$API_PORT/api/v1/task?workflow_id=$wfId"
-#resultGetTask=$(curl -X GET "$API_URL"  -H "request-id: $RANDOM")
-#if [ $? -ne 0 ]; then
-#  echo "Error: Failed to post the HTTP request"
-#  exit 1
-#fi
-#echo $resultGetTask
+sleep 10
 
+# 查询 workflow
+API_URL="http://$API_IP:$API_PORT/api/v1/task?workflow_id=$wfId"
+resultGetTask=$(curl -X GET "$API_URL"  -H "request-id: $RANDOM")
+if [ $? -ne 0 ]; then
+  echo "Error: Failed to post the HTTP request"
+  exit 1
+fi
+echo $resultGetTask
 
-#    "import_obj_id":"task_1694855605076icxk",
-#    "import_obj_as":"/docker/imported/",
+# 关闭 workflow
+API_URL="http://$API_IP:$API_PORT/api/v1/workflow/wf1695727729450ajvs"
+echo $API_URL
+result=$(curl -X PATCH "$API_URL"  -H "request-id: $RANDOM")
+
+echo "PATCH result: "$result

@@ -84,10 +84,5 @@ const (
 )
 
 const (
-	INT_ENABLED  = 1
-	INT_DISABLED = 0
-)
-
-const (
 	BIZ_CODE_INVALID = -1001
 )

@@ -26,6 +26,7 @@ type Workflow struct {
 	CreateAt int64  `json:"create_at"`
 	CreateBy int64  `json:"create_by"`
 	Desc     string `json:"desc"`
+	Enabled  int    `json:"enabled"` // 上层业务角度希望 有效/无效
 	Status   int    `json:"status"  gorm:"default:60021001"`
 	ExitCode int    `json:"exit_code"`
 	Define   string `json:"define"`
