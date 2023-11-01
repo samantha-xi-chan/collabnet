@@ -43,12 +43,11 @@ type Task struct {
 	Define string `json:"define" `
 	Status int    `json:"status" gorm:"index:idx_status"   gorm:"default:60021001"` // TASK_STATUS_INIT     = 60021001
 	Error  string `json:"error" `
-	NodeId string `json:"node_id" `
+	//NodeId string `json:"node_id" `
+	//ContainerId string `json:"container_id"`
 
 	ImportObjId string `json:"import_obj_id"`
 	ImportObjAs string `json:"import_obj_as"`
-
-	ContainerId string `json:"container_id"`
 }
 
 func (ctl *TaskCtl) CreateItem(item Task) (err error) {

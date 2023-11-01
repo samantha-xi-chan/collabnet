@@ -65,7 +65,6 @@ func PostWorkflow(ctx context.Context, req api_workflow.PostWorkflowReq) (api_wo
 			CheckExitCode: grammar.GetCodeFromBool(task.CheckExitCode),
 			Define:        "",
 			Status:        api.TASK_STATUS_INIT,
-			NodeId:        "",
 
 			ImportObjId: task.ImportObjId,
 			ImportObjAs: task.ImportObjAs,
