@@ -192,15 +192,36 @@ func (ctl *TaskCtl) GetItemsByWorkflowIdDeprecated(wfId string) (x []api_workflo
 
 func (ctl *TaskCtl) GetItemsByWorkflowIdV18(wfId string) (x []api_workflow.TaskResp, total int64, e error) { // todo: ORDER BY create_at
 	var tasks []api_workflow.TaskResp
-	db.Table("compute_task").
-		Select("DISTINCT compute_task.id, compute_task.name, compute_task.start_at, compute_task.end_at, compute_task.status, link.host_name , sched.carrier , compute_task.exit_code, ce.obj_id").
-		Joins("JOIN compute_edge AS ce JOIN sched JOIN link  ON compute_task.id = ce.start_task_id  AND sched.task_id = compute_task.id AND sched.link_id = link.id ").
-		Where("compute_task.workflow_id = ?", wfId).
-		Find(&tasks).Limit(-1).
+
+	db.Table("(SELECT DISTINCT ct.id, ct.name, ct.start_at, ct.end_at, ct.status, ct.exit_code, ce.obj_id FROM compute_task AS ct JOIN compute_edge AS ce ON ct.id = ce.start_task_id WHERE ct.workflow_id = ?) AS task_sub", wfId).
+		Select("task_sub.*, link.host_name, sched.carrier").
+		Joins("LEFT JOIN sched ON sched.task_id = task_sub.id").
+		Joins("LEFT JOIN link ON link.id = sched.link_id").
+		Scan(&tasks).Limit(-1).
 		Offset(-1).
 		Count(&total)
 
 	/*
+			SELECT task_sub.* ,link.host_name, sched.carrier
+		    FROM ( SELECT DISTINCT ct.id, ct.name, ct.start_at, ct.end_at, ct.status, ct.exit_code, ce.obj_id
+			    FROM `compute_task` AS ct JOIN compute_edge AS ce
+			    ON ct.id = ce.start_task_id
+			    WHERE ct.workflow_id = 'wf_1699007538633eeyr') AS task_sub
+			LEFT JOIN sched
+			ON sched.task_id  = task_sub.id
+			LEFT JOIN link
+			ON link.id = sched.link_id
+	*/
+
+	/*
+		db.Table("compute_task").
+			Select("DISTINCT compute_task.id, compute_task.name, compute_task.start_at, compute_task.end_at, compute_task.status, link.host_name , sched.carrier , compute_task.exit_code, ce.obj_id").
+			Joins("JOIN compute_edge AS ce JOIN sched JOIN link  ON compute_task.id = ce.start_task_id  AND sched.task_id = compute_task.id AND sched.link_id = link.id ").
+			Where("compute_task.workflow_id = ?", wfId).
+			Find(&tasks).Limit(-1).
+			Offset(-1).
+			Count(&total)
+
 		SELECT DISTINCT ct.id, ct.name, ct.start_at, ct.end_at, ct.status, link.host_name , sched.carrier , ct.exit_code, ce.obj_id
 		FROM `compute_task` AS ct JOIN compute_edge AS ce JOIN sched JOIN link
 		ON ct.id = ce.start_task_id  AND sched.task_id = ct.id AND sched.link_id = link.id
