@@ -60,7 +60,7 @@ func CreateContainerWrapper(ctx context.Context, req api.PostContainerReq, conta
 		cpuSet = fmt.Sprintf("0-%d", numCPU/2-1)
 	}
 
-	containerId, err = docker_container.CreateContainer(ctx,
+	id, err := docker_container.CreateContainer(ctx,
 		taskId, req.CbAddr,
 		false,
 		req.Image,
@@ -77,7 +77,7 @@ func CreateContainerWrapper(ctx context.Context, req api.PostContainerReq, conta
 		return "", err
 	}
 
-	containerId = containerId[:12]
+	containerId = id[:12]
 	log.Println("docker_container.CreateContainer, containerId = ", containerId)
 
 	return containerId, nil

@@ -328,6 +328,12 @@ func init() {
 	firstParty := config.GetFirstParty()
 	log.Println("firstParty: ", firstParty)
 	if firstParty {
+		log.Printf("Running In Mode FirstParty Node !!!!!! ") // Info level log
+	} else {
+		log.Printf("Running In Mode UserProvided Node !!!!!! ") // Info level log
+	}
+
+	if firstParty {
 		v := config.GetDependMsgRpc()
 		log.Println("GetDependMsgRpc: ", v)
 		succ := message.GetMsgCtl().Init(v)
