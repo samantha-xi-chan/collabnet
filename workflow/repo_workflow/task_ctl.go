@@ -197,7 +197,7 @@ func (ctl *TaskCtl) GetItemsByWorkflowIdV18(wfId string) (x []api_workflow.TaskR
 		Select("task_sub.*, link.host_name, sched.carrier, sched.reason").
 		Joins("LEFT JOIN sched ON sched.task_id = task_sub.id").
 		Joins("LEFT JOIN link ON link.id = sched.link_id").
-		Order("task_sub.start_at ASC").
+		Order("task_sub.create_at ASC").
 		Scan(&tasks).Limit(-1).
 		Offset(-1).
 		Count(&total)
