@@ -193,7 +193,7 @@ func (ctl *TaskCtl) GetItemsByWorkflowIdDeprecated(wfId string) (x []api_workflo
 func (ctl *TaskCtl) GetItemsByWorkflowIdV18(wfId string) (x []api_workflow.TaskResp, total int64, e error) { // todo: ORDER BY create_at
 	var tasks []api_workflow.TaskResp
 
-	db.Table("(SELECT DISTINCT ct.id, ct.name, ct.start_at, ct.end_at, ct.status, ct.exit_code, ce.obj_id FROM compute_task AS ct JOIN compute_edge AS ce ON ct.id = ce.start_task_id WHERE ct.workflow_id = ?) AS task_sub", wfId).
+	db.Table("(SELECT DISTINCT ct.id, ct.name, ct.create_at,ct.start_at, ct.end_at, ct.status, ct.exit_code, ce.obj_id FROM compute_task AS ct JOIN compute_edge AS ce ON ct.id = ce.start_task_id WHERE ct.workflow_id = ?) AS task_sub", wfId).
 		Select("task_sub.*, link.host_name, sched.carrier, sched.reason").
 		Joins("LEFT JOIN sched ON sched.task_id = task_sub.id").
 		Joins("LEFT JOIN link ON link.id = sched.link_id").
