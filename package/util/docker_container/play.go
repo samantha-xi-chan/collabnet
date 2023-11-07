@@ -14,26 +14,54 @@ import (
 	"github.com/sirupsen/logrus"
 	"log"
 	"strings"
+	"time"
 )
 
 func WatchContainer(ctx context.Context, taskId string, containerId string, cleanContainer bool, logRt bool) (exitCode_ int, e error) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	BUF_SIZE := 4096
 	stdOut := make(chan string, BUF_SIZE)
 	stdErr := make(chan string, BUF_SIZE)
 
+	isHot := true
 	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				fmt.Println("Child routine received signal to exit.")
+				return
+			default:
+				fmt.Println("Child routine is running...")
+				time.Sleep(10 * time.Second)
+				b, e := message.GetMsgCtl().GetTaskIsHot(taskId)
+				if e != nil {
+					log.Println("message.GetMsgCtl().GetTaskIsHot: e = ", e) // todo: error
+					continue
+				}
+				if b == api.TRUE {
+					isHot = true
+				} else {
+					isHot = false
+				}
+			}
+		}
+	}()
+
+	go func() { // todo： 协程泄漏 ？
 		for msg := range stdOut {
 			message.GetMsgCtl().UpdateTaskWrapper(taskId, api.TASK_STATUS_RUNNING, msg)
 		}
 	}()
-	go func() {
+	go func() { // todo： 协程泄漏 ？
 		for msg := range stdErr {
 			message.GetMsgCtl().UpdateTaskWrapper(taskId, api.TASK_STATUS_RUNNING, msg)
 		}
 	}()
 
 	if logRt {
-		funcErrCode, procErrCode, e := procutil.StartProcBloRt(stdOut, stdErr, func(pid int) {
+		funcErrCode, procErrCode, e := procutil.StartProcBloRt(stdOut, stdErr, &isHot, func(pid int) {
 			//log.Printf("taskId %s, pid: %d\n", taskId, pid)
 		}, true, procutil.GetDockerBin(), "logs", "--follow", containerId)
 		logrus.Debugf("funcErrCode: %d, procErrCode: %d, error: %s ", funcErrCode, procErrCode, e)
@@ -71,6 +99,7 @@ func WatchContainer(ctx context.Context, taskId string, containerId string, clea
 			RemoveVolumes: true,
 		})
 	}
+
 	return exitCode, nil
 }
 

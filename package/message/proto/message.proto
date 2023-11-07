@@ -10,7 +10,6 @@ message UpdateSessionStatusReq {
   int32 evt_type = 3;      // 1001. 会话启动    1002.会话结束
   string payload = 4;
 }
-
 message UpdateSessionStatusResp {
   int32 err_code = 1;
   string msg = 2;
@@ -21,13 +20,22 @@ message FeedSessionStreamReq {
   int64 timestamp = 2;
   string payload = 3;
 }
-
 message FeedSessionStreamResp {
   int32 err_code = 1;
   string msg = 2;
 }
 
+message GetSessionStatusReq {
+  string session_id = 1;
+}
+message GetSessionStatusResp {
+  int32 code = 1;
+  string msg = 3;
+  int32 data = 2;
+}
+
 service Message {
   rpc UpdateSessionStatus (UpdateSessionStatusReq) returns (UpdateSessionStatusResp) {}
   rpc FeedSessionStream (FeedSessionStreamReq) returns (FeedSessionStreamResp) {}
+  rpc GetSessionStatus (GetSessionStatusReq) returns (GetSessionStatusResp) {}
 }

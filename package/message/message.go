@@ -87,3 +87,27 @@ func (ctl *MsgCtl) updateTask(taskId string, status int, extra string) (e error)
 
 	return nil
 }
+
+func (ctl *MsgCtl) GetTaskIsHot(taskId string) (isHot int, e error) {
+	client := pb.NewMessageClient(ctl.conn)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*2)
+	defer cancel()
+
+	resp, err := client.GetSessionStatus(
+		ctx,
+		&pb.GetSessionStatusReq{
+			SessionId: taskId,
+		})
+	if err != nil {
+		logrus.Errorf("gRPC err: %v", err) // todo P1 : add extra base64
+		return api.FALSE, errors.Wrap(err, "GetSessionStatus: ")
+	}
+
+	if resp.Code != 0 {
+		logrus.Errorf("resp.Code != 0: %#v", resp.Code) // todo P1 : add extra base64
+		return api.FALSE, errors.Wrap(err, "GetSessionStatus: ")
+	}
+
+	return int(resp.Data), nil
+}

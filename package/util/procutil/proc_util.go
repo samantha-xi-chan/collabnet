@@ -94,7 +94,7 @@ func GetDockerBin() string {
 	return ""
 }
 
-func StartProcBloRt(stdOut chan string, stdErr chan string, cb Callback, trackLog bool, cmdName string, cmdArg ...string) (funcErrCode int, procErrCode int, e error) {
+func StartProcBloRt(stdOut chan string, stdErr chan string, enableWatch *bool, cb Callback, trackLog bool, cmdName string, cmdArg ...string) (funcErrCode int, procErrCode int, e error) {
 
 	var wg sync.WaitGroup
 
@@ -128,7 +128,9 @@ func StartProcBloRt(stdOut chan string, stdErr chan string, cb Callback, trackLo
 			scanner := bufio.NewScanner(stdout)
 			for scanner.Scan() {
 				str := scanner.Text()
-				stdOut <- str
+				if *enableWatch {
+					stdOut <- str
+				}
 
 				if false { // todo: tmp
 					log.Println("StartProcBlo out str : ", str)
@@ -149,7 +151,9 @@ func StartProcBloRt(stdOut chan string, stdErr chan string, cb Callback, trackLo
 			scanner := bufio.NewScanner(stderr)
 			for scanner.Scan() {
 				str := scanner.Text()
-				stdErr <- str
+				if *enableWatch {
+					stdErr <- str
+				}
 
 				if false { // todo: tmp
 					log.Println("StartProcBlo err str : ", str)
