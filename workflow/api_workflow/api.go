@@ -96,6 +96,7 @@ type TaskResp struct {
 	HostName string `json:"host_name"`
 	Carrier  string `json:"carrier"`
 	Reason   string `json:"reason"`
+	Error    string `json:"error"`
 }
 
 type QueryGetTaskResp struct {

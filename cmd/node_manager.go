@@ -376,7 +376,7 @@ var pluginChan = make(chan api.PluginTask)
 
 func main() {
 	log.Println("main() ")
-	//fmt.Printf("Version: %s\n", Version)
+	fmt.Printf("Version: %s\n", Version)
 	fmt.Printf("BuildTime: %s\n", BuildTime)
 	fmt.Printf("GitCommit: %s\n", GitCommit)
 

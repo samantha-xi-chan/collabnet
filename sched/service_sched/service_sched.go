@@ -94,22 +94,26 @@ func OnTimer(idTimer string, evtType int, holder string, bytes []byte) (ee error
 		repo_sched.GetSchedCtl().UpdateItemById(itemTask.Id, map[string]interface{}{
 			"fwk_code": api.FWK_CODE_ERR_CMD_ACK,
 			"reason":   "evtType == api.SCHED_EVT_TIMEOUT_CMDACK",
+			"error":    "evtType == api.SCHED_EVT_TIMEOUT_CMDACK",
 		})
 	} else if evtType == api.SCHED_EVT_TIMEOUT_PREACK {
 		repo_sched.GetSchedCtl().UpdateItemById(itemTask.Id, map[string]interface{}{
 			"fwk_code": api.FWK_CODE_ERR_PRE_ACK,
 			"reason":   "evtType == api.SCHED_EVT_TIMEOUT_PREACK",
+			"error":    "evtType == api.SCHED_EVT_TIMEOUT_PREACK",
 		})
 	} else if evtType == api.SCHED_EVT_TIMEOUT_HB {
 		repo_sched.GetSchedCtl().UpdateItemById(itemTask.Id, map[string]interface{}{
 			"fwk_code": api.FWK_CODE_ERR_HEARBEAT,
 			"reason":   " evtType == api.SCHED_EVT_TIMEOUT_HB",
+			"error":    " evtType == api.SCHED_EVT_TIMEOUT_HB",
 		})
 	} else if evtType == api.SCHED_EVT_TIMEOUT_RUN {
 		repo_sched.GetSchedCtl().UpdateItemById(itemTask.Id, map[string]interface{}{
 			"fwk_code":  api.FWK_CODE_ERR_RUN_TIMEOUT,
 			"finish_at": time.Now().UnixMilli(),
 			"reason":    "evtType == api.SCHED_EVT_TIMEOUT_RUN",
+			"error":     "evtType == api.SCHED_EVT_TIMEOUT_RUN",
 		})
 
 		service_time.DisableTimer(itemTask.HbTimer)
@@ -210,6 +214,7 @@ func OnBizDataFromRegisterEndpoint(endpoint string, bytes []byte) (e error) { //
 			"fwk_code":  api.FWK_CODE_ERR_OK,
 			"biz_code":  body.Para0101,
 			"reason":    body.Para0102,
+			"error":     body.Para0102,
 		})
 
 		service_time.DisableTimer(itemTask.HbTimer)
@@ -374,6 +379,7 @@ func NewSched(taskId string, actionType int, taskType int, cmd string, linkId st
 			"best_prog": api.STATUS_SCHED_ANALYZE,
 			"fwk_code":  api.FWK_CODE_ERR_SEND,
 			"reason":    "link.SendDataToLinkId e != nil || code != 0",
+			"error":     "link.SendDataToLinkId e != nil || code != 0",
 		})
 		callback(taskId, api.TASK_EVT_REJECT, nil)
 		return idSched, nil

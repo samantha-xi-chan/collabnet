@@ -12,6 +12,7 @@ import (
 	"collab-net-v2/util/logrus_wrap"
 	"collab-net-v2/workflow"
 	"context"
+	"fmt"
 	logrustash "github.com/bshuster-repo/logrus-logstash-hook"
 	"github.com/sirupsen/logrus"
 	"log"
@@ -28,6 +29,10 @@ func main() {
 	ctx := context.Background()
 	var logger *logrus.Logger
 	log.Println("main [init] : ")
+	fmt.Printf("Version: %s\n", Version)
+	fmt.Printf("BuildTime: %s\n", BuildTime)
+	fmt.Printf("GitCommit: %s\n", GitCommit)
+
 	instance := config.GetRunningInstance()
 	logServer := config.GetLogServer()
 	//

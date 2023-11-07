@@ -16,6 +16,11 @@ import (
 )
 
 func main() {
+
+	fmt.Printf("Version: %s\n", Version)
+	fmt.Printf("BuildTime: %s\n", BuildTime)
+	fmt.Printf("GitCommit: %s\n", GitCommit)
+
 	for {
 		log.Println("-    -    -    -    -    ")
 		dto, e := waitTaskCmd()
