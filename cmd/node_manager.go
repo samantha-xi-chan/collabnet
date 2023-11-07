@@ -155,7 +155,7 @@ func HandlerDockerTask(task api.PluginTask) (willHandle bool) {
 			return
 		}
 
-		log.Println("任务执行 容器创建OK， containerId = ", containerId)
+		log.Println("task running : container created， containerId = ", containerId)
 		SendBizData2Platform(link.GetPackageBytes(
 			time.Now().UnixMilli(),
 			config.VerSched,
