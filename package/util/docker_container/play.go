@@ -30,16 +30,17 @@ func WatchContainer(ctx context.Context, taskId string, containerId string, clea
 		for {
 			select {
 			case <-ctx.Done():
-				fmt.Println("Child routine received signal to exit.")
+				log.Println("Child routine received signal to exit. taskId = ", taskId)
 				return
 			default:
-				fmt.Println("Child routine is running...")
-				time.Sleep(500 * time.Millisecond)
+				log.Println("WatchContainer Child routine is running.. taskId = ", taskId)
+				time.Sleep(10 * 1000 * time.Millisecond)
 				b, e := message.GetMsgCtl().GetTaskIsHot(taskId)
 				if e != nil {
 					log.Println("message.GetMsgCtl().GetTaskIsHot: e = ", e) // todo: error
 					continue
 				}
+				log.Printf(" container Id: %s, isHot: %d \n", containerId, b)
 				if b == api.TRUE {
 					isHot = true
 				} else {

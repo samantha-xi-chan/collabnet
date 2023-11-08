@@ -120,7 +120,7 @@ func HandlerDockerTask(task api.PluginTask) (willHandle bool) {
 			for {
 				select {
 				case <-ticker.C:
-					log.Println("Heartbeat")
+					log.Println("HandlerDockerTask Heartbeat schedId = ", schedId)
 
 					SendBizData2Platform(link.GetPackageBytes(
 						time.Now().UnixMilli(),
@@ -160,6 +160,7 @@ func HandlerDockerTask(task api.PluginTask) (willHandle bool) {
 			return
 		}
 
+		mapContainerHeartbeat[schedId] = time.Now().UnixMilli()
 		log.Println("task running : container created， containerId = ", containerId)
 		SendBizData2Platform(link.GetPackageBytes(
 			time.Now().UnixMilli(),
@@ -181,7 +182,7 @@ func HandlerDockerTask(task api.PluginTask) (willHandle bool) {
 			errString = e.Error()
 		}
 
-		log.Println("任务执行 ed", task.TaskId)
+		log.Println("task run  ed", task.TaskId)
 		SendBizData2Platform(link.GetPackageBytes(
 			time.Now().UnixMilli(),
 			config.VerSched,
@@ -449,8 +450,8 @@ func main() {
 	go func() {
 		for true {
 			for key, tick := range mapContainerHeartbeat {
-				if time.Now().UnixMilli()-tick > HeartbeatIntervalSecond*HeartbeatIntervalSecondMul {
-					log.Printf("mapContainerHeartbeat Key: %s, Value: %d time.Now().UnixMilli()-tick >  const \n", key, tick)
+				if time.Now().UnixMilli()/1000-tick/1000 > HeartbeatIntervalSecond*HeartbeatIntervalSecondMul {
+					log.Printf("WARNING: mapContainerHeartbeat Key: %s, Value: %d time.Now().UnixMilli()-tick >  const \n", key, tick)
 					// kill it and remove record
 					docker_container.StopContainerByName(key)
 					delete(mapContainerHeartbeat, key)
