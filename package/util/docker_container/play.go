@@ -34,7 +34,7 @@ func WatchContainer(ctx context.Context, taskId string, containerId string, clea
 				return
 			default:
 				log.Println("WatchContainer Child routine is running.. taskId = ", taskId)
-				time.Sleep(10 * 1000 * time.Millisecond)
+				time.Sleep(1 * 1000 * time.Millisecond)
 				b, e := message.GetMsgCtl().GetTaskIsHot(taskId)
 				if e != nil {
 					log.Println("message.GetMsgCtl().GetTaskIsHot: e = ", e) // todo: error
