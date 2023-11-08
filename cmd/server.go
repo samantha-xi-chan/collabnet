@@ -10,6 +10,7 @@ import (
 	"collab-net-v2/task/control_task"
 	"collab-net-v2/task/service_task"
 	"collab-net-v2/util/logrus_wrap"
+	"collab-net-v2/util/util_net"
 	"collab-net-v2/workflow"
 	"context"
 	"fmt"
@@ -23,6 +24,30 @@ func OnTaskChange(idTask string, evt int, x []byte) (e error) {
 	log.Println("USER [OnTaskChange] idTask = ", idTask, ", evt = ", evt)
 
 	return nil
+}
+
+func init() {
+	log.Println("main [init] start ")
+	defer func() {
+		log.Println("main [init] end ")
+	}()
+
+	for true {
+		bAllOK, _ := util_net.CheckTcpService(
+			[]string{
+				"go-message-waiter:10051",
+				"mysql-collabnet:3306",
+				"minio-service:9000",
+			},
+		)
+
+		log.Println("bAllOK: ", bAllOK)
+		if bAllOK {
+			break
+		}
+
+		time.Sleep(time.Second)
+	}
 }
 
 func main() {
