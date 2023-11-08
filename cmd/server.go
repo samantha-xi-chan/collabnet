@@ -36,8 +36,11 @@ func init() {
 		bAllOK, _ := util_net.CheckTcpService(
 			[]string{
 				"go-message-waiter:10051", // todo: coding style
+				"go-message-notify:9102",
 				"mysql-collabnet:3306",
 				"minio-service:9000",
+				"redis-service:6379",
+				"rmq-cluster:5672",
 			},
 		)
 
