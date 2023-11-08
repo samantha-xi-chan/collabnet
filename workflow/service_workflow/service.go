@@ -497,6 +497,7 @@ func PlayAsConsumerBlock(mqUrl string, consumerCnt int, cleanTaskCtx bool) {
 					fmt.Println("JSON serialization error:", err) // todo: xxx
 				}
 
+				message.GetMsgCtl().UpdateTaskWrapper(itemTask.WorkflowId, api.SESSION_STATUS_INIT, fmt.Sprintf(" - Starting TaskId: %s ", itemTask.ID)) // for debug only
 				// item.CmdStr
 				idSched, e := service_sched.NewSched(itemTask.ID,
 					link.ACTION_TYPE_NEWTASK, link.TASK_TYPE_DOCKER,
@@ -520,6 +521,7 @@ func PlayAsConsumerBlock(mqUrl string, consumerCnt int, cleanTaskCtx bool) {
 				})
 
 				OnTaskStatusChange(context.Background(), taskId, api.TASK_STATUS_END, itemSched.BizCode)
+				message.GetMsgCtl().UpdateTaskWrapper(itemTask.WorkflowId, api.SESSION_STATUS_INIT, fmt.Sprintf(" - End Watching TaskId: %s ", itemTask.ID)) // for debug only
 
 				return true
 			})
