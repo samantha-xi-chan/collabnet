@@ -202,6 +202,34 @@ func OnBizDataFromRegisterEndpoint(endpoint string, bytes []byte) (e error) { //
 		// reset timer
 		service_time.RenewTimer(itemTask.HbTimer, config_sched.SCHED_HEARTBEAT_TIMEOUT)
 
+		// check should be running ?
+		itemSched, e := repo_sched.GetSchedCtl().GetItemById(idSched)
+		if e != nil {
+			log.Println("repo_sched.GetSchedCtl().GetItemById: ", idSched) // todo: error
+		} else {
+			if itemSched.FwkCode == api.FWK_CODE_ERR_DEFAULT && itemSched.TaskEnabled == api.TRUE && itemSched.Enabled == api.TRUE {
+				log.Println("itemSched.FwkCode == api.FWK_CODE_ERR_DEFAULT && itemSched.TaskEnabled == api.TRUE && itemSched.Enabled == api.TRUE")
+				code, e := link.SendDataToLinkId(
+					itemSched.LinkId,
+					link.GetPackageBytes(
+						time.Now().UnixMilli(),
+						config.VerSched,
+						link.PACKAGE_TYPE_BIZ,
+						link.PlatformBiiData{
+							ActionType: link.ACTION_TYPE_STATUS_TASK,
+							TaskType:   itemSched.TaskType,
+							SchedId:    itemSched.Id,
+							TaskId:     itemSched.TaskId,
+						}))
+				if e != nil {
+					log.Println("SendDataToLinkId ACTION_TYPE_STATUS_TASK e ", e)
+				} else {
+					log.Println("link.SendDataToLinkId code :  ", code)
+				}
+
+			}
+		}
+
 		callback(idSched, body.Para01, nil)
 	} else if body.Para01 == api.TASK_EVT_END {
 		//idTimer, _ := service_time.NewTimer(itemTask.PreTimeout, api.STATUS_SCHED_PRE_ACKED, idSched, "prepare_timeout")
@@ -268,7 +296,7 @@ func StopSchedByTaskId(taskId string) (ee error) { // todo: send stop cmd to exc
 			}))
 	if e != nil {
 		// 记录关键错误
-		log.Println("StopSched e ", e)
+		log.Println("StopSched e ", e) // todo: error
 	}
 	log.Println("StopSched code", code)
 

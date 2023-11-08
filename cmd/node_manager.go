@@ -32,6 +32,13 @@ var (
 	notify      = make(chan int, 1024)
 	readChanEx  = make(chan []byte, 1024)
 	writeChanEx = make(chan []byte, 1024)
+
+	mapContainerHeartbeat = make(map[string]int64)
+)
+
+const (
+	HeartbeatIntervalSecond    = 10
+	HeartbeatIntervalSecondMul = 6
 )
 
 func OnUpdateFromPlugin(id string, status int, para01 int) {
@@ -78,8 +85,8 @@ func OnUpdateFromPlugin(id string, status int, para01 int) {
 }
 
 func HandlerDockerTask(task api.PluginTask) (willHandle bool) {
-	go func() { // 模拟任务处理的情况
-		log.Println("任务准备 ing", task.TaskId)
+	go func() {
+		log.Println("task prepare ing", task.TaskId)
 		time.Sleep(time.Second * 1)
 		SendBizData2Platform(link.GetPackageBytes(
 			time.Now().UnixMilli(),
@@ -93,7 +100,6 @@ func HandlerDockerTask(task api.PluginTask) (willHandle bool) {
 			},
 		))
 
-		// 启动 docker 执行命令
 		log.Println("task.Cmd: ", task.Cmd)
 
 		var containerReq api.PostContainerReq
@@ -107,8 +113,8 @@ func HandlerDockerTask(task api.PluginTask) (willHandle bool) {
 
 		quit := make(chan bool)
 
-		go func() { // 心跳
-			ticker := time.NewTicker(time.Second * 10)
+		go func() {
+			ticker := time.NewTicker(time.Second * HeartbeatIntervalSecond)
 			defer ticker.Stop()
 
 			for {
@@ -129,7 +135,6 @@ func HandlerDockerTask(task api.PluginTask) (willHandle bool) {
 					))
 
 				case <-quit:
-					// 停止发送心跳信息
 					return
 				}
 			}
@@ -313,6 +318,11 @@ func OnNewBizDataFromPlatform(bytes []byte) {
 		log.Println(" [OnNewBizDataFromPlatform] SendBizData2Platform STATUS_SCHED_CMD_ACKED schedId = ", schedId)
 
 		docker_container.StopContainerByName(schedId)
+	} else if body.ActionType == link.ACTION_TYPE_STATUS_TASK && body.TaskType == link.TASK_TYPE_DOCKER {
+		schedId := body.SchedId
+		//taskId := body.TaskId
+		mapContainerHeartbeat[schedId] = time.Now().UnixMilli()
+		log.Println("mapContainerHeartbeat update : schedId = ", schedId)
 	} else {
 		log.Println("WARNING: unknown cmd, ", body.ActionType, " ", body.TaskType)
 	}
@@ -435,6 +445,22 @@ func main() {
 		readChanEx,
 		writeChanEx,
 	)
+
+	go func() {
+		for true {
+			for key, tick := range mapContainerHeartbeat {
+				if time.Now().UnixMilli()-tick > HeartbeatIntervalSecond*HeartbeatIntervalSecondMul {
+					log.Printf("mapContainerHeartbeat Key: %s, Value: %d time.Now().UnixMilli()-tick >  const \n", key, tick)
+					// kill it and remove record
+					docker_container.StopContainerByName(key)
+					delete(mapContainerHeartbeat, key)
+				}
+				time.Sleep(time.Millisecond * 10)
+			}
+
+			time.Sleep(time.Second * 20)
+		}
+	}()
 
 	log.Println("[main] waiting select{}")
 	select {
