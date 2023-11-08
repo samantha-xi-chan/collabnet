@@ -109,5 +109,11 @@ func (ctl *MsgCtl) GetTaskIsHot(taskId string) (isHot int, e error) {
 		return api.FALSE, errors.Wrap(err, "GetSessionStatus: ")
 	}
 
-	return int(resp.Data), nil
+	if resp.Data == api.TRUE {
+		return api.TRUE, nil
+	} else if resp.Data == api.FALSE {
+		return api.FALSE, nil
+	}
+
+	return
 }

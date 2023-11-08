@@ -40,7 +40,7 @@ func WatchContainer(ctx context.Context, taskId string, containerId string, clea
 					log.Println("message.GetMsgCtl().GetTaskIsHot: e = ", e) // todo: error
 					continue
 				}
-				log.Printf(" container Id: %s, isHot: %d \n", containerId, b)
+				log.Printf(" taskId: %s, isHot: %d \n", taskId, b)
 				if b == api.TRUE {
 					isHot = true
 				} else {
