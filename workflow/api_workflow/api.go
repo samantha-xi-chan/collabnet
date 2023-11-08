@@ -94,6 +94,7 @@ type TaskResp struct {
 	//NodeId      string `json:"node_id"`
 	//ContainerId string `json:"container_id"`
 	HostName string `json:"host_name"`
+	From     string `json:"from"`
 	Carrier  string `json:"carrier"`
 	Reason   string `json:"reason"`
 	Error    string `json:"error"`
