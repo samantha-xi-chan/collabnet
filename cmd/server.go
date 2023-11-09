@@ -44,7 +44,7 @@ func init() {
 			},
 		)
 
-		log.Println("bAllOK: ", bAllOK)
+		log.Println("CheckTcpService bAllOK: ", bAllOK)
 		if bAllOK {
 			break
 		}
