@@ -61,22 +61,22 @@ func OnConnChange(endpoint string, _type int) (e error) {
 	return nil
 }
 
-func OnTimerWrapper(idTimer string, evtType int, holder string, bytes []byte) (ee error) {
+func OnTimerWrapper(idTimer string, evtType int, holder string, desc string, bytes []byte) (ee error) {
 	go func() {
-		OnTimer(idTimer, evtType, holder, bytes)
+		OnTimer(idTimer, evtType, holder, desc, bytes)
 	}()
 	return nil
 }
 
-func OnTimer(idTimer string, evtType int, holder string, bytes []byte) (ee error) { // 定时器 事件
-	log.Printf("[OnTimer ╥﹏╥... ]holder %s,  idTimer: %s, evtType: %d, bytes: %s\n", holder, idTimer, evtType, string(bytes))
+func OnTimer(idTimer string, evtType int, holder string, desc string, bytes []byte) (ee error) { // 定时器 事件
+	log.Printf("[OnTimer ╥﹏╥... ]holder %s, desc %s idTimer: %s, evtType: %d, bytes: %s\n", holder, desc, idTimer, evtType, string(bytes))
 	itemTask, e := repo_sched.GetSchedCtl().GetItemById(holder)
 	if e != nil {
 		log.Println("repo_sched.GetSchedCtl().GetItemById e :", e)
 		return nil
 	}
-	if itemTask.FwkCode == api.STATUS_SCHED_FINISHED {
-		log.Println("xfz itemTask.FwkCode == api.SCHED_FWK_CODE_END , item.Reason = ", itemTask.Reason)
+	if itemTask.FwkCode >= api.FWK_CODE_ERR_ANALYZE {
+		log.Println("itemTask.FwkCode >= api.FWK_CODE_ERR_ANALYZE , error = ", itemTask.Error)
 		return nil
 	}
 	if itemTask.TaskEnabled == api.FALSE { // 业务角度抛弃
@@ -93,26 +93,26 @@ func OnTimer(idTimer string, evtType int, holder string, bytes []byte) (ee error
 		log.Printf("[OnTimer]  STATUS_SCHED_CMD_ACKED ")
 		repo_sched.GetSchedCtl().UpdateItemById(itemTask.Id, map[string]interface{}{
 			"fwk_code": api.FWK_CODE_ERR_CMD_ACK,
-			"reason":   "evtType == api.SCHED_EVT_TIMEOUT_CMDACK",
+			"reason":   "",
 			"error":    "evtType == api.SCHED_EVT_TIMEOUT_CMDACK",
 		})
 	} else if evtType == api.SCHED_EVT_TIMEOUT_PREACK {
 		repo_sched.GetSchedCtl().UpdateItemById(itemTask.Id, map[string]interface{}{
 			"fwk_code": api.FWK_CODE_ERR_PRE_ACK,
-			"reason":   "evtType == api.SCHED_EVT_TIMEOUT_PREACK",
+			"reason":   "",
 			"error":    "evtType == api.SCHED_EVT_TIMEOUT_PREACK",
 		})
 	} else if evtType == api.SCHED_EVT_TIMEOUT_HB {
 		repo_sched.GetSchedCtl().UpdateItemById(itemTask.Id, map[string]interface{}{
 			"fwk_code": api.FWK_CODE_ERR_HEARBEAT,
-			"reason":   " evtType == api.SCHED_EVT_TIMEOUT_HB",
+			"reason":   "",
 			"error":    " evtType == api.SCHED_EVT_TIMEOUT_HB",
 		})
 	} else if evtType == api.SCHED_EVT_TIMEOUT_RUN {
 		repo_sched.GetSchedCtl().UpdateItemById(itemTask.Id, map[string]interface{}{
 			"fwk_code":  api.FWK_CODE_ERR_RUN_TIMEOUT,
 			"finish_at": time.Now().UnixMilli(),
-			"reason":    "evtType == api.SCHED_EVT_TIMEOUT_RUN",
+			"reason":    "",
 			"error":     "evtType == api.SCHED_EVT_TIMEOUT_RUN",
 		})
 

@@ -34,6 +34,7 @@ var (
 	writeChanEx = make(chan []byte, 1024)
 
 	mapContainerHeartbeat = make(map[string]int64)
+	mapProcessHeartbeat   = make(map[string]int64)
 )
 
 const (
@@ -321,9 +322,12 @@ func OnNewBizDataFromPlatform(bytes []byte) {
 		docker_container.StopContainerByName(schedId)
 	} else if body.ActionType == link.ACTION_TYPE_STATUS_TASK && body.TaskType == link.TASK_TYPE_DOCKER {
 		schedId := body.SchedId
-		//taskId := body.TaskId
 		mapContainerHeartbeat[schedId] = time.Now().UnixMilli()
 		log.Println("mapContainerHeartbeat update : schedId = ", schedId)
+	} else if body.ActionType == link.ACTION_TYPE_STATUS_TASK && body.TaskType == link.TASK_TYPE_RAW {
+		schedId := body.SchedId
+		mapProcessHeartbeat[schedId] = time.Now().UnixMilli()
+		log.Println("mapProcessHeartbeat update : schedId = ", schedId)
 	} else {
 		log.Println("WARNING: unknown cmd, ", body.ActionType, " ", body.TaskType)
 	}
@@ -454,6 +458,16 @@ func main() {
 					log.Printf("WARNING: mapContainerHeartbeat Key: %s, Value: %d time.Now().UnixMilli()-tick >  const \n", key, tick)
 					// kill it and remove record
 					docker_container.StopContainerByName(key)
+					delete(mapContainerHeartbeat, key)
+				}
+				time.Sleep(time.Millisecond * 10)
+			}
+
+			for key, tick := range mapProcessHeartbeat {
+				if time.Now().UnixMilli()/1000-tick/1000 > HeartbeatIntervalSecond*HeartbeatIntervalSecondMul {
+					log.Printf("WARNING: mapProcessHeartbeat Key: %s, Value: %d time.Now().UnixMilli()-tick >  const \n", key, tick)
+					// kill it and remove record
+					// todo: stop process
 					delete(mapContainerHeartbeat, key)
 				}
 				time.Sleep(time.Millisecond * 10)

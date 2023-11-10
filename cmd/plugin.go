@@ -4,16 +4,64 @@ import (
 	"bytes"
 	"collab-net-v2/api"
 	"collab-net-v2/internal/config"
-	"math/rand"
-
 	"encoding/json"
 	"fmt"
 	"github.com/pkg/errors"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"net/http"
+	"os/exec"
 	"time"
 )
+
+func onNewDto(dto api.PluginTask) {
+	log.Println("  任务内容是： ", dto.Cmd, ", 任务准备的超时时间(秒)是： ", dto.TimeoutPre, ", 任务运行的超时时间(秒)是： ", dto.TimeoutRun)
+
+	// 判断内容  如果当前任务的属性为 有效 则发 任务开始执行的http, 解析出 任务的执行时长条件要求，
+	notifyTaskStatus(dto.Id, api.TASK_EVT_START, 0)
+
+	quit := make(chan bool)
+	go func() {
+		ticker := time.NewTicker(time.Second * 10)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ticker.C:
+				notifyTaskStatus(dto.Id, api.TASK_EVT_HEARTBEAT, 0)
+
+			case <-quit:
+				return
+			}
+		}
+	}()
+
+	// run
+	cmd := exec.Command("sh", "-c", dto.Cmd)
+
+	// 启动进程
+	if err := cmd.Start(); err != nil {
+		fmt.Printf("启动进程时发生错误：%v\n", err)
+		return
+	}
+
+	// 获取进程号
+	pid := cmd.Process.Pid
+	fmt.Printf("执行命令的进程号：%d\n", pid)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		fmt.Printf("执行命令时发生错误：%v\n", err)
+		return
+	}
+
+	fmt.Printf("命令输出:\n%s\n", output)
+	quit <- true
+
+	rand.Seed(time.Now().UnixNano())
+	randomNumber := rand.Intn(10)
+	notifyTaskStatus(dto.Id, api.TASK_EVT_END, randomNumber) // 返回 [0,9] 随机值 作为 exitCode
+}
 
 func main() {
 
@@ -35,26 +83,10 @@ func main() {
 		// 业务接入提示：
 		log.Println("当前收到的任务编号是:  ", dto.Id, ", TaskId = ", dto.TaskId, ", 任务是否仍然有效： ", dto.Valid)
 		if dto.Valid {
-			log.Println("  任务内容是： ", dto.Cmd, ", 任务准备的超时时间(秒)是： ", dto.TimeoutPre, ", 任务运行的超时时间(秒)是： ", dto.TimeoutRun)
+			log.Printf("后台处理任务 %s,  继续接收新任务\n", dto.Id)
+			go onNewDto(dto)
 
-			go func() {
-				// 判断内容  如果当前任务的属性为 有效 则发 任务开始执行的http, 解析出 任务的执行时长条件要求，
-				notifyTaskStatus(dto.Id, api.TASK_EVT_START, 0)
-
-				// 此处是任务执行 用 sleep 代替, 执行过程中需要发送心跳, 这个demo表示 任务执行耗时 3秒
-				for i := 0; i < 3; i++ {
-					// 这里是任务执行（例如 执行安全测试）
-					time.Sleep(time.Millisecond * 500)
-					notifyTaskStatus(dto.Id, api.TASK_EVT_HEARTBEAT, 0)
-					time.Sleep(time.Millisecond * 500)
-				}
-
-				rand.Seed(time.Now().UnixNano())
-				randomNumber := rand.Intn(10)
-				notifyTaskStatus(dto.Id, api.TASK_EVT_END, randomNumber) // 返回 [0,9] 随机值 作为 exitCode
-			}()
-
-			log.Printf("处理任务 %s,  继续接收新任务\n", dto.Id)
+			time.Sleep(time.Second)
 			continue
 		} else {
 			log.Println("业务代码此时应该 关闭如果正在运行的编号为  ", dto.Id, "的任务，并发送任务结束的通知")

@@ -48,7 +48,7 @@ func shouldAck(x []byte) bool {
 		}
 
 		if callbackFunc != nil {
-			callbackFunc(item.Id, item.Type, item.Holder, nil)
+			callbackFunc(item.Id, item.Type, item.Holder, item.Desc, nil)
 		}
 		if item.CallbackAddr != "" {
 			go func() {
@@ -81,7 +81,7 @@ func shouldAck(x []byte) bool {
 var rmq *rmq_util.RabbitMQ
 var err error
 
-type FUNC_TIMEOUT_CB func(idTimer string, _type int, holder string, bytes []byte) (x error)
+type FUNC_TIMEOUT_CB func(idTimer string, _type int, holder string, desc string, bytes []byte) (x error)
 
 var callbackFunc FUNC_TIMEOUT_CB
 
