@@ -9,13 +9,10 @@ import (
 	"collab-net-v2/task/config_task"
 	"collab-net-v2/task/control_task"
 	"collab-net-v2/task/service_task"
-	"collab-net-v2/util/logrus_wrap"
 	"collab-net-v2/util/util_net"
 	"collab-net-v2/workflow"
 	"context"
 	"fmt"
-	logrustash "github.com/bshuster-repo/logrus-logstash-hook"
-	"github.com/sirupsen/logrus"
 	"log"
 	"time"
 )
@@ -55,26 +52,27 @@ func init() {
 
 func main() {
 	ctx := context.Background()
-	var logger *logrus.Logger
+	//var logger *logrus.Logger
 	log.Println("main [init] : ")
 	fmt.Printf("Version: %s\n", Version)
 	fmt.Printf("BuildTime: %s\n", BuildTime)
 	fmt.Printf("GitCommit: %s\n", GitCommit)
 
 	instance := config.GetRunningInstance()
-	logServer := config.GetLogServer()
+	log.Println("GetRunningInstance: ", instance)
+	//logServer := config.GetLogServer()
 	//
-	logger = logrus.New()
-	logger.SetLevel(logrus.TraceLevel) // 后续改为 配置中心处理
-	hook, err := logrustash.NewHook("tcp", logServer, instance)
-	if err != nil {
-		log.Fatal("logrustash.NewHook: ", err)
-	}
-	logger.Hooks.Add(hook)
+	//logger = logrus.New()
+	//logger.SetLevel(logrus.TraceLevel) // 后续改为 配置中心处理
+	//hook, err := logrustash.NewHook("tcp", logServer, instance)
+	//if err != nil {
+	//	log.Fatal("logrustash.NewHook: ", err)
+	//}
+	//logger.Hooks.Add(hook)
 
-	log := logger.WithFields(logrus.Fields{
-		"method": "main",
-	})
+	//log := logger.WithFields(logrus.Fields{
+	//	"method": "main",
+	//})
 
 	v := config.GetDependMsgRpc()
 	if v == "" {
@@ -92,7 +90,7 @@ func main() {
 
 	time.Sleep(time.Millisecond * 100)
 	go func() {
-		e := control_link.InitGinService(logrus_wrap.SetContextLogger(ctx, logger), config_link.LISTEN_PORT)
+		e := control_link.InitGinService(ctx, config_link.LISTEN_PORT)
 		if e != nil {
 			log.Fatal("control_link.InitGinService e: ", e)
 		}
@@ -103,7 +101,7 @@ func main() {
 
 	time.Sleep(time.Millisecond * 100)
 	go func() {
-		e := control_task.InitGinService(logrus_wrap.SetContextLogger(ctx, logger), config_task.LISTEN_PORT)
+		e := control_task.InitGinService(context.Background(), config_task.LISTEN_PORT)
 		if e != nil {
 			log.Fatal("control_task.InitGinService4 e: ", e)
 		}
