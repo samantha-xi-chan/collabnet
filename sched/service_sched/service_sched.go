@@ -88,7 +88,6 @@ func OnTimer(idTimer string, evtType int, holder string, desc string, bytes []by
 		return nil
 	}
 
-	// 更新状态 并关闭 已经不再需要的定时器
 	if evtType == api.SCHED_EVT_TIMEOUT_CMDACK {
 		log.Printf("[OnTimer]  STATUS_SCHED_CMD_ACKED ")
 		repo_sched.GetSchedCtl().UpdateItemById(itemTask.Id, map[string]interface{}{
@@ -108,6 +107,8 @@ func OnTimer(idTimer string, evtType int, holder string, desc string, bytes []by
 			"reason":   "",
 			"error":    " evtType == api.SCHED_EVT_TIMEOUT_HB",
 		})
+
+		service_time.DisableTimer(itemTask.RunTimer)
 	} else if evtType == api.SCHED_EVT_TIMEOUT_RUN {
 		repo_sched.GetSchedCtl().UpdateItemById(itemTask.Id, map[string]interface{}{
 			"fwk_code":  api.FWK_CODE_ERR_RUN_TIMEOUT,

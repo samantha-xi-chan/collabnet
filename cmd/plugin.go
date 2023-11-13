@@ -39,14 +39,11 @@ func onNewDto(dto api.PluginTask) {
 
 	// run
 	cmd := exec.Command("sh", "-c", dto.Cmd)
-
-	// 启动进程
 	if err := cmd.Start(); err != nil {
 		fmt.Printf("启动进程时发生错误：%v\n", err)
 		return
 	}
 
-	// 获取进程号
 	pid := cmd.Process.Pid
 	fmt.Printf("执行命令的进程号：%d\n", pid)
 	output, err := cmd.CombinedOutput()
