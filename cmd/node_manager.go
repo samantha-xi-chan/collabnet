@@ -82,6 +82,20 @@ func OnUpdateFromPlugin(id string, status int, para01 int) {
 				Para0101:   para01,
 			},
 		))
+	} else if status == api.TASK_EVT_HEARTBEAT {
+		SendBizData2Platform(link.GetPackageBytes(
+			time.Now().UnixMilli(),
+			config.VerSched,
+			link.PACKAGE_TYPE_BIZ,
+			link.PlatformBiiData{
+				ActionType: link.ACTION_TYPE_NEWTASK,
+				TaskType:   link.TASK_TYPE_RAW,
+				SchedId:    id,
+				Para01:     api.TASK_EVT_HEARTBEAT,
+			},
+		))
+	} else {
+		log.Printf("WARNING: unknown status = %d \n", status)
 	}
 }
 

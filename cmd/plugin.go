@@ -23,7 +23,7 @@ func onNewDto(dto api.PluginTask) {
 
 	quit := make(chan bool)
 	go func() {
-		ticker := time.NewTicker(time.Second * 10)
+		ticker := time.NewTicker(time.Second * 30)
 		defer ticker.Stop()
 
 		for {
@@ -46,13 +46,13 @@ func onNewDto(dto api.PluginTask) {
 
 	pid := cmd.Process.Pid
 	fmt.Printf("执行命令的进程号：%d\n", pid)
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		fmt.Printf("执行命令时发生错误：%v\n", err)
-		return
-	}
-
-	fmt.Printf("命令输出:\n%s\n", output)
+	//output, err := cmd.CombinedOutput()
+	//if err != nil {
+	//	fmt.Printf("执行命令时发生错误：%v\n", err)
+	//	return
+	//}
+	//
+	//fmt.Printf("命令输出:\n%s\n", output)
 	quit <- true
 
 	rand.Seed(time.Now().UnixNano())
@@ -97,7 +97,7 @@ func main() {
 
 func notifyTaskStatus(id string, status int, statusPara01 int) (x string, e error) {
 	url := fmt.Sprintf("http://%s%s%s/%s", config.PLUGIN_SERVICE_IP, config.PLUGIN_SERVICE_PORT, config.PLUGIN_SERVICE_ROUTER, id)
-	log.Println("notifyTaskStatus url : ", url)
+	log.Println("notifyTaskStatus url : ", url, ", status:  ", status, ", statusPara01:  ", statusPara01)
 
 	requestBody, err := json.Marshal(api.PostPluginTaskStatusReq{
 		Msg:    "PostPluginTaskStatusReq",
