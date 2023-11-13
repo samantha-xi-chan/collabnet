@@ -24,9 +24,10 @@ func StartHttpServer(listenAddr string) {
 	}
 	workflow := r.Group("/api/v1/workflow")
 	{
-		workflow.GET("/:workflow_id", GetWorkflow)
-		workflow.PATCH("/:workflow_id", PatchWorkflow)
+		workflow.GET("/:id", GetWorkflow)
+		workflow.PATCH("/:id", PatchWorkflow)
 		workflow.POST("", PostWorkflow)
+		workflow.DELETE("/:id", DeleteWorkflow)
 	}
 
 	log.Println("listenAddr : ", listenAddr)
@@ -105,7 +106,7 @@ func GetTask(c *gin.Context) {
 //}
 
 func PatchWorkflow(c *gin.Context) {
-	workflowId := c.Param("workflow_id")
+	workflowId := c.Param("id")
 	if workflowId == "" {
 		c.JSON(http.StatusBadRequest, api.HttpRespBody{
 			Code: api.ERR_URL_ID,
@@ -130,8 +131,9 @@ func PatchWorkflow(c *gin.Context) {
 	})
 	return
 }
+
 func GetWorkflow(c *gin.Context) {
-	workflowId := c.Param("workflow_id")
+	workflowId := c.Param("id")
 	if workflowId == "" {
 		c.JSON(http.StatusBadRequest, api.HttpRespBody{
 			Code: api.ERR_URL_ID,
@@ -170,6 +172,25 @@ func GetWorkflow(c *gin.Context) {
 			QueryGetTask: items,
 			Total:        total,
 		},
+	})
+	return
+}
+
+func DeleteWorkflow(c *gin.Context) {
+	workflowId := c.Param("id")
+	if workflowId == "" {
+		c.JSON(http.StatusBadRequest, api.HttpRespBody{
+			Code: api.ERR_URL_ID,
+			Msg:  "ERR_URL_ID",
+		})
+		return
+	}
+
+	// todo: 删除任务记录， 制品数据
+
+	c.JSON(http.StatusBadRequest, api.HttpRespBody{
+		Code: api.ERR_OTHER,
+		Msg:  "ERR_OTHER",
 	})
 	return
 }

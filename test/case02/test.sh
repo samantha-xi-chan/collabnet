@@ -18,19 +18,22 @@ cleanup() {
     rm -rf $instanceFile
 }
 
-linkEndpoint=192.168.36.102:31080
-taskEndpoint=192.168.36.102:32080
+Host="192.168.31.6"
+
+linkEndpoint=$Host:31080
+taskEndpoint=$Host:32080
 
 echo "link: "
 linkResp=$(curl -X GET "http://$linkEndpoint/api/v1/link")
-echo $linkResp
-first_id=$(echo "$linkResp" | jq -r '.data[1].id')
-echo $first_id
+echo "linkResp: "$linkResp
+first_id=$(echo "$linkResp" | jq -r '.data[0].id')
+echo "first_id: "$first_id
 
 if [ -z "$first_id" ]; then
     echo "first_id 为空，退出脚本"
     exit 1
 fi
+
 #if [ "$first_id" == "null" ]; then
 #    echo "\$first_id 为 null，退出脚本"
 #    exit 1
@@ -52,7 +55,6 @@ case "$os_name" in
         ;;
 esac
 
-# task
 DAG=$current_dir"/"$instanceFile
 req=$(cat $DAG)
 echo "$req"
@@ -62,16 +64,15 @@ echo $postTaskResp
 taskId=$(echo "$postTaskResp" | jq -r '.data.id')
 echo "taskId: "$taskId
 
-#sleep 3
+sleep 3
 #patchTaskResp=$(curl -X PATCH "http://$taskEndpoint/api/v1/task/$taskId" )
 #echo $patchTaskResp
 #echo "patchTaskResp: "$patchTaskResp
 
-#sleep 5; echo "get task: "
-#curl -X GET "http://$taskEndpoint/api/v1/task/$taskId"; echo ;
-#sleep 5; echo "get task: "
-#curl -X GET "http://$taskEndpoint/api/v1/task/$taskId"; echo ;
-
+sleep 5; echo "get task: "
+curl -X GET "http://$taskEndpoint/api/v1/task/$taskId"; echo ;
+sleep 5; echo "get task: "
+curl -X GET "http://$taskEndpoint/api/v1/task/$taskId"; echo ;
 
 sleep 15; echo "get task: "
-curl -X GET "http://$taskEndpoint/api/v1/task"; echo ;
+#curl -X GET "http://$taskEndpoint/api/v1/task"; echo ;

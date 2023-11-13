@@ -3,7 +3,8 @@
     "name": "a",
     "image": "badouralix/curl-jq:latest",
     "cmd_str": ["http://192.168.31.8:2080/a.sh", "para01", "para02","para03","para0N"],
-    "timeout": 10,
+    "timeout": 800,
+    "remain": true,
     "on_fail": "nothing",
     "resource_quota": {
       "cpu_perc": 200,
@@ -17,6 +18,7 @@
     "image": "badouralix/curl-jq:latest",
     "cmd_str": ["http://192.168.31.8:2080/b.sh", "para01", "para02","para03","para0N"],
     "timeout": 60,
+    "remain": false,
     "on_fail": "nothing",
     "resource_quota": {
       "cpu_perc": 200,

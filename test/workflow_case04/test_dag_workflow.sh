@@ -2,8 +2,9 @@
 
 #API_IP="192.168.31.6"
 # API_IP="192.168.36.5"
-API_IP="192.168.34.178"
-#API_IP="192.168.36.102"
+#API_IP="192.168.34.178"
+API_IP="192.168.36.102"
+#API_IP="192.168.31.6"
 API_PORT="30181"
 DOWNLOAD_HOST="8_root"
 
@@ -47,16 +48,16 @@ fi
 echo
 echo "wfId: " $wfId
 
-#sleep 3
-#
-## 查询 workflow
-#API_URL="http://$API_IP:$API_PORT/api/v1/task?workflow_id=$wfId"
-#resultGetTask=$(curl -X GET "$API_URL"  -H "request-id: $RANDOM")
-#if [ $? -ne 0 ]; then
-#  echo "Error: Failed to post the HTTP request"
-#  exit 1
-#fi
-#echo $resultGetTask
+sleep 3
+
+# 查询 workflow
+API_URL="http://$API_IP:$API_PORT/api/v1/task?workflow_id=$wfId"
+resultGetTask=$(curl -X GET "$API_URL"  -H "request-id: $RANDOM")
+if [ $? -ne 0 ]; then
+  echo "Error: Failed to post the HTTP request"
+  exit 1
+fi
+echo $resultGetTask
 
 # 关闭 workflow
 #API_URL="http://$API_IP:$API_PORT/api/v1/workflow/$wfId"

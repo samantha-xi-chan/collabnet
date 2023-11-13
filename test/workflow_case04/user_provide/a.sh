@@ -13,8 +13,12 @@ echo "created by NAME: "$NAME  | tee -a $OUTPUT
 #  i=$((i + 1))
 #done
 
-TimeSecond=40
-
-echo "a going to sleep: " $TimeSecond | tee -a $OUTPUT
-sleep $TimeSecond
-echo "end of  sleep :" $TimeSecond | tee -a $OUTPUT
+loop=2
+i=1
+while [ $i -le $loop ]; do
+  echo "loop $i: " | tee -a $OUTPUT
+  TimeSecond=3
+  echo "a going to sleep: " $TimeSecond | tee -a $OUTPUT
+  sleep $TimeSecond
+  i=$((i + 1))
+done
