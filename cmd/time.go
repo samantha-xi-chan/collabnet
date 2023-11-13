@@ -2,14 +2,15 @@ package main
 
 import (
 	"collab-net-v2/internal/config"
+	"github.com/sirupsen/logrus"
+
 	//"collab-net-v2/internal/config"
 	"collab-net-v2/sched/config_sched"
 	"collab-net-v2/time/control_time"
 	"collab-net-v2/time/service_time"
 	"collab-net-v2/util/logrus_wrap"
 	"context"
-	logrustash "github.com/bshuster-repo/logrus-logstash-hook"
-	"github.com/sirupsen/logrus"
+	//"github.com/sirupsen/logrus"
 	"log"
 )
 
@@ -18,20 +19,22 @@ var logger *logrus.Logger
 func init() {
 	log.Println("main [init] : ")
 	instance := config.GetRunningInstance()
+	log.Println("instance: ", instance)
 	logServer := config.GetLogServer()
+	log.Println("logServer: ", logServer)
 
 	//
-	logger = logrus.New()
-	logger.SetLevel(logrus.TraceLevel) // 后续改为 配置中心处理
-	hook, err := logrustash.NewHook("tcp", logServer, instance)
-	if err != nil {
-		log.Fatal(err)
-	}
-	logger.Hooks.Add(hook)
-
-	log := logger.WithFields(logrus.Fields{
-		"method": "init",
-	})
+	//logger = logrus.New()
+	//logger.SetLevel(logrus.TraceLevel) // 后续改为 配置中心处理
+	//hook, err := logrustash.NewHook("tcp", logServer, instance)
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//logger.Hooks.Add(hook)
+	//
+	//log := logger.WithFields(logrus.Fields{
+	//	"method": "init",
+	//})
 
 	if true { // if in k8s
 		service_time.Init(
