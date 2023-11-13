@@ -22,6 +22,7 @@ type TaskInput struct {
 	SrcDir  string   `json:"src_dir,omitempty"`
 	SinkDir string   `json:"sink_dir,omitempty"`
 	Timeout int      `json:"timeout"`
+	Remain  bool     `json:"remain"` /* 1 as true, 0 as false */
 
 	CheckExitCode bool `json:"check_exit_code"` /* 1 as true, 0 as false */
 

@@ -32,7 +32,7 @@ func StartService() {
 	log.Println("taskConcurrent: ", taskConcurrent)
 
 	go func() {
-		service_workflow.PlayAsConsumerBlock(mqDsn, taskConcurrent, false)
+		service_workflow.PlayAsConsumerBlock(mqDsn, taskConcurrent)
 	}()
 	time.Sleep(time.Millisecond * 200)
 

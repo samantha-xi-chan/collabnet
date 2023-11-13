@@ -18,7 +18,6 @@ import (
 func onNewDto(dto api.PluginTask) {
 	log.Println("  任务内容是： ", dto.Cmd, ", 任务准备的超时时间(秒)是： ", dto.TimeoutPre, ", 任务运行的超时时间(秒)是： ", dto.TimeoutRun)
 
-	// 判断内容  如果当前任务的属性为 有效 则发 任务开始执行的http, 解析出 任务的执行时长条件要求，
 	notifyTaskStatus(dto.Id, api.TASK_EVT_START, 0)
 
 	quit := make(chan bool)
@@ -39,20 +38,23 @@ func onNewDto(dto api.PluginTask) {
 
 	// run
 	cmd := exec.Command("sh", "-c", dto.Cmd)
+	var stdout bytes.Buffer
+	cmd.Stdout = &stdout
 	if err := cmd.Start(); err != nil {
-		fmt.Printf("启动进程时发生错误：%v\n", err)
+		log.Printf("cmd.Start() error : %v\n", err)
 		return
 	}
 
 	pid := cmd.Process.Pid
-	fmt.Printf("执行命令的进程号：%d\n", pid)
-	//output, err := cmd.CombinedOutput()
-	//if err != nil {
-	//	fmt.Printf("执行命令时发生错误：%v\n", err)
-	//	return
-	//}
-	//
-	//fmt.Printf("命令输出:\n%s\n", output)
+	log.Printf("dto.Id: %s, cmd.Process.Pid：%d\n", dto.Id, pid)
+	err := cmd.Wait()
+	if err != nil {
+		fmt.Printf("Error waiting for the command to finish: %v\n", err) // todo: warning
+		//os.Exit(1)
+	}
+
+	log.Printf("Command output:\n%s", stdout.String())
+
 	quit <- true
 
 	rand.Seed(time.Now().UnixNano())

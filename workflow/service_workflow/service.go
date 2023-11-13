@@ -62,6 +62,7 @@ func PostWorkflow(ctx context.Context, req api_workflow.PostWorkflowReq) (api_wo
 			Timeout:       task.Timeout,
 			ExpExitCode:   task.ExpExitCode,
 			ExitCode:      api.EXIT_CODE_INIT,
+			Remain:        task.Remain,
 			CheckExitCode: grammar.GetCodeFromBool(task.CheckExitCode),
 			Define:        "",
 			Status:        api.TASK_STATUS_INIT,
@@ -340,7 +341,7 @@ func GetWorkflowByTaskId(taskId string) (item repo_workflow.Workflow, x error) {
 //	return nil
 //}
 
-func PlayAsConsumerBlock(mqUrl string, consumerCnt int, cleanTaskCtx bool) {
+func PlayAsConsumerBlock(mqUrl string, consumerCnt int) {
 	mq := util_mq.RabbitMQManager{}
 	defer mq.Release()
 
@@ -482,7 +483,7 @@ func PlayAsConsumerBlock(mqUrl string, consumerCnt int, cleanTaskCtx bool) {
 					BucketName:     config_workflow.BUCKET_NAME,
 					CbAddr:         "",
 					LogRt:          true,
-					CleanContainer: cleanTaskCtx,
+					CleanContainer: !itemTask.Remain,
 					//Name:           fmt.Sprintf("%s_%d", taskId, time.Now().UnixMilli()),
 					Image:   itemTask.Image,
 					CmdStr:  stringArray,

@@ -35,6 +35,7 @@ type Task struct {
 	StartAt     int64 `json:"start_at"`
 	EndAt       int64 `json:"end_at"`
 	Timeout     int   `json:"timeout"` // Second
+	Remain      bool  `json:"remain"`  // remain the task environment context
 	ExpExitCode int   `json:"exp_exit_code"`
 	ExitCode    int   `json:"exit_code" gorm:"default:1000"` // EXIT_CODE_INIT    = 1000
 
