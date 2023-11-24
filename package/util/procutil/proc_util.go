@@ -123,6 +123,7 @@ func StartProcBloRt(ctx context.Context, stdOut chan string, stdErr chan string,
 		logs := make(chan string)
 		go func() {
 			buf := make([]byte, sliceSize)
+			var partialLine string
 			for {
 				n, err := reader.Read(buf)
 				if err != nil {
@@ -132,21 +133,23 @@ func StartProcBloRt(ctx context.Context, stdOut chan string, stdErr chan string,
 					fmt.Fprintf(os.Stderr, "Error reading logs: %v\n", err)
 					break
 				}
-				logs <- string(buf[:n])
+
+				data := buf[:n]
+				lines := strings.Split(partialLine+string(data), "\n")
+
+				for i, line := range lines {
+					if i < len(lines)-1 {
+						logs <- line
+					} else {
+						partialLine = line
+					}
+				}
 			}
 			close(logs)
-
 			log.Println("end of {for n, err := reader.Read(buf)} , containerId = ", containerId)
 		}()
 
 		for slice := range logs {
-			// log for debug
-			if len(slice) > 100 {
-				log.Println("len(slice) = ", len(slice), ", slice[:100]:", slice[:100])
-			} else {
-				log.Println("slice: ", slice)
-			}
-
 			if *enableWatch {
 				stdOut <- slice
 			}

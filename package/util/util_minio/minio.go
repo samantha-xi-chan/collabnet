@@ -22,7 +22,7 @@ type FileManager struct {
 
 func (f *FileManager) InitFM(ctx context.Context, endpoint string, accessKeyID string, secretAccessKey string, useSSL bool, bucketName string, clean bool) (e error) {
 	// Initialize minio client object.
-	log.Println("InitFM(")
+	log.Println("InitFM()")
 	f.minioClient, e = minio.New(endpoint, &minio.Options{
 		Creds:  credentials.NewStaticV4(accessKeyID, secretAccessKey, ""),
 		Secure: useSSL,
