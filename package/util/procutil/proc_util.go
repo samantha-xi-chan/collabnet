@@ -163,12 +163,12 @@ func StartProcBloRt(ctx context.Context, stdOut chan string, stdErr chan string,
 	case containerResp := <-containerCh:
 		fmt.Printf("containerId %s  , StatusCode: %d \n", containerId, containerResp.StatusCode)
 	case err := <-errsCh:
-		log.Fatal(err)
+		log.Println("err := <-errsCh", err)
 	}
 
 	containerInfo, err := cli.ContainerInspect(context.Background(), containerId)
 	if err != nil {
-		log.Fatal(err)
+		log.Println("ContainerInspect: ", err)
 	}
 	fmt.Printf("containerId %s  , State.ExitCode: %d \n", containerId, containerInfo.State.ExitCode)
 
