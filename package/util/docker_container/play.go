@@ -64,7 +64,7 @@ func WatchContainer(ctx context.Context, taskId string, containerId string, clea
 	}()
 
 	// logRt
-	procErrCode, e := procutil.StartProcBloRt(context.Background(), stdOut, stdErr, &isHot, containerId)
+	procErrCode, e := procutil.WaitContainerLog(context.Background(), stdOut, stdErr, &isHot, containerId)
 	logrus.Debugf(" procErrCode: %d, error: %s ", procErrCode, e)
 
 	close(stdOut)

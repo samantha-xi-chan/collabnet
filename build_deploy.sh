@@ -13,7 +13,7 @@ CGO_ENABLED=0 GOOS=linux  GOARCH=amd64 go build -o release/plugin        -ldflag
 ##scp -r ./config           $HOST:/root/ ;
 
 HOST="36105_root"
-ssh $HOST "killall node_manager"
+#ssh $HOST "killall node_manager"
 scp release/node_manager $HOST:/root/;
 
 #HOST="36109_root"

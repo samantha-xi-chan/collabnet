@@ -97,7 +97,7 @@ func GetDockerBin() string {
 	return ""
 }
 
-func StartProcBloRt(ctx context.Context, stdOut chan string, stdErr chan string, enableWatch *bool, containerId string) (procErrCode int, e error) {
+func WaitContainerLog(ctx context.Context, stdOut chan string, stdErr chan string, enableWatch *bool, containerId string) (procErrCode int, e error) {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		return 0, errors.Wrap(err, "NewClientWithOpts: ")
