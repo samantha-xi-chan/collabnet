@@ -175,7 +175,7 @@ func HandlerDockerTask(task api.PluginTask) (willHandle bool) {
 			return
 		}
 
-		mapContainerHeartbeat[schedId] = time.Now().UnixMilli()
+		mapContainerHeartbeat[schedId] = time.Now().UnixMilli() // todo: optimize RW
 		log.Println("task running : container created， containerId = ", containerId)
 		SendBizData2Platform(link.GetPackageBytes(
 			time.Now().UnixMilli(),

@@ -67,7 +67,10 @@ func (ctl *MsgCtl) updateTask(taskId string, status int, extra string) (e error)
 				Payload:   extra,
 			})
 		if err != nil {
-			logrus.Errorf("gRPC err: %v", err) // todo P1 : add extra base64
+			logrus.Errorf("FeedSessionStream gRPC err: %v", err) // todo P1 : add extra base64
+			logrus.Errorf("FeedSessionStream len(extra): %v", len(extra))
+			logrus.Errorf("FeedSessionStream extra: %v", extra)
+
 			return errors.Wrap(err, "UpdateTask: ")
 		}
 	} else {
@@ -80,7 +83,7 @@ func (ctl *MsgCtl) updateTask(taskId string, status int, extra string) (e error)
 				Payload:   extra,
 			})
 		if err != nil {
-			logrus.Errorf("gRPC err: %v", err) // todo P1 : add extra base64
+			logrus.Errorf("UpdateSessionStatus gRPC err: %v", err) // todo P1 : add extra base64
 			return errors.Wrap(err, "UpdateTask: ")
 		}
 	}
@@ -100,7 +103,7 @@ func (ctl *MsgCtl) GetTaskIsHot(taskId string) (isHot int, e error) {
 			SessionId: taskId,
 		})
 	if err != nil {
-		logrus.Errorf("gRPC err: %v", err) // todo P1 : add extra base64
+		logrus.Errorf("GetTaskIsHot gRPC err: %v", err) // todo P1 : add extra base64
 		return api.FALSE, errors.Wrap(err, "GetSessionStatus: ")
 	}
 
