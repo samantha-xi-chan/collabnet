@@ -15,6 +15,16 @@ func Init(ctx context.Context, endpoint string, accessKeyID string, secretAccess
 	return fileManager.InitFM(ctx, endpoint, accessKeyID, secretAccessKey, useSSL, bucketName, clean)
 }
 
+func IsConnected(ctx context.Context) (bool, error) {
+
+	if fileManager.minioClient == nil {
+		log.Println("ERROR: f.minioClient == nil") // todo: coding style
+		return false, errors.New("fileManager.minioClient == nil: ")
+	}
+
+	return true, nil
+}
+
 // 备份文件夹内部
 func BackupDir(bucketName string, localDir string, objId string) (x error) {
 	//log.Println("BackupDir input: localDir = ", localDir, ", objId: ", objId)
@@ -45,11 +55,16 @@ func RestoreDir(bucketName string, objId string, localDir string) (e error) {
 	defer log.Println("RestoreDir end: localDir = ", localDir, ", objId: ", objId)
 	ctx := context.Background()
 
-	tmpFile, _ := ioutil.TempFile("", "simple")
-	defer tmpFile.Close()
+	tmpFile, e := ioutil.TempFile("", "simple")
+	if e != nil {
+		log.Println("ERROR: tmpFile, e := ioutil.TempFile, e = ", e.Error())
+		return
+	}
+
 	fileManager.DownloadFile(ctx, bucketName, tmpFile.Name(), objId)
 
 	util_zip.RecursiveUnzip(tmpFile.Name(), localDir)
 
+	tmpFile.Close()
 	return nil
 }

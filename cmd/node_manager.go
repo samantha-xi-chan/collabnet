@@ -468,7 +468,7 @@ func main() {
 	go func() {
 		for true {
 			for key, tick := range mapContainerHeartbeat {
-				if time.Now().UnixMilli()/1000-tick/1000 > HeartbeatIntervalSecond*HeartbeatIntervalSecondMul {
+				if time.Now().UnixMilli()-tick > HeartbeatIntervalSecond*HeartbeatIntervalSecondMul*1000 {
 					log.Printf("WARNING: mapContainerHeartbeat Key: %s, Value: %d time.Now().UnixMilli()-tick >  const \n", key, tick)
 					// kill it and remove record
 					docker_container.StopContainerByName(key)
@@ -478,7 +478,7 @@ func main() {
 			}
 
 			for key, tick := range mapProcessHeartbeat {
-				if time.Now().UnixMilli()/1000-tick/1000 > HeartbeatIntervalSecond*HeartbeatIntervalSecondMul {
+				if time.Now().UnixMilli()-tick > HeartbeatIntervalSecond*HeartbeatIntervalSecondMul*1000 {
 					log.Printf("WARNING: mapProcessHeartbeat Key: %s, Value: %d time.Now().UnixMilli()-tick >  const \n", key, tick)
 					// kill it and remove record
 					// todo: stop process

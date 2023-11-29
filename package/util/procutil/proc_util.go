@@ -156,6 +156,8 @@ func WaitContainerLog(ctx context.Context, stdOut chan string, stdErr chan strin
 		}
 
 		log.Println("end of {for slice := range logs} , containerId = ", containerId)
+		close(stdOut)
+		close(stdErr)
 	}()
 
 	containerCh, errsCh := cli.ContainerWait(context.Background(), containerId, container.WaitConditionNotRunning)

@@ -48,6 +48,8 @@ func init() {
 
 		time.Sleep(time.Second)
 	}
+
+	config.Init()
 }
 
 func main() {
@@ -83,8 +85,9 @@ func main() {
 	if !ok {
 		log.Fatal("message.GetMsgCtl().Init(v) error, addr = ", v)
 	}
-	message.GetMsgCtl().UpdateTaskWrapper("taskid_demo", 1001, "demo msg")
+	message.GetMsgCtl().UpdateTaskWrapper("col", 1001, "col")
 
+	service_task.Init()
 	log.Println("[main] SetTaskCallback")
 	service_task.SetTaskCallback(OnTaskChange)
 

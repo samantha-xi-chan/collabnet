@@ -67,9 +67,6 @@ func WatchContainer(ctx context.Context, taskId string, containerId string, clea
 	procErrCode, e := procutil.WaitContainerLog(context.Background(), stdOut, stdErr, &isHot, containerId)
 	logrus.Debugf(" procErrCode: %d, error: %s ", procErrCode, e)
 
-	close(stdOut)
-	close(stdErr)
-
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		e = errors.Wrap(err, "NewClientWithOpts: ")
