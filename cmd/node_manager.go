@@ -9,6 +9,7 @@ import (
 	"collab-net-v2/package/util/docker_vol"
 	"collab-net-v2/package/util/util_minio"
 	"collab-net-v2/sched/config_sched"
+	"collab-net-v2/util/stl"
 	"collab-net-v2/workflow/config_workflow"
 	"collab-net-v2/workflow/service_workflow"
 	"context"
@@ -33,8 +34,8 @@ var (
 	readChanEx  = make(chan []byte, 1024)
 	writeChanEx = make(chan []byte, 1024)
 
-	mapContainerHeartbeat = make(map[string]int64)
-	mapProcessHeartbeat   = make(map[string]int64)
+	mapContainerHeartbeat = stl.SafeMap{Data: make(map[string]int64)}
+	//mapProcessHeartbeat   = stl.SafeMap{Data: make(map[string]int64)}
 )
 
 const (
@@ -175,7 +176,8 @@ func HandlerDockerTask(task api.PluginTask) (willHandle bool) {
 			return
 		}
 
-		mapContainerHeartbeat[schedId] = time.Now().UnixMilli() // todo: optimize RW
+		mapContainerHeartbeat.Set(schedId, time.Now().UnixMilli())
+
 		log.Println("task running : container created， containerId = ", containerId)
 		SendBizData2Platform(link.GetPackageBytes(
 			time.Now().UnixMilli(),
@@ -336,11 +338,12 @@ func OnNewBizDataFromPlatform(bytes []byte) {
 		docker_container.StopContainerByName(schedId)
 	} else if body.ActionType == link.ACTION_TYPE_STATUS_TASK && body.TaskType == link.TASK_TYPE_DOCKER {
 		schedId := body.SchedId
-		mapContainerHeartbeat[schedId] = time.Now().UnixMilli()
+		mapContainerHeartbeat.Set(schedId, time.Now().UnixMilli())
+
 		log.Println("mapContainerHeartbeat update : schedId = ", schedId)
 	} else if body.ActionType == link.ACTION_TYPE_STATUS_TASK && body.TaskType == link.TASK_TYPE_RAW {
 		schedId := body.SchedId
-		mapProcessHeartbeat[schedId] = time.Now().UnixMilli()
+		//mapProcessHeartbeat.Set(schedId, time.Now().UnixMilli())
 		log.Println("mapProcessHeartbeat update : schedId = ", schedId)
 	} else {
 		log.Println("WARNING: unknown cmd, ", body.ActionType, " ", body.TaskType)
@@ -354,6 +357,8 @@ func SendBizData2Platform(bytes []byte) {
 }
 
 func init() {
+	config.Init()
+
 	firstParty := config.GetFirstParty()
 	log.Println("firstParty: ", firstParty)
 	if firstParty {
@@ -369,6 +374,8 @@ func init() {
 		if !succ {
 			log.Fatal("message.GetMsgCtl().Init(v) error, addr = ", v)
 		}
+
+		log.Println("message.GetMsgCtl().Init end ")
 
 		e := docker_vol.CreateVolumeFromFile(context.Background(), config_workflow.VOL_TOOL, config_workflow.SCRIPT_FILENAME, config_workflow.SCRIPT_CONTENT)
 		if e != nil {
@@ -467,25 +474,29 @@ func main() {
 
 	go func() {
 		for true {
-			for key, tick := range mapContainerHeartbeat {
+
+			iteratedMap := mapContainerHeartbeat.Iterate()
+			for key, tick := range iteratedMap {
 				if time.Now().UnixMilli()-tick > HeartbeatIntervalSecond*HeartbeatIntervalSecondMul*1000 {
 					log.Printf("WARNING: mapContainerHeartbeat Key: %s, Value: %d time.Now().UnixMilli()-tick >  const \n", key, tick)
 					// kill it and remove record
 					docker_container.StopContainerByName(key)
-					delete(mapContainerHeartbeat, key)
+					//delete(mapContainerHeartbeat, key)
+					mapContainerHeartbeat.Delete(key)
 				}
 				time.Sleep(time.Millisecond * 10)
 			}
 
-			for key, tick := range mapProcessHeartbeat {
-				if time.Now().UnixMilli()-tick > HeartbeatIntervalSecond*HeartbeatIntervalSecondMul*1000 {
-					log.Printf("WARNING: mapProcessHeartbeat Key: %s, Value: %d time.Now().UnixMilli()-tick >  const \n", key, tick)
-					// kill it and remove record
-					// todo: stop process
-					delete(mapContainerHeartbeat, key)
-				}
-				time.Sleep(time.Millisecond * 10)
-			}
+			//for key, tick := range mapProcessHeartbeat {
+			//	if time.Now().UnixMilli()-tick > HeartbeatIntervalSecond*HeartbeatIntervalSecondMul*1000 {
+			//		log.Printf("WARNING: mapProcessHeartbeat Key: %s, Value: %d time.Now().UnixMilli()-tick >  const \n", key, tick)
+			//		// kill it and remove record
+			//		// todo: stop process
+			//		//delete(mapContainerHeartbeat, key)
+			//		//mapProcessHeartbeat.Delete(key)
+			//	}
+			//	time.Sleep(time.Millisecond * 10)
+			//}
 
 			time.Sleep(time.Second * 20)
 		}
