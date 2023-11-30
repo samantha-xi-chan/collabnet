@@ -22,7 +22,6 @@ func CreateContainerWrapper(ctx context.Context, req api.PostContainerReq, conta
 
 	arrayB[0] = "/bin/sh"
 	arrayB[1] = "/path/in/docker/cmd.sh"
-	//arrayB[2] = "enable_debug"
 	copy(arrayB[2:], req.CmdStr[0:])
 
 	// check if image ready
@@ -41,7 +40,6 @@ func CreateContainerWrapper(ctx context.Context, req api.PostContainerReq, conta
 		}
 	}
 
-	//name := idgen.GetIDWithPref(config.CONTINAER_PREF)
 	for idx, val := range req.BindIn {
 		log.Println("for idx, val := range req.BindIn idx=", idx)
 		if val.VolId != "" {

@@ -4,7 +4,7 @@
     "image": "badouralix/curl-jq:latest",
     "cmd_str": ["http://192.168.31.8:2080/a.sh", "para01", "para02","para03","para0N"],
     "timeout": 800,
-    "remain": true,
+    "remain": false,
     "on_fail": "nothing",
     "resource_quota": {
       "cpu_perc": 200,
@@ -18,7 +18,7 @@
     "image": "badouralix/curl-jq:latest",
     "cmd_str": ["http://192.168.31.8:2080/b.sh", "para01", "para02","para03","para0N"],
     "timeout": 60,
-    "remain": true,
+    "remain": false,
     "on_fail": "nothing",
     "resource_quota": {
       "cpu_perc": 200,
@@ -32,7 +32,7 @@
     "image": "badouralix/curl-jq:latest",
     "cmd_str": ["http://192.168.31.8:2080/c.sh", "para01", "para02","para03","para0N"],
     "timeout": 60,
-    "remain": true,
+    "remain": false,
     "on_fail": "nothing",
     "resource_quota": {
       "cpu_perc": 200,
@@ -46,7 +46,7 @@
     "image": "badouralix/curl-jq:latest",
     "cmd_str": ["http://192.168.31.8:2080/d.sh", "para01", "para02","para03","para0N"],
     "timeout": 60,
-    "remain": true,
+    "remain": false,
     "on_fail": "nothing",
     "resource_quota": {
       "cpu_perc": 200,
@@ -60,7 +60,7 @@
     "image": "badouralix/curl-jq:latest",
     "cmd_str": ["http://192.168.31.8:2080/e.sh", "para01", "para02","para03","para0N"],
     "timeout": 60,
-    "remain": true,
+    "remain": false,
     "on_fail": "nothing",
     "resource_quota": {
       "cpu_perc": 200,
@@ -74,7 +74,7 @@
     "image": "badouralix/curl-jq:latest",
     "cmd_str": ["http://192.168.31.8:2080/f.sh", "f01", "f02","f03","f0N"],
     "timeout": 60,
-    "remain": true,
+    "remain": false,
     "on_fail": "nothing",
     "resource_quota": {
       "cpu_perc": 200,
