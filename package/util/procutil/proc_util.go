@@ -149,9 +149,19 @@ func WaitContainerLog(ctx context.Context, stdOut chan string, stdErr chan strin
 			log.Println("end of {for n, err := reader.Read(buf)} , containerId = ", containerId)
 		}()
 
+		SIZE_PREF := 8
 		for slice := range logs {
 			if *enableWatch {
-				stdOut <- slice
+				trimmedString := slice
+				len := len(slice)
+				log.Println("len slice: ", len)
+
+				if len >= SIZE_PREF {
+					trimmedString = slice[SIZE_PREF:]
+					//log.Println("trimmedString： ", trimmedString)
+				}
+
+				stdOut <- trimmedString
 			}
 		}
 
