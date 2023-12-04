@@ -154,7 +154,7 @@ func WaitContainerLog(ctx context.Context, stdOut chan string, stdErr chan strin
 			if *enableWatch {
 				trimmedString := slice
 				len := len(slice)
-				log.Println("len slice: ", len)
+				//log.Println("len slice: ", len)
 
 				if len >= SIZE_PREF {
 					trimmedString = slice[SIZE_PREF:]

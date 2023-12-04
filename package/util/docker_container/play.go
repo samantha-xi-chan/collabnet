@@ -162,7 +162,7 @@ func CreateContainer(ctx context.Context,
 	return containerId, nil
 }
 
-func StartContainerVV(ctx context.Context, containerId string) (err error) {
+func StartContainer(ctx context.Context, containerId string) (err error) {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		err = errors.Wrap(err, "NewClientWithOpts: ")

@@ -85,7 +85,7 @@ func StartContainerAndWait(ctx context.Context, containerId string, req api.Post
 	logRt := req.LogRt
 	cleanContainer := req.CleanContainer
 
-	e = docker_container.StartContainerVV(ctx, containerId)
+	e = docker_container.StartContainer(ctx, containerId)
 	if e != nil {
 		return 0, errors.Wrap(e, "docker_container.StartContainerVV: ")
 	}
