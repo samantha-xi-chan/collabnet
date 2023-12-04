@@ -7,6 +7,8 @@ import (
 	"collab-net-v2/time/service_time"
 	"context"
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
+
 	//"github.com/sirupsen/logrus"
 	"log"
 	"net/http"
@@ -37,7 +39,7 @@ func PatchTime(c *gin.Context) {
 
 	var dto api_time.PatchTimeReq
 	if err := c.BindJSON(&dto); err != nil {
-		logrus.Error("bad request in Post(): ", err)
+		log.Println("bad request in Post(): ", err)
 		c.JSON(http.StatusOK, api.HttpRespBody{
 			Code: api.ERR_FORMAT,
 			Msg:  "ERR_FORMAT: " + err.Error(),
