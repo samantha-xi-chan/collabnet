@@ -46,9 +46,8 @@ func CreateVolumeFromFile(ctx context.Context, volumeName string, fileName strin
 
 	log.Printf("VolumeMountpoint  Info: %+v\n", volumeInspectResp.Mountpoint)
 
-	// 获取卷的路径
-	volumePath := volume.Mountpoint
-	err = ioutil.WriteFile(fmt.Sprintf("%s/%s", volumePath, fileName), []byte(fileContent), os.ModePerm)
+	path := fmt.Sprintf("%s/%s", volume.Mountpoint, fileName)
+	err = ioutil.WriteFile(path, []byte(fileContent), os.ModePerm)
 	if err != nil {
 		return err
 	}

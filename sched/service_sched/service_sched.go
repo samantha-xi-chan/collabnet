@@ -149,7 +149,7 @@ func OnBizDataFromRegisterEndpoint(endpoint string, bytes []byte) (e error) { //
 	}
 
 	if itemTask.FwkCode == api.STATUS_SCHED_FINISHED {
-		log.Println(" sff itemTask.FwkCode == api.SCHED_FWK_CODE_END , item.Reason = ", itemTask.Reason)
+		log.Println(" sff itemTask.FwkCode == api.SCHED_FWK_CODE_END , item.Reason = ", itemTask.Error)
 		return nil
 	}
 	if itemTask.TaskEnabled == api.FALSE { // 业务角度抛弃
@@ -238,7 +238,6 @@ func OnBizDataFromRegisterEndpoint(endpoint string, bytes []byte) (e error) { //
 			"best_prog": api.STATUS_SCHED_RUN_END,
 			"fwk_code":  api.FWK_CODE_ERR_OK,
 			"biz_code":  body.Para0101,
-			"reason":    body.Para0102,
 			"error":     body.Para0102,
 		})
 
@@ -298,7 +297,7 @@ func StopSchedByTaskId(taskId string) (ee error) { // todo: send stop cmd to exc
 	log.Println("StopSched code", code)
 
 	if item.FwkCode == api.STATUS_SCHED_FINISHED {
-		log.Println("StopSchedByTaskId item.FwkCode == api.SCHED_FWK_CODE_END, item.Reason = ", item.Reason)
+		log.Println("StopSchedByTaskId item.FwkCode == api.SCHED_FWK_CODE_END, item.Reason = ", item.Error)
 		return
 	}
 
@@ -344,7 +343,7 @@ func StopSchedById(id string) (ee error) {
 	log.Println("StopSched code", code)
 
 	if item.FwkCode == api.STATUS_SCHED_FINISHED {
-		log.Println("StopSchedById  item.FwkCode == api.SCHED_FWK_CODE_END, item.Reason = ", item.Reason)
+		log.Println("StopSchedById  item.FwkCode == api.SCHED_FWK_CODE_END, item.Reason = ", item.Error)
 		return
 	}
 
@@ -449,12 +448,12 @@ func WaitSchedEnd(idSched string) (repo_sched.Sched, error) { // 临时用轮询
 		}
 
 		if item.BestProg >= api.STATUS_SCHED_RUN_END {
-			log.Println(" WaitSchedEnd item.FwkCode == api.SCHED_FWK_CODE_END , item.Reason = ", item.Reason)
+			log.Println(" WaitSchedEnd item.FwkCode == api.SCHED_FWK_CODE_END , item.Reason = ", item.Error)
 			return item, nil
 		}
 
 		if item.TaskEnabled == api.FALSE {
-			log.Println(" item.TaskEnabled == api.FALSE", item.Reason)
+			log.Println(" item.TaskEnabled == api.FALSE", item.Error)
 			return item, nil
 		}
 	}

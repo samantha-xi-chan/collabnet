@@ -22,7 +22,12 @@ type FileManager struct {
 
 func (f *FileManager) InitFM(ctx context.Context, endpoint string, accessKeyID string, secretAccessKey string, useSSL bool, bucketName string, clean bool) (e error) {
 	// Initialize minio client object.
-	log.Println("InitFM(")
+	log.Println("InitFM()")
+	f.endpoint = endpoint
+	f.accessKeyId = accessKeyID
+	f.secretAccessKey = secretAccessKey
+	f.useSSL = useSSL
+
 	f.minioClient, e = minio.New(endpoint, &minio.Options{
 		Creds:  credentials.NewStaticV4(accessKeyID, secretAccessKey, ""),
 		Secure: useSSL,
@@ -81,6 +86,9 @@ func (f *FileManager) InitFM(ctx context.Context, endpoint string, accessKeyID s
 }
 
 func (f *FileManager) RemoveBucket(ctx context.Context, bucketName string) (e error) {
+
+	f.checkHealth(ctx)
+
 	err := f.minioClient.RemoveBucket(ctx, bucketName)
 	if err != nil {
 		log.Println("RemoveBucket: ", err)
@@ -93,12 +101,9 @@ func (f *FileManager) RemoveBucket(ctx context.Context, bucketName string) (e er
 
 // local dir : remote url
 func (f *FileManager) UploadFile(ctx context.Context, bucketName string, filePath string, objectName string) (e error) {
-	contentType := "application/zip"
+	f.checkHealth(ctx)
 
-	if f.minioClient == nil {
-		log.Fatal("f.minioClient == nil")
-		return
-	}
+	contentType := "application/zip"
 
 	// Upload the zip file with FPutObject
 	_, err := f.minioClient.FPutObject(ctx, bucketName, objectName, filePath, minio.PutObjectOptions{ContentType: contentType})
@@ -112,9 +117,32 @@ func (f *FileManager) UploadFile(ctx context.Context, bucketName string, filePat
 	return nil
 }
 
-func (f *FileManager) DownloadFile(ctx context.Context, bucketName string, filePath string, objectName string) (e error) {
+func (f *FileManager) checkHealth(ctx context.Context) (e error) {
+	if f.minioClient == nil {
+		log.Println("ERROR: f.minioClient == nil") // todo: coding style
+		return
+	}
 
-	// Upload the zip file with FPutObject
+	if f.minioClient.IsOnline() == false {
+		log.Println("ERROR: f.minioClient.IsOnline() == false") // todo: coding style
+
+		f.minioClient, e = minio.New(f.endpoint, &minio.Options{
+			Creds:  credentials.NewStaticV4(f.accessKeyId, f.secretAccessKey, ""),
+			Secure: f.useSSL,
+		})
+
+		if e != nil {
+			log.Println("f.minioClient, e = minio.New：e = ", e.Error())
+			log.Fatal("Exit intentional ！！！")
+		}
+	}
+
+	return
+}
+
+func (f *FileManager) DownloadFile(ctx context.Context, bucketName string, filePath string, objectName string) (e error) {
+	f.checkHealth(ctx)
+
 	err := f.minioClient.FGetObject(ctx, bucketName, objectName, filePath, minio.GetObjectOptions{})
 	if err != nil {
 		log.Println("FGetObject: ", err, ", objectName ", objectName)

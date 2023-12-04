@@ -18,7 +18,7 @@ import (
 	"time"
 )
 
-func init() {
+func Init() {
 	mySqlDsn, e := config.GetMySqlDsn()
 	if e != nil {
 		log.Fatal("config.GetMySqlDsn: ", e)

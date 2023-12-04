@@ -100,6 +100,8 @@ func (r *RabbitMQManager) Consume(queueName string, channelId int, ackInChan []i
 		}
 	}
 
+	log.Println("end of for d := range msgs")
+
 	return nil
 }
 

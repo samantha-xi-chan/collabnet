@@ -54,27 +54,18 @@ func WatchContainer(ctx context.Context, taskId string, containerId string, clea
 		for msg := range stdOut {
 			message.GetMsgCtl().UpdateTaskWrapper(taskId, api.TASK_STATUS_RUNNING, msg)
 		}
+		log.Println("end of range stdOut , containerId = ", containerId)
 	}()
 	go func() { // todo： 协程泄漏 ？
 		for msg := range stdErr {
 			message.GetMsgCtl().UpdateTaskWrapper(taskId, api.TASK_STATUS_RUNNING, msg)
 		}
+		log.Println("end of range stdErr , containerId = ", containerId)
 	}()
 
-	if logRt {
-		funcErrCode, procErrCode, e := procutil.StartProcBloRt(stdOut, stdErr, &isHot, func(pid int) {
-			//log.Printf("taskId %s, pid: %d\n", taskId, pid)
-		}, true, procutil.GetDockerBin(), "logs", "--follow", containerId)
-		logrus.Debugf("funcErrCode: %d, procErrCode: %d, error: %s ", funcErrCode, procErrCode, e)
-	} else {
-		funcErrCode, procErrCode, e := procutil.StartProcBlo(stdOut, stdErr, func(pid int) {
-			//log.Printf("taskId %s, pid: %d\n", taskId, pid)
-		}, true, procutil.GetDockerBin(), "logs", "--follow", containerId)
-		logrus.Debugf("taskId: %s, funcErrCode: %d, procErrCode: %d, error: %s ", taskId, funcErrCode, procErrCode, e)
-	}
-
-	close(stdOut)
-	close(stdErr)
+	// logRt
+	procErrCode, e := procutil.WaitContainerLog(context.Background(), stdOut, stdErr, &isHot, containerId)
+	logrus.Debugf(" procErrCode: %d, error: %s ", procErrCode, e)
 
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {

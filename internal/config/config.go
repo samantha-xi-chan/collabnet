@@ -10,7 +10,7 @@ import (
 
 const PATH = "config/app.yaml"
 
-func init() {
+func Init() {
 	podName := os.Getenv("POD_NAME")
 	if podName == "" {
 		log.Println("Failed to get POD_NAME environment variable")

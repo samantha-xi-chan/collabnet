@@ -22,7 +22,6 @@ func CreateContainerWrapper(ctx context.Context, req api.PostContainerReq, conta
 
 	arrayB[0] = "/bin/sh"
 	arrayB[1] = "/path/in/docker/cmd.sh"
-	//arrayB[2] = "enable_debug"
 	copy(arrayB[2:], req.CmdStr[0:])
 
 	// check if image ready
@@ -32,7 +31,7 @@ func CreateContainerWrapper(ctx context.Context, req api.PostContainerReq, conta
 	}
 
 	if exists {
-		log.Println("docker_image.IsImageExists true") // just debug info
+		log.Println("docker_image.IsImageExists true", req.Image) // just debug info
 	} else {
 		log.Println("docker_image.PullImageBlo : ", req.Image) //  INFO
 		ee := docker_image.PullImageBlo(ctx, req.Image)        // todo ： 添加 提前下载 image的能力到产品接口
@@ -41,7 +40,6 @@ func CreateContainerWrapper(ctx context.Context, req api.PostContainerReq, conta
 		}
 	}
 
-	//name := idgen.GetIDWithPref(config.CONTINAER_PREF)
 	for idx, val := range req.BindIn {
 		log.Println("for idx, val := range req.BindIn idx=", idx)
 		if val.VolId != "" {
@@ -54,7 +52,7 @@ func CreateContainerWrapper(ctx context.Context, req api.PostContainerReq, conta
 	}
 
 	numCPU := runtime.NumCPU()
-	fmt.Printf("CPU core cnt：%d\n", numCPU)
+	log.Printf("CPU core cnt：%d\n", numCPU)
 	cpuSet := "0"
 	if numCPU/2-1 >= 1 {
 		cpuSet = fmt.Sprintf("0-%d", numCPU/2-1)
@@ -66,7 +64,7 @@ func CreateContainerWrapper(ctx context.Context, req api.PostContainerReq, conta
 		req.Image,
 		arrayB,
 		8*1000, // todo： 改为全局可配置
-		50,     // todo： 改为全局可配置
+		200,    // todo： 改为全局可配置
 		cpuSet,
 		containerName,
 
