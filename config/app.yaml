@@ -1,10 +1,10 @@
 biz:
-  sched_server: "192.168.31.6:30080"
+  sched_server: "192.168.31.45:30080"
   first_party: true
 
 depend:
-  minio_dsn: "admin:password@192.168.31.6:32000"
-  msg_rpc: "192.168.31.6:30051"
+  minio_dsn: "admin:password@192.168.31.45:32000"
+  msg_rpc: "192.168.31.45:30051"
 
 debug:
-  log_server: "192.168.36.101:5000"
+  log_server: "192.168.31.45:5000"
