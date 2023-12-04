@@ -43,7 +43,8 @@ func CreateContainerWrapper(ctx context.Context, req api.PostContainerReq, conta
 	for idx, val := range req.BindIn {
 		log.Println("for idx, val := range req.BindIn idx=", idx)
 		if val.VolId != "" {
-			ee := docker_vol.CreateVolumeFromObjId(ctx, req.BucketName, val.VolId, val.VolId, false)
+			volName := fmt.Sprintf("%s_%s", containerName, val.VolId)
+			ee := docker_vol.CreateVolumeFromObjId(ctx, req.BucketName, volName, val.VolId, false)
 			if ee != nil {
 				log.Println("CreateVolumeFromObjId e=", ee)
 				return "", errors.Wrap(ee, "docker_vol.CreateVolumeFromObjId")
@@ -52,7 +53,7 @@ func CreateContainerWrapper(ctx context.Context, req api.PostContainerReq, conta
 	}
 
 	numCPU := runtime.NumCPU()
-	log.Printf("CPU core cnt：%d\n", numCPU)
+	//log.Printf("CPU core cnt：%d\n", numCPU)
 	cpuSet := "0"
 	if numCPU/2-1 >= 1 {
 		cpuSet = fmt.Sprintf("0-%d", numCPU/2-1)
@@ -81,7 +82,7 @@ func CreateContainerWrapper(ctx context.Context, req api.PostContainerReq, conta
 	return containerId, nil
 }
 
-func StartContainerAndWait(ctx context.Context, containerId string, req api.PostContainerReq) (exitCode int, e error) {
+func StartContainerAndWait(ctx context.Context, containerId string, req api.PostContainerReq, containerName string) (exitCode int, e error) {
 	logRt := req.LogRt
 	cleanContainer := req.CleanContainer
 
@@ -97,21 +98,34 @@ func StartContainerAndWait(ctx context.Context, containerId string, req api.Post
 	}
 	log.Println("exitCode: ", exitCode, " , containerId: ", containerId)
 
-	out := []string{}
-	if len(req.BindOut) >= 1 {
-		// get container expId path
-		absPath, e := docker_vol.GetVolAbsPath(ctx, req.BindOut[0].VolId)
+	for idx, val := range req.BindOut {
+		log.Printf("BindOut, idx: %d, val:%s", idx, val)
+
+		volName := fmt.Sprintf("%s_%s", containerName, val.VolId)
+		objId := val.VolId
+
+		absPath, e := docker_vol.GetVolAbsPath(ctx, volName)
 		if e != nil {
 			log.Println("docker_vol.GetVolAbsPath, err = ", e)
 		}
-		e = util_minio.BackupDir(req.BucketName, absPath+"/", req.BindOut[0].VolId)
+		e = util_minio.BackupDir(req.BucketName, absPath+"/", objId)
 		if e != nil {
 			log.Println("docker_image.BackupDir, err = ", e)
 		}
-		out = append(out, req.BindOut[0].VolId)
+		//out = append(out, volName)
 	}
 
-	log.Println("StartContainerAndWait out: ", out)
+	// clean all
+	for idx, val := range req.BindIn {
+		log.Printf("deleting BindIn, idx: %d, val:%s", idx, val)
+		newVolId := fmt.Sprintf("%s_%s", containerName, val.VolId)
+		docker_vol.RemoveVol(ctx, newVolId)
+	}
+	for idx, val := range req.BindOut {
+		log.Printf("deleting BindOut, idx: %d, val:%s", idx, val)
+		newVolId := fmt.Sprintf("%s_%s", containerName, val.VolId)
+		docker_vol.RemoveVol(ctx, newVolId)
+	}
 
 	return exitCode, nil
 }

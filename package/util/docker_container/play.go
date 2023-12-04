@@ -117,10 +117,12 @@ func CreateContainer(ctx context.Context,
 	binds = append(binds, config_workflow.HOSTS_BIND)
 
 	for _, val := range bindIn {
-		binds = append(binds, fmt.Sprintf("%s:%s", val.VolId, val.VolPath))
+		volName := fmt.Sprintf("%s_%s", containerName, val.VolId)
+		binds = append(binds, fmt.Sprintf("%s:%s", volName, val.VolPath))
 	}
 	for _, val := range bindOut {
-		binds = append(binds, fmt.Sprintf("%s:%s", val.VolId, val.VolPath))
+		volName := fmt.Sprintf("%s_%s", containerName, val.VolId)
+		binds = append(binds, fmt.Sprintf("%s:%s", volName, val.VolPath))
 	}
 
 	log.Println("taskId: ", taskId, "  cmdStringArr: ", cmdStringArr, "  binds: ", binds)

@@ -192,7 +192,7 @@ func HandlerDockerTask(task api.PluginTask) (willHandle bool) {
 			},
 		))
 
-		exitCode, e = service_workflow.StartContainerAndWait(context.Background(), containerId, containerReq)
+		exitCode, e = service_workflow.StartContainerAndWait(context.Background(), containerId, containerReq, schedId)
 		errString := ""
 		quit <- true
 		if e != nil {

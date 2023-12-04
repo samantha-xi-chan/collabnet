@@ -133,7 +133,7 @@ func GetVolAbsPath(ctx context.Context, volumeName string) (AbsPath string, e er
 	return volumeInspectResp.Mountpoint, nil
 }
 
-func RemoveVol(ctx context.Context, volumeName string) (e error) {
+func RemoveVol(ctx context.Context, volumeId string) (e error) {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		e = errors.Wrap(err, "NewClientWithOpts: ")
@@ -145,12 +145,12 @@ func RemoveVol(ctx context.Context, volumeName string) (e error) {
 		}
 	}()
 
-	if err := cli.VolumeRemove(context.Background(), volumeName, true); err != nil {
+	if err := cli.VolumeRemove(context.Background(), volumeId, true); err != nil {
 		log.Printf("无法删除卷: %v\n", err)
 		return err
 	}
 
-	log.Printf("删除卷完成 volumeName= %s\n", volumeName)
+	log.Printf("vol deleted volumeId= %s\n", volumeId)
 	return nil
 }
 
