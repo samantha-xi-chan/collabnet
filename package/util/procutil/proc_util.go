@@ -11,6 +11,7 @@ import (
 	"github.com/shirou/gopsutil/process"
 	"io"
 	"log"
+	"math"
 	"os"
 	"os/exec"
 	"runtime"
@@ -104,6 +105,7 @@ func WaitContainerLog(ctx context.Context, stdOut chan string, stdErr chan strin
 	}
 
 	sliceSize := 10 * 1024 * 1024
+	maxPack := 4 * 1024
 
 	go func() {
 		logOptions := types.ContainerLogsOptions{
@@ -152,16 +154,33 @@ func WaitContainerLog(ctx context.Context, stdOut chan string, stdErr chan strin
 		SIZE_PREF := 8
 		for slice := range logs {
 			if *enableWatch {
-				trimmedString := slice
-				len := len(slice)
-				//log.Println("len slice: ", len)
+				length := len(slice)
 
-				if len >= SIZE_PREF {
-					trimmedString = slice[SIZE_PREF:]
-					//log.Println("trimmedString： ", trimmedString)
+				if length < SIZE_PREF {
+					stdOut <- slice
+					continue
+				} else if length < maxPack {
+					stdOut <- slice[SIZE_PREF:]
+					continue
+				} else {
 				}
 
-				stdOut <- trimmedString
+				body := slice[SIZE_PREF:]
+				length = length - SIZE_PREF
+				result := float64(length) / float64(maxPack)
+				ceiledResult := math.Ceil(result)
+				ceiledResultInt := int(ceiledResult)
+				for i := 0; i < ceiledResultInt; i++ {
+					top := (i + 1) * maxPack
+					if top > length {
+						top = length
+					}
+					chunk := body[i*maxPack : top-1]
+					var builder strings.Builder
+					builder.WriteString(fmt.Sprintf("[TRUNCATED][page: %4d / %4d) : size: %4d ", i, ceiledResultInt, top-i*maxPack))
+					builder.WriteString(chunk)
+					stdOut <- builder.String()
+				}
 			}
 		}
 
