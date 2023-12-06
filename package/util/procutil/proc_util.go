@@ -153,35 +153,39 @@ func WaitContainerLog(ctx context.Context, stdOut chan string, stdErr chan strin
 
 		SIZE_PREF := 8
 		for slice := range logs {
-			if *enableWatch {
-				length := len(slice)
-
-				if length < SIZE_PREF {
-					stdOut <- slice
-					continue
-				} else if length < maxPack {
-					stdOut <- slice[SIZE_PREF:]
-					continue
-				} else {
-				}
-
-				body := slice[SIZE_PREF:]
-				length = length - SIZE_PREF
-				result := float64(length) / float64(maxPack)
-				ceiledResult := math.Ceil(result)
-				ceiledResultInt := int(ceiledResult)
-				for i := 0; i < ceiledResultInt; i++ {
-					top := (i + 1) * maxPack
-					if top > length {
-						top = length
-					}
-					chunk := body[i*maxPack : top-1]
-					var builder strings.Builder
-					builder.WriteString(fmt.Sprintf("[TRUNCATED][page: %4d / %4d) : size: %4d ", i, ceiledResultInt, top-i*maxPack))
-					builder.WriteString(chunk)
-					stdOut <- builder.String()
-				}
+			if !*enableWatch {
+				// todo： 未观测，不做记录
+				continue
 			}
+
+			// 拆解 并外送
+			length := len(slice)
+			if length < SIZE_PREF {
+				stdOut <- slice
+				continue
+			} else if length < maxPack {
+				stdOut <- slice[SIZE_PREF:]
+				continue
+			} else {
+			}
+
+			body := slice[SIZE_PREF:]
+			length = length - SIZE_PREF
+			result := float64(length) / float64(maxPack)
+			ceiledResult := math.Ceil(result)
+			ceiledResultInt := int(ceiledResult)
+			for i := 0; i < ceiledResultInt; i++ {
+				top := (i + 1) * maxPack
+				if top > length {
+					top = length
+				}
+				chunk := body[i*maxPack : top-1]
+				var builder strings.Builder
+				builder.WriteString(fmt.Sprintf("[TRUNCATED][page: %4d / %4d) : size: %4d ", i, ceiledResultInt, top-i*maxPack))
+				builder.WriteString(chunk)
+				stdOut <- builder.String()
+			}
+
 		}
 
 		log.Println("end of {for slice := range logs} , containerId = ", containerId)

@@ -53,7 +53,6 @@ func CreateContainerWrapper(ctx context.Context, req api.PostContainerReq, conta
 	}
 
 	numCPU := runtime.NumCPU()
-	//log.Printf("CPU core cnt：%d\n", numCPU)
 	cpuSet := "0"
 	if numCPU/2-1 >= 1 {
 		cpuSet = fmt.Sprintf("0-%d", numCPU/2-1)

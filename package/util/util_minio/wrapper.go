@@ -6,6 +6,7 @@ import (
 	"github.com/pkg/errors"
 	"io/ioutil"
 	"log"
+	"os"
 )
 
 var fileManager FileManager
@@ -25,46 +26,57 @@ func IsConnected(ctx context.Context) (bool, error) {
 	return true, nil
 }
 
-// 备份文件夹内部
-func BackupDir(bucketName string, localDir string, objId string) (x error) {
-	//log.Println("BackupDir input: localDir = ", localDir, ", objId: ", objId)
-	//defer log.Println("BackupDir end: localDir = ", localDir, ", objId: ", objId)
+func BackupDir(bucketName string, localDir string, objId string) error {
 	ctx := context.Background()
 
 	tmpFile, err := ioutil.TempFile("", "simple")
 	if err != nil {
 		return errors.Wrap(err, "ioutil.TempFile: ")
 	}
-	defer tmpFile.Close()
+	defer func() {
+		tmpFile.Close()
+		err := os.Remove(tmpFile.Name())
+		if err != nil {
+			log.Println("Error cleaning up temporary file:", err)
+		}
+	}()
 
-	e := util_zip.RecursiveZip(localDir, tmpFile.Name())
-	if e != nil {
-		return errors.Wrap(e, "util_zip.RecursiveZip: ")
+	if err := util_zip.RecursiveZip(localDir, tmpFile.Name()); err != nil {
+		return errors.Wrap(err, "util_zip.RecursiveZip: ")
 	}
 
 	log.Println("BackupDir", bucketName, tmpFile.Name(), objId)
-	e = fileManager.UploadFile(ctx, bucketName, tmpFile.Name(), objId)
-	if e != nil {
-		return errors.Wrap(e, "fileManager.UploadFile: ")
+	if err := fileManager.UploadFile(ctx, bucketName, tmpFile.Name(), objId); err != nil {
+		return errors.Wrap(err, "fileManager.UploadFile: ")
 	}
+
 	return nil
 }
 
-func RestoreDir(bucketName string, objId string, localDir string) (e error) {
-	log.Println("RestoreDir input: objId = ", objId, ", localDir: ", localDir)
-	defer log.Println("RestoreDir end: localDir = ", localDir, ", objId: ", objId)
+func RestoreDir(bucketName string, objId string, localDir string) error {
+	log.Println("RestoreDir input: objId =", objId, ", localDir:", localDir)
+	defer log.Println("RestoreDir end: localDir =", localDir, ", objId:", objId)
+
 	ctx := context.Background()
 
-	tmpFile, e := ioutil.TempFile("", "simple")
-	if e != nil {
-		log.Println("ERROR: tmpFile, e := ioutil.TempFile, e = ", e.Error())
-		return
+	tmpFile, err := ioutil.TempFile("", "simple")
+	if err != nil {
+		log.Println("ERROR: tmpFile, err := ioutil.TempFile, err =", err.Error())
+		return err
 	}
+	defer func() {
+		tmpFile.Close()
+		err := os.Remove(tmpFile.Name())
+		if err != nil {
+			log.Println("Error cleaning up temporary file:", err)
+		}
+	}()
 
-	fileManager.DownloadFile(ctx, bucketName, tmpFile.Name(), objId)
+	if err := fileManager.DownloadFile(ctx, bucketName, tmpFile.Name(), objId); err != nil {
+		return err
+	}
 
 	util_zip.RecursiveUnzip(tmpFile.Name(), localDir)
 
-	tmpFile.Close()
 	return nil
 }
