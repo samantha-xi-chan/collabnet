@@ -111,19 +111,19 @@ func StartContainerAndWait(ctx context.Context, containerId string, req api.Post
 		if e != nil {
 			log.Println("docker_image.BackupDir, err = ", e)
 		}
-		//out = append(out, volName)
 	}
 
-	// clean all
-	for idx, val := range req.BindIn {
-		log.Printf("deleting BindIn, idx: %d, val:%s", idx, val)
-		newVolId := fmt.Sprintf("%s_%s", containerName, val.VolId)
-		docker_vol.RemoveVol(ctx, newVolId)
-	}
-	for idx, val := range req.BindOut {
-		log.Printf("deleting BindOut, idx: %d, val:%s", idx, val)
-		newVolId := fmt.Sprintf("%s_%s", containerName, val.VolId)
-		docker_vol.RemoveVol(ctx, newVolId)
+	if cleanContainer {
+		for idx, val := range req.BindIn {
+			log.Printf("deleting BindIn, idx: %d, val:%s", idx, val)
+			newVolId := fmt.Sprintf("%s_%s", containerName, val.VolId)
+			docker_vol.RemoveVol(ctx, newVolId)
+		}
+		for idx, val := range req.BindOut {
+			log.Printf("deleting BindOut, idx: %d, val:%s", idx, val)
+			newVolId := fmt.Sprintf("%s_%s", containerName, val.VolId)
+			docker_vol.RemoveVol(ctx, newVolId)
+		}
 	}
 
 	return exitCode, nil

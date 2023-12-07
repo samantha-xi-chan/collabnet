@@ -41,7 +41,7 @@ func BackupDir(bucketName string, localDir string, objId string) error {
 		}
 	}()
 
-	if err := util_zip.RecursiveZip(localDir, tmpFile.Name()); err != nil {
+	if err := util_zip.TarFileOrDir(localDir, tmpFile.Name()); err != nil {
 		return errors.Wrap(err, "util_zip.RecursiveZip: ")
 	}
 
@@ -76,7 +76,7 @@ func RestoreDir(bucketName string, objId string, localDir string) error {
 		return err
 	}
 
-	util_zip.RecursiveUnzip(tmpFile.Name(), localDir)
+	util_zip.UnTar(tmpFile.Name(), localDir)
 
 	return nil
 }
