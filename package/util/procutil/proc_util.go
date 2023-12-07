@@ -181,7 +181,7 @@ func WaitContainerLog(ctx context.Context, stdOut chan string, stdErr chan strin
 				}
 				chunk := body[i*maxPack : top-1]
 				var builder strings.Builder
-				builder.WriteString(fmt.Sprintf("[TRUNCATED][page: %4d / %4d) : size: %4d ", i, ceiledResultInt, top-i*maxPack))
+				builder.WriteString(fmt.Sprintf("[TRUNCATED] [page %4d of %4d , bytes: %8d ]  ", i+1, ceiledResultInt, top-i*maxPack))
 				builder.WriteString(chunk)
 				stdOut <- builder.String()
 			}
