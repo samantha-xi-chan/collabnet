@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package user;
+option go_package = "./pb_pkg";
+
+message UserRequest {
+  int32 id = 1;
+}
+message UserResponse {
+  int32 id = 1;
+  string name = 2;
+}
+
+
+message CreateTimeRequest {
+  string rand = 1;
+  int32 timeout = 2;
+  int32 type = 3;
+  string holder = 4;
+  string desc = 5;
+  string callbackAddr = 6;
+}
+message CreateTimeResponse {
+  int32 code = 1;
+  string id = 2;
+}
+
+service UserService {
+  rpc getUser(UserRequest) returns (UserResponse) {};
+  rpc createTime(CreateTimeRequest) returns (CreateTimeResponse) {};
+}
