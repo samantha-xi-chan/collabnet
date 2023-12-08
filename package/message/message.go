@@ -43,12 +43,6 @@ func (ctl *MsgCtl) UpdateTaskWrapper(taskId string, status int, extra string) (e
 		return errors.Wrap(e, "UpdateTask: ")
 	}
 
-	//extra = fmt.Sprintf("Tracking : %s, NewMsg: %s", taskId, extra)
-	//e = ctl.updateTask(api.TOPIC_ALL, status, extra)
-	//if e != nil {
-	//	return errors.Wrap(e, "UpdateTask TOPIC_ALL: ")
-	//}
-
 	return nil
 }
 
@@ -66,11 +60,11 @@ func (ctl *MsgCtl) updateTask(taskId string, status int, extra string) (e error)
 				Timestamp: time.Now().UnixNano() / 1e6,
 				Payload:   extra,
 			})
+
 		if err != nil {
 			logrus.Errorf("FeedSessionStream gRPC err: %v", err) // todo P1 : add extra base64
 			logrus.Errorf("FeedSessionStream len(extra): %v", len(extra))
 			logrus.Errorf("FeedSessionStream extra: %v", extra)
-
 			return errors.Wrap(err, "UpdateTask: ")
 		}
 	} else {

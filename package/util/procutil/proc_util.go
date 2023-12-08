@@ -105,7 +105,7 @@ func WaitContainerLog(ctx context.Context, stdOut chan string, stdErr chan strin
 	}
 
 	sliceSize := 10 * 1024 * 1024
-	maxPack := 4 * 1024
+	maxPack := 2 * 1024
 
 	go func() {
 		logOptions := types.ContainerLogsOptions{
@@ -161,10 +161,13 @@ func WaitContainerLog(ctx context.Context, stdOut chan string, stdErr chan strin
 			// 拆解 并外送
 			length := len(slice)
 			if length < SIZE_PREF {
+				//log.Println("len(slice):  ", len(slice), "         s: ", slice)
 				stdOut <- slice
 				continue
 			} else if length < maxPack {
-				stdOut <- slice[SIZE_PREF:]
+				str := slice[SIZE_PREF:]
+				//log.Println("len(str):  ", len(str), "         s: ", str)
+				stdOut <- str
 				continue
 			} else {
 			}
