@@ -105,7 +105,7 @@ func WaitContainerLog(ctx context.Context, stdOut chan string, stdErr chan strin
 	}
 
 	sliceSize := 10 * 1024 * 1024
-	maxPack := 4 * 1024
+	maxPack := 2 * 1024
 
 	go func() {
 		logOptions := types.ContainerLogsOptions{
@@ -161,10 +161,13 @@ func WaitContainerLog(ctx context.Context, stdOut chan string, stdErr chan strin
 			// 拆解 并外送
 			length := len(slice)
 			if length < SIZE_PREF {
+				//log.Println("len(slice):  ", len(slice), "         s: ", slice)
 				stdOut <- slice
 				continue
 			} else if length < maxPack {
-				stdOut <- slice[SIZE_PREF:]
+				str := slice[SIZE_PREF:]
+				//log.Println("len(str):  ", len(str), "         s: ", str)
+				stdOut <- str
 				continue
 			} else {
 			}
@@ -181,7 +184,7 @@ func WaitContainerLog(ctx context.Context, stdOut chan string, stdErr chan strin
 				}
 				chunk := body[i*maxPack : top-1]
 				var builder strings.Builder
-				builder.WriteString(fmt.Sprintf("[TRUNCATED][page: %4d / %4d) : size: %4d ", i, ceiledResultInt, top-i*maxPack))
+				builder.WriteString(fmt.Sprintf("[TRUNCATED] [page %4d of %4d , bytes: %8d ]  ", i+1, ceiledResultInt, top-i*maxPack))
 				builder.WriteString(chunk)
 				stdOut <- builder.String()
 			}
@@ -196,7 +199,7 @@ func WaitContainerLog(ctx context.Context, stdOut chan string, stdErr chan strin
 	containerCh, errsCh := cli.ContainerWait(context.Background(), containerId, container.WaitConditionNotRunning)
 	select {
 	case containerResp := <-containerCh:
-		fmt.Printf("containerId %s  , StatusCode: %d \n", containerId, containerResp.StatusCode)
+		log.Printf("containerId %s  , StatusCode: %d \n", containerId, containerResp.StatusCode)
 	case err := <-errsCh:
 		log.Println("err := <-errsCh", err)
 	}
@@ -205,7 +208,7 @@ func WaitContainerLog(ctx context.Context, stdOut chan string, stdErr chan strin
 	if err != nil {
 		log.Println("ContainerInspect: ", err)
 	}
-	fmt.Printf("containerId %s  , State.ExitCode: %d \n", containerId, containerInfo.State.ExitCode)
+	log.Printf("containerId %s  , State.ExitCode: %d \n", containerId, containerInfo.State.ExitCode)
 
 	return containerInfo.State.ExitCode, nil
 }

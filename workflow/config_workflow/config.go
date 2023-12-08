@@ -19,18 +19,6 @@ const (
 	HOSTS_BIND       = "/etc/hosts:/etc/hosts:ro"
 	SCRIPT_CONTENT   = `#/bin/sh
 
-total_args=$#
-if [ $total_args -lt 2 ]; then
-    echo "至少需要提供两个参数"
-    exit 1
-fi
-
-count=1
-for arg in "$@"; do
-    echo "para $count: $arg"
-    count=$((count + 1))
-done
-
 cleanup() {
     rm -r "$temp_dir"
 }
@@ -39,7 +27,6 @@ trap cleanup EXIT
 
 temp_dir=$(mktemp -d)
 cd "$temp_dir"
-
 
 if [ "${1%%:*}" = "http" ]; then
   curl -s -o remote.sh --fail "$1"
@@ -61,7 +48,7 @@ sh remote.sh "$@"
 remote_script_exit_code=$?
 
 if [ $remote_script_exit_code -ne 0 ]; then
-  echo "remote_script_exit_code: $remote_script_exit_code."
+#  echo "remote_script_exit_code: $remote_script_exit_code."
   exit $remote_script_exit_code
 fi
 

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"collab-net-v2/api"
 	"collab-net-v2/internal/config"
 	"collab-net-v2/link/config_link"
 	"collab-net-v2/link/control_link"
@@ -85,7 +86,7 @@ func main() {
 	if !ok {
 		log.Fatal("message.GetMsgCtl().Init(v) error, addr = ", v)
 	}
-	message.GetMsgCtl().UpdateTaskWrapper("col", 1001, "col")
+	message.GetMsgCtl().UpdateTaskWrapper("init", api.TASK_STATUS_RUNNING, "nil")
 
 	service_task.Init()
 	log.Println("[main] SetTaskCallback")
