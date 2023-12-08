@@ -1,22 +1,31 @@
-#echo " = = = = = =  "
 
-NAME=d
-INPUT_B=/docker/b/out.txt
-INPUT_C=/docker/c/out.txt
-OUTPUT=/docker/d/out.txt
+Prev01=b
+PrevDir01=/docker/$PrevDir
+PrevFile01=$PrevDir/out.txt
+Prev02=c
+PrevDir02=/docker/$PrevDir
+PrevFile02=$PrevDir/out.txt
 
-cat $INPUT_B >>  $OUTPUT
-cat $INPUT_C >>  $OUTPUT
-echo "created by NAME: "$NAME >> $OUTPUT
+Current=d
+CurrentDir=/docker/$Current
+CurrentFile=$CurrentDir/out.txt
 
-#num_args=$#
-#i=1
-#while [ $i -le $num_args ]; do
-#  arg=$(eval echo "\$$i")
-#  echo "参数 $i: $arg"
-#  i=$((i + 1))
-#done
+cat $PrevFile01 >>  $CurrentFile
+cat $PrevFile02 >>  $CurrentFile
+cp -rf $PrevDir01 $CurrentDir
+cp -rf $PrevDir02 $CurrentDir
 
+echo "created by Current: "$Current  | tee -a $CurrentFile
 
+echo -e "_   _   _   _   _   _   _   _   _   _   _   _   start $Current  _   _   _   _   _   _   _   _   _   _   _   _ " | tee -a $CurrentFile
+cd $CurrentDir
+mkdir -p Deep01_x/Deep02_x
+mkdir -p Deep01_x/Deep02_y
+mkdir -p Deep01_y/Deep02_x
+mkdir -p Deep01_y/Deep02_y
+date >   Deep01_y/Deep02_y/date.txt
+date >   date.txt
 
+tree
 
+echo -e "_   _   _   _   _   _   _   _   _   _   _   _    end $Current   _   _   _   _   _   _   _   _   _   _   _   _ " | tee -a $OUTPUT
