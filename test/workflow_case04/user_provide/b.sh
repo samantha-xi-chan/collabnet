@@ -1,20 +1,25 @@
-#echo " = = = = = =  "
 
-NAME=b
-INPUT=/docker/a/out.txt
-OUTPUT=/docker/b/out.txt
+Prev=a
+PrevDir=/docker/$PrevDir
+PrevFile=$PrevDir/out.txt
 
-cat $INPUT >>  $OUTPUT
-echo "created by NAME: "$NAME >> $OUTPUT
+Current=b
+CurrentDir=/docker/$Current
+CurrentFile=$CurrentDir/out.txt
 
+cat $PrevFile >>  $CurrentFile
+cp -rf $PrevDir $CurrentDir
+echo "created by Current: "$Current  | tee -a $CurrentFile
 
-#num_args=$#
-#i=1
-#while [ $i -le $num_args ]; do
-#  arg=$(eval echo "\$$i")
-#  echo "参数 $i: $arg"
-#  i=$((i + 1))
-#done
+echo -e "_   _   _   _   _   _   _   _   _   _   _   _   start $Current  _   _   _   _   _   _   _   _   _   _   _   _ " | tee -a $CurrentFile
+cd $CurrentDir
+mkdir -p Deep01_x/Deep02_x
+mkdir -p Deep01_x/Deep02_y
+mkdir -p Deep01_y/Deep02_x
+mkdir -p Deep01_y/Deep02_y
+date >   Deep01_y/Deep02_y/date.txt
+date >   date.txt
 
+tree
 
-echo "b going to sleep 1" | tee -a $OUTPUT
+echo -e "_   _   _   _   _   _   _   _   _   _   _   _    end $Current   _   _   _   _   _   _   _   _   _   _   _   _ " | tee -a $OUTPUT

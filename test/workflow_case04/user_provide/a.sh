@@ -1,52 +1,19 @@
-#echo " = = = = = =  "
 
-NAME=a
-OUTPUT=/docker/a/out.txt
+Current=a
+CurrentDir=/docker/$Current
+CurrentFile=$CurrentDir/out.txt
 
-echo "created by NAME: "$NAME  | tee -a $OUTPUT
+echo "created by Current: "$Current  | tee -a $CurrentFile
 
-echo -e "_   _   _   _   _   _   _   _   _   _   _   _   start a  _   _   _   _   _   _   _   _   _   _   _   _ " | tee -a $OUTPUT
-#  date | tee -a $OUTPUT
-  date; sleep 1;
-#  date; sleep 1;
-#  date; sleep 1;
-#  date; sleep 1;
-#  date; sleep 1;
-#  echo "5 end"
-#  date; sleep 1;
-#  date; sleep 1;
-#  date; sleep 1;
-#  date; sleep 1;
-#  date; sleep 1;
-#  echo "10 end"
-#  date; sleep 1;
-#  date; sleep 1;
-#  date; sleep 1;
-#  date; sleep 1;
-#  date; sleep 1;
-#  echo "15 end"
-#  date; sleep 1;
-#  date; sleep 1;
-#  date; sleep 1;
-#  date; sleep 1;
-#  date; sleep 1;
-#  echo "20 end"
-#  date; sleep 1;
-#  date; sleep 1;
-#  date; sleep 1;
-#  date; sleep 1;
-#  date; sleep 1;
-#  echo "25 end"
-#  date; sleep 1;
-#  date; sleep 1;
-#  date; sleep 1;
-#  date; sleep 1;
-#  date; sleep 1;
-#  echo "30 end"
-#  date; sleep 1;
-#  date; sleep 1;
-#  date; sleep 1;
-#  date; sleep 1;
-#  date; sleep 1;
-#  echo "35 end"
-echo -e "_   _   _   _   _   _   _   _   _   _   _   _   end a  _   _   _   _   _   _   _   _   _   _   _   _ " | tee -a $OUTPUT
+echo -e "_   _   _   _   _   _   _   _   _   _   _   _   start $Current  _   _   _   _   _   _   _   _   _   _   _   _ " | tee -a $CurrentFile
+cd $CurrentDir
+mkdir -p Deep01_x/Deep02_x
+mkdir -p Deep01_x/Deep02_y
+mkdir -p Deep01_y/Deep02_x
+mkdir -p Deep01_y/Deep02_y
+date >   Deep01_y/Deep02_y/date.txt
+date >   date.txt
+
+tree
+
+echo -e "_   _   _   _   _   _   _   _   _   _   _   _    end $Current   _   _   _   _   _   _   _   _   _   _   _   _ " | tee -a $OUTPUT
