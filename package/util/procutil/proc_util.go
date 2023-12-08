@@ -199,7 +199,7 @@ func WaitContainerLog(ctx context.Context, stdOut chan string, stdErr chan strin
 	containerCh, errsCh := cli.ContainerWait(context.Background(), containerId, container.WaitConditionNotRunning)
 	select {
 	case containerResp := <-containerCh:
-		fmt.Printf("containerId %s  , StatusCode: %d \n", containerId, containerResp.StatusCode)
+		log.Printf("containerId %s  , StatusCode: %d \n", containerId, containerResp.StatusCode)
 	case err := <-errsCh:
 		log.Println("err := <-errsCh", err)
 	}
@@ -208,7 +208,7 @@ func WaitContainerLog(ctx context.Context, stdOut chan string, stdErr chan strin
 	if err != nil {
 		log.Println("ContainerInspect: ", err)
 	}
-	fmt.Printf("containerId %s  , State.ExitCode: %d \n", containerId, containerInfo.State.ExitCode)
+	log.Printf("containerId %s  , State.ExitCode: %d \n", containerId, containerInfo.State.ExitCode)
 
 	return containerInfo.State.ExitCode, nil
 }

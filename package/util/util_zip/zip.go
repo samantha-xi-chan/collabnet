@@ -187,7 +187,7 @@ func TarFileOrDir(fileOrDirToTar string, tarFileName string) (e error) {
 		return errors.Wrap(err, "TarDirectory ,tarFile:   ")
 	}
 
-	fmt.Printf("arc ok：%s\n", tarFileName)
+	log.Printf("arc ok：%s\n", tarFileName)
 	return nil
 }
 
