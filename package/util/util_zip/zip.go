@@ -137,13 +137,18 @@ func tarFile(tarWriter *tar.Writer, fileToTar string, baseDir string) error {
 	return nil
 }
 
-func TarDirectory(tarWriter *tar.Writer, dirToTar string, baseDir string) error {
+func TarDirectory(tarWriter *tar.Writer, dirToTar string, baseDir string, ignoreLink bool) error {
 	err := filepath.Walk(dirToTar, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
 
 		if info.IsDir() {
+			return nil
+		}
+
+		if info.Mode()&os.ModeSymlink != 0 && ignoreLink {
+			fmt.Println("WARN: In TarDirectory ", info.Name(), " is symbolicLink")
 			return nil
 		}
 
@@ -177,7 +182,7 @@ func TarFileOrDir(fileOrDirToTar string, tarFileName string) (e error) {
 	}
 
 	if fileInfo.IsDir() {
-		err = TarDirectory(tarWriter, fileOrDirToTar, baseDir)
+		err = TarDirectory(tarWriter, fileOrDirToTar, baseDir, true)
 	} else {
 		err = tarFile(tarWriter, fileOrDirToTar, baseDir)
 	}

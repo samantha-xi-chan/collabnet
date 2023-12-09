@@ -42,7 +42,7 @@ func BackupDir(bucketName string, localDir string, objId string) error {
 	}()
 
 	if err := util_zip.TarFileOrDir(localDir, tmpFile.Name()); err != nil {
-		return errors.Wrap(err, "util_zip.RecursiveZip: ")
+		return errors.Wrap(err, "util_zip.TarFileOrDir: ")
 	}
 
 	log.Println("BackupDir", bucketName, tmpFile.Name(), objId)
