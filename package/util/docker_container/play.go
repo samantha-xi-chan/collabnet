@@ -136,7 +136,8 @@ func CreateContainer(ctx context.Context,
 		},
 		&container.HostConfig{
 			Resources: container.Resources{
-				Memory: memLimMb * 1000 * 1000, // MB
+				MemoryReservation: memLimMb * 1024 * 1024, // MB
+				Memory:            memLimMb * 1024 * 1024, // MB
 				//MemorySwap: memLimMb * 1000 * 1000 * 6, // MB
 				CPUPeriod:  int64(100 * 1000),
 				CPUQuota:   int64(cpuPercent * 1000),

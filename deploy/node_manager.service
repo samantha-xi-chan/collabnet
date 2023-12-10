@@ -1,0 +1,14 @@
+# /etc/systemd/system/node_manager.service
+
+[Unit]
+Description=node_manager Service
+After=network.target docker.service
+
+[Service]
+ExecStart=/opt/node/node_manager
+WorkingDirectory=/opt/node/
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=default.target

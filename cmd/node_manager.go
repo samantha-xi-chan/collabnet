@@ -10,6 +10,7 @@ import (
 	"collab-net-v2/package/util/util_minio"
 	"collab-net-v2/sched/config_sched"
 	"collab-net-v2/util/stl"
+	"collab-net-v2/util/util_net"
 	"collab-net-v2/workflow/config_workflow"
 	"collab-net-v2/workflow/service_workflow"
 	"context"
@@ -370,6 +371,22 @@ func init() {
 	if firstParty {
 		v := config.GetDependMsgRpc()
 		log.Println("GetDependMsgRpc: ", v)
+
+		for true {
+			bAllOK, _ := util_net.CheckTcpService(
+				[]string{
+					v,
+				},
+			)
+
+			log.Println("CheckTcpService bAllOK: ", bAllOK)
+			if bAllOK {
+				break
+			}
+
+			time.Sleep(time.Second)
+		}
+
 		succ := message.GetMsgCtl().Init(v)
 		if !succ {
 			log.Fatal("message.GetMsgCtl().Init(v) error, addr = ", v)
@@ -402,6 +419,21 @@ func init() {
 		password := parts[1][:lastIndex]
 		address := parts[1][lastIndex+1:]
 		log.Printf("username: %s , password: %s, address: %s\n", username, password, address)
+
+		for true {
+			bAllOK, _ := util_net.CheckTcpService(
+				[]string{
+					address,
+				},
+			)
+
+			log.Println("CheckTcpService bAllOK: ", bAllOK)
+			if bAllOK {
+				break
+			}
+
+			time.Sleep(time.Second)
+		}
 
 		e = util_minio.Init(context.Background(), address, username, password, config_workflow.BUCKET_NAME, false)
 		if e != nil {
