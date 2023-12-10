@@ -1,7 +1,7 @@
 package util_minio
 
 import (
-	"collab-net-v2/package/util/util_zip"
+	"collab-net-v2/package/util/compress"
 	"context"
 	"github.com/pkg/errors"
 	"io/ioutil"
@@ -41,7 +41,7 @@ func BackupDir(bucketName string, localDir string, objId string) error {
 		}
 	}()
 
-	if err := util_zip.TarFileOrDir(localDir, tmpFile.Name()); err != nil {
+	if err := compress.TarFiles(localDir, tmpFile.Name()); err != nil {
 		return errors.Wrap(err, "util_zip.TarFileOrDir: ")
 	}
 
@@ -76,7 +76,7 @@ func RestoreDir(bucketName string, objId string, localDir string) error {
 		return err
 	}
 
-	util_zip.UnTar(tmpFile.Name(), localDir)
+	compress.UntarFiles(tmpFile.Name(), localDir)
 
 	return nil
 }

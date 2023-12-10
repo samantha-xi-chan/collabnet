@@ -239,3 +239,82 @@ func UnTar(tarFile string, destFolder string) error {
 
 	return nil
 }
+
+func TarV2(sourceDirectory string, archiveFileName string) error {
+	// 创建 tar 归档文件
+	archiveFile, err := os.Create(archiveFileName)
+	if err != nil {
+		return fmt.Errorf("error creating archive file: %v", err)
+	}
+	defer archiveFile.Close()
+
+	// 创建 gzip writer
+	gzipWriter := gzip.NewWriter(archiveFile)
+	defer gzipWriter.Close()
+
+	// 创建 tar writer
+	tarWriter := tar.NewWriter(gzipWriter)
+	defer tarWriter.Close()
+
+	// 遍历源目录并将文件添加到 tar 归档中
+	err = filepath.Walk(sourceDirectory, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		// 获取相对路径
+		relPath, err := filepath.Rel(sourceDirectory, path)
+		if err != nil {
+			return err
+		}
+
+		// 使用 Lstat 获取文件信息，以区分软链接和实际文件
+		fileInfo, err := os.Lstat(path)
+		if err != nil {
+			return err
+		}
+
+		// 创建 tar 文件头信息
+		header, err := tar.FileInfoHeader(fileInfo, relPath)
+		if err != nil {
+			return err
+		}
+
+		// 如果是软链接，设置 Linkname
+		if fileInfo.Mode()&os.ModeSymlink != 0 {
+			linkname, err := os.Readlink(path)
+			if err != nil {
+				return err
+			}
+			header.Linkname = linkname
+		}
+
+		// 写入文件头信息到 tar 归档
+		if err := tarWriter.WriteHeader(header); err != nil {
+			return err
+		}
+
+		// 如果是普通文件或者硬链接，将文件内容写入 tar 归档
+		if fileInfo.Mode().IsRegular() || fileInfo.Mode()&os.ModeType == 0 {
+			file, err := os.Open(path)
+			if err != nil {
+				return err
+			}
+			defer file.Close()
+
+			_, err = io.Copy(tarWriter, file)
+			if err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return fmt.Errorf("error walking source directory: %v", err)
+	}
+
+	fmt.Printf("Tar archive created successfully: %s\n", archiveFileName)
+	return nil
+}
