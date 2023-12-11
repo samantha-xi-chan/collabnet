@@ -46,7 +46,7 @@ func PostWorkflow(ctx context.Context, req api_workflow.PostWorkflowReq) (api_wo
 			fmt.Println("Error:", err)
 		}
 
-		taskId := idgen.GetIdWithPref("task_")
+		taskId := idgen.GetIdWithPref("t")
 		repo_workflow.GetTaskCtl().CreateItem(repo_workflow.Task{
 			ID:         taskId,
 			Name:       task.Name,
