@@ -107,7 +107,7 @@ func Init(mqUrl string, exchange string, mySqlDsn string) {
 func NewTimer(timeoutSecond int, _type int, holder string, desc string, callbackAddr string) (id string, e error) {
 	log.Printf("[NewTimer] timeoutSecond=%d , _type = %d, holder = %s, desc = %s , callbackAddr = %s \n", timeoutSecond, _type, holder, desc, callbackAddr)
 
-	idTimer := idgen.GetIdWithPref("time")
+	idTimer := idgen.GetIdWithPref("t")
 	log.Print("        [NewTimer]  idTimer: ", idTimer)
 	idOnce := idgen.GetIdWithPref(fmt.Sprintf("once_%s_", desc))
 
