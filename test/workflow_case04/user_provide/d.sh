@@ -26,5 +26,6 @@ mkdir -p Deep01_y/Deep02_y; date >   Deep01_y/Deep02_y/date.txt
 date >   date.txt
 
 tree
+free -h
 
 echo -e "_   _   _   _   _   _   _   _   _   _   _   _    end $Current   _   _   _   _   _   _   _   _   _   _   _   _ " | tee -a $OUTPUT

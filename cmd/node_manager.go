@@ -8,6 +8,7 @@ import (
 	"collab-net-v2/package/util/docker_container"
 	"collab-net-v2/package/util/docker_vol"
 	"collab-net-v2/package/util/util_minio"
+	"collab-net-v2/package/util/util_os"
 	"collab-net-v2/sched/config_sched"
 	"collab-net-v2/util/stl"
 	"collab-net-v2/util/util_net"
@@ -358,6 +359,13 @@ func SendBizData2Platform(bytes []byte) {
 }
 
 func init() {
+	maxOpenFiles, err := util_os.GetMaxOpenFiles()
+	if err != nil {
+		fmt.Println("Error:", err)
+		os.Exit(1)
+	}
+	log.Println("maxOpenFiles: ", maxOpenFiles)
+
 	config.Init()
 
 	firstParty := config.GetFirstParty()

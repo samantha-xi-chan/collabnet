@@ -27,7 +27,7 @@ func CreateContainerWrapper(ctx context.Context, req api.PostContainerReq, conta
 	// check if image ready
 	exists, e := docker_image.IsImageExists(ctx, req.Image)
 	if e != nil {
-		return "", errors.Wrap(e, "docker_image.IsImageExists")
+		return "", errors.Wrap(e, "docker_image.IsImageExists: ")
 	}
 
 	if exists {
