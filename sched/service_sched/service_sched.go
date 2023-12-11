@@ -441,7 +441,7 @@ func WaitSchedEnd(idSched string) (repo_sched.Sched, error) { // 临时用轮询
 	for true {
 		loop++
 		log.Println("WaitSchedEnd loop: ", loop)
-		time.Sleep(time.Second * 5)
+		time.Sleep(time.Second * 1)
 		item, e := repo_sched.GetSchedCtl().GetItemById(idSched)
 		if e != nil {
 			return repo_sched.Sched{}, errors.Wrap(e, "repo_sched.GetSchedCtl().GetItemById: ")
