@@ -3,6 +3,8 @@ CGO_ENABLED=0 GOOS=linux  GOARCH=amd64 go build -o release/server        -ldflag
 CGO_ENABLED=0 GOOS=linux  GOARCH=amd64 go build -o release/node_manager  -ldflags "-X main.Version=v1.9-dev -X main.BuildTime=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -X main.GitCommit=$(git rev-parse --short HEAD)"   cmd/version.go cmd/node_manager.go ;
 CGO_ENABLED=0 GOOS=linux  GOARCH=amd64 go build -o release/plugin        -ldflags "-X main.Version=v1.9-dev -X main.BuildTime=$(date -u +'%Y-%m-%dT%H:%M:%SZ') -X main.GitCommit=$(git rev-parse --short HEAD)"   cmd/version.go cmd/plugin.go ;
 
+exit 0
+
  HOST="36107_root"
  ssh $HOST "systemctl list-units --type=service --state=running"
  ssh $HOST "mkdir -p /opt/node/; "
