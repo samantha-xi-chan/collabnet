@@ -18,7 +18,7 @@ func GetEdgeCtl() *EdgeCtl {
 }
 
 func (Edge) TableName() string {
-	return "compute_edge"
+	return "c_edge"
 }
 
 type Edge struct {
@@ -40,30 +40,6 @@ func (ctl *EdgeCtl) CreateItem(item Edge) (err error) {
 
 	return nil
 }
-
-//
-
-//func (ctl *EdgeCtl) CreateItemFromWorkFlowAndFromTo(id string, name string, workflowId string,
-//	startName string, endName string,
-//	resource string, objId string,
-//) (err error) {
-//	sql := "INSERT INTO compute_edge (id, start, end, create_at, status) \n" +
-//		""
-//
-//	subqueryResult := 0
-//	db.Raw(sql).Scan(&subqueryResult)
-//	log.Println(subqueryResult)
-//	return nil
-//
-//	db.Raw(`
-//	INSERT INTO compute_edge (id, start, end, create_at, status)
-//	SELECT ? AS id,
-//	(SELECT id FROM compute_task WHERE workflow_id = ? AND name = ?) AS start,
-//		(SELECT id FROM compute_task WHERE workflow_id = ? AND name = ?) AS end,
-//		1 AS create_at,
-//		1 AS status
-//    `, id, workflowId, startName, workflowId, endName).Scan(&subqueryResult)
-//}
 
 func (ctl *EdgeCtl) GetItemsByStartTaskId(taskId string) ([]Edge, error) {
 	var items []Edge
@@ -90,9 +66,9 @@ func (ctl *EdgeCtl) GetItemsByEndTaskId(taskId string) ([]Edge, error) {
 func (ctl *EdgeCtl) GetUnfinishedUpstremTaskId(endTaskId string) (unfinishedSize int64, err error) {
 	var count int64
 
-	db.Table("compute_edge").
-		Joins("JOIN compute_task ON compute_edge.start_task_id = compute_task.id").
-		Where("compute_task.status != ? AND compute_edge.end_task_id = ?", api.TASK_STATUS_END, endTaskId).
+	db.Table("c_edge").
+		Joins("JOIN c_task ON c_edge.start_task_id = c_task.id").
+		Where("c_task.status != ? AND c_edge.end_task_id = ?", api.TASK_STATUS_END, endTaskId).
 		Count(&count)
 
 	return count, nil

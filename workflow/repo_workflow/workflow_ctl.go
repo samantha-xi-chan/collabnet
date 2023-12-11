@@ -17,7 +17,7 @@ func GetWorkflowCtl() *WorkflowCtl {
 }
 
 func (Workflow) TableName() string {
-	return "compute_workflow"
+	return "c_workflow"
 }
 
 type Workflow struct {

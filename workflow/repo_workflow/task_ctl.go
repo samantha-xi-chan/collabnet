@@ -19,7 +19,7 @@ func GetTaskCtl() *TaskCtl {
 }
 
 func (Task) TableName() string {
-	return "compute_task"
+	return "c_task"
 }
 
 type Task struct {
@@ -108,9 +108,8 @@ func (ctl *TaskCtl) GetItemFromWorkflowAndName(wfId string, name string) (i Task
 func (ctl *TaskCtl) GetWorkflowObjIdsFromTaskId(taskID string) (_ []api_workflow.VolItem, e error) { // todo: optimize
 	var result []api_workflow.VolItem
 
-	sql := "SELECT ct.obj_id_out, cn.url \nFROM compute_task ct\nJOIN compute_node cn ON ct.node_id = cn.id\nWHERE ct.workflow_id IN (\n    SELECT workflow_id\n    FROM compute_task\n    WHERE id = ?)"
+	sql := "SELECT ct.obj_id_out, cn.url \nFROM c_task ct\nJOIN c_node cn ON ct.node_id = cn.id\nWHERE ct.workflow_id IN (\n    SELECT workflow_id\n    FROM c_task\n    WHERE id = ?)"
 
-	// SELECT ct.obj_id_out , ct.node_id, cn.url  FROM biz.compute_task ct LEFT JOIN compute_node cn ON ct.node_id = cn.id
 	if err := db.Raw(sql, taskID).Scan(&result).Error; err != nil {
 		return nil, err
 	}
@@ -129,7 +128,7 @@ func (ctl *TaskCtl) UpdateItemByID(id string, fieldsToUpdate map[string]interfac
 }
 
 func (ctl *TaskCtl) UpdateItemEnqueue(id string) (rowsAffected int64, e error) {
-	updateQuery := "UPDATE compute_task SET status = ? WHERE id = ? AND status = ? "
+	updateQuery := "UPDATE c_task SET status = ? WHERE id = ? AND status = ? "
 	result := db.Exec(updateQuery, api.TASK_STATUS_QUEUEING, id, api.TASK_STATUS_INIT)
 
 	if result.Error != nil {
@@ -163,30 +162,13 @@ func (ctl *TaskCtl) GetNextTasksByTaskId(taskId string) (items []Task, total int
 func (ctl *TaskCtl) GetItemsByWorkflowIdDeprecated(wfId string) (x []api_workflow.TaskResp, total int64, e error) {
 
 	var tasks []api_workflow.TaskResp
-	db.Table("compute_task").
-		Select("DISTINCT compute_task.id, compute_task.name, compute_task.start_at, compute_task.end_at, compute_task.status, compute_task.node_id, compute_task.container_id, compute_task.exit_code, ce.obj_id").
-		Joins("JOIN compute_edge AS ce ON compute_task.id = ce.start_task_id").
-		Where("compute_task.workflow_id = ?", wfId).
+	db.Table("c_task").
+		Select("DISTINCT c_task.id, c_task.name, c_task.start_at, c_task.end_at, c_task.status, c_task.node_id, c_task.container_id, c_task.exit_code, ce.obj_id").
+		Joins("JOIN c_edge AS ce ON c_task.id = ce.start_task_id").
+		Where("c_task.workflow_id = ?", wfId).
 		Find(&tasks).Limit(-1).
 		Offset(-1).
 		Count(&total)
-	/*
-			sql := `
-		        SELECT DISTINCT (ct_sub.id), ct_sub.name, ct_sub.start_at, ct_sub.end_at, ct_sub.status, ct_sub.node_id, ct_sub.check_exit_code, ce.obj_id
-		        FROM (SELECT * FROM compute_task WHERE workflow_id = ?) AS ct_sub
-		        JOIN compute_edge AS ce
-		        ON ct_sub.id = ce.start_task_id
-		    `
-			err = db.Raw(sql, wfId).Scan(&tasks).Error
-	*/
-
-	/*
-	   SELECT DISTINCT (ct_sub.id), ct_sub.name, ct_sub.start_at, ct_sub.end_at, ct_sub.status, ct_sub.check_exit_code, ce.obj_id
-	   FROM (SELECT * FROM compute_task WHERE workflow_id = 'wf_1698824209416jbie') AS ct_sub
-	   JOIN compute_edge AS ce
-	   ON ct_sub.id = ce.start_task_id
-
-	*/
 
 	return tasks, total, nil
 }
@@ -194,7 +176,7 @@ func (ctl *TaskCtl) GetItemsByWorkflowIdDeprecated(wfId string) (x []api_workflo
 func (ctl *TaskCtl) GetItemsByWorkflowIdV18(wfId string) (x []api_workflow.TaskResp, total int64, e error) { // todo: ORDER BY create_at
 	var tasks []api_workflow.TaskResp
 
-	db.Table("(SELECT DISTINCT ct.id, ct.name, ct.create_at,ct.start_at, ct.end_at, ct.status, ct.exit_code, ce.obj_id FROM compute_task AS ct JOIN compute_edge AS ce ON ct.id = ce.start_task_id WHERE ct.workflow_id = ?) AS task_sub", wfId).
+	db.Table("(SELECT DISTINCT ct.id, ct.name, ct.create_at,ct.start_at, ct.end_at, ct.status, ct.exit_code, ce.obj_id FROM c_task AS ct JOIN c_edge AS ce ON ct.id = ce.start_task_id WHERE ct.workflow_id = ?) AS task_sub", wfId).
 		Select("task_sub.*, link.host_name, link.from AS host_ip, sched.carrier, sched.error ").
 		Joins("LEFT JOIN sched ON sched.task_id = task_sub.id").
 		Joins("LEFT JOIN link ON link.id = sched.link_id").
@@ -202,33 +184,6 @@ func (ctl *TaskCtl) GetItemsByWorkflowIdV18(wfId string) (x []api_workflow.TaskR
 		Scan(&tasks).Limit(-1).
 		Offset(-1).
 		Count(&total)
-
-	/*
-			SELECT task_sub.* ,link.host_name, sched.carrier
-		    FROM ( SELECT DISTINCT ct.id, ct.name, ct.start_at, ct.end_at, ct.status, ct.exit_code, ce.obj_id
-			    FROM `compute_task` AS ct JOIN compute_edge AS ce
-			    ON ct.id = ce.start_task_id
-			    WHERE ct.workflow_id = 'wf_1699007538633eeyr') AS task_sub
-			LEFT JOIN sched
-			ON sched.task_id  = task_sub.id
-			LEFT JOIN link
-			ON link.id = sched.link_id
-	*/
-
-	/*
-		db.Table("compute_task").
-			Select("DISTINCT compute_task.id, compute_task.name, compute_task.start_at, compute_task.end_at, compute_task.status, link.host_name , sched.carrier , compute_task.exit_code, ce.obj_id").
-			Joins("JOIN compute_edge AS ce JOIN sched JOIN link  ON compute_task.id = ce.start_task_id  AND sched.task_id = compute_task.id AND sched.link_id = link.id ").
-			Where("compute_task.workflow_id = ?", wfId).
-			Find(&tasks).Limit(-1).
-			Offset(-1).
-			Count(&total)
-
-		SELECT DISTINCT ct.id, ct.name, ct.start_at, ct.end_at, ct.status, link.host_name , sched.carrier , ct.exit_code, ce.obj_id
-		FROM `compute_task` AS ct JOIN compute_edge AS ce JOIN sched JOIN link
-		ON ct.id = ce.start_task_id  AND sched.task_id = ct.id AND sched.link_id = link.id
-		WHERE ct.workflow_id = 'wf_1698825735413xzkd'
-	*/
 
 	return tasks, total, nil
 }
@@ -277,13 +232,13 @@ func (ctl *TaskCtl) GetMaxLeftQuotaNodeId() (nodeId string, leftQuota int, e err
 		LeftQuota   int
 	}
 
-	subQuery := db.Table("compute_task").
+	subQuery := db.Table("c_task").
 		Select("node_id, COUNT(*) AS running_task_count").
 		//Where("exit_code = ?", api.TASK_ERROR_CODE_INIT).
 		Where("status = ?", api.TASK_STATUS_RUNNING).
 		Group("node_id")
 
-	db.Table("compute_node cn").
+	db.Table("c_node cn").
 		Select("cn.id AS node_id, cn.task_quota AS quota, COALESCE(rt.running_task_count, 0) AS running_task, (cn.task_quota - COALESCE(rt.running_task_count, 0)) AS left_quota").
 		Joins("LEFT JOIN (?) AS rt ON cn.id = rt.node_id", subQuery).
 		Order("left_quota DESC").
@@ -301,10 +256,10 @@ var subqueryResult struct {
 
 func (ctl *TaskCtl) UpdatePreTaskIdFromWorkflowAndName(workflowId string, preName string, nextName string) (nodeId string, e error) {
 	db.Raw(`
-        UPDATE compute_task AS ct1
+        UPDATE c_task AS ct1
         JOIN (
             SELECT id
-            FROM compute_task
+            FROM c_task
             WHERE workflow_id = ? AND name = ?
             LIMIT 1
         ) AS subquery
