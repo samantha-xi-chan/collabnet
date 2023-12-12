@@ -1,7 +1,7 @@
 package util_minio
 
 import (
-	"collab-net-v2/package/util/compress"
+	"collab-net-v2/util/compress"
 	"context"
 	"github.com/pkg/errors"
 	"io/ioutil"

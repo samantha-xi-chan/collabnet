@@ -2,10 +2,10 @@ package service_workflow
 
 import (
 	"collab-net-v2/api"
-	"collab-net-v2/package/util/docker_container"
-	"collab-net-v2/package/util/docker_image"
-	"collab-net-v2/package/util/docker_vol"
-	"collab-net-v2/package/util/util_minio"
+	"collab-net-v2/util/docker_container"
+	"collab-net-v2/util/docker_image"
+	"collab-net-v2/util/docker_vol"
+	"collab-net-v2/util/util_minio"
 	"context"
 	"fmt"
 	"github.com/pkg/errors"

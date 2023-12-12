@@ -1,7 +1,7 @@
 package docker_vol
 
 import (
-	"collab-net-v2/package/util/util_minio"
+	"collab-net-v2/util/util_minio"
 	"context"
 	"fmt"
 	"github.com/docker/docker/api/types/volume"

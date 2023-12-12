@@ -2,10 +2,13 @@ package util_os
 
 import (
 	"fmt"
+	"github.com/shirou/gopsutil/cpu"
+	"github.com/shirou/gopsutil/mem"
 	"os/exec"
 	"runtime"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func GetMaxOpenFiles() (int, error) {
@@ -34,6 +37,22 @@ func GetMaxOpenFiles() (int, error) {
 	}
 
 	return maxOpenFiles, nil
+}
+
+func PrintCpuMemUsage() {
+	cpuUsage, err := cpu.Percent(time.Second, false)
+	if err != nil {
+		fmt.Println("Error getting CPU usage:", err)
+	} else {
+		fmt.Printf("CPU Usage: %.2f%%\n", cpuUsage[0])
+	}
+
+	memInfo, err := mem.VirtualMemory()
+	if err != nil {
+		fmt.Println("Error getting memory usage:", err)
+	} else {
+		fmt.Printf("Total: %v, Free: %v, Used: %v, UsedPercent: %.2f%%\n", memInfo.Total, memInfo.Free, memInfo.Used, memInfo.UsedPercent)
+	}
 }
 
 /*

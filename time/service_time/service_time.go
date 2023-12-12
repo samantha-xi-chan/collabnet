@@ -2,11 +2,11 @@ package service_time
 
 import (
 	"bytes"
-	"collab-net-v2/package/util/idgen"
 	"collab-net-v2/sched/config_sched"
 	"collab-net-v2/time/api_time"
 	"collab-net-v2/time/repo_time"
 	"collab-net-v2/time/util/rmq_util"
+	"collab-net-v2/util/idgen"
 	"encoding/json"
 	"fmt"
 	"github.com/pkg/errors"

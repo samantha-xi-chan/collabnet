@@ -3,7 +3,7 @@ Current=a
 CurrentDir=/docker/$Current
 CurrentFile=$CurrentDir/out.txt
 
-echo "created by Current: "$Current  | tee -a $CurrentFile
+echo " 😄 created by Current: "$Current  | tee -a $CurrentFile
 
 echo -e "_   _   _   _   _   _   _   _   _   _   _   _   start $Current  _   _   _   _   _   _   _   _   _   _   _   _ " | tee -a $CurrentFile
 cd $CurrentDir

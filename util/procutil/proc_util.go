@@ -1,7 +1,7 @@
 package procutil
 
 import (
-	"collab-net-v2/package/util/stl"
+	"collab-net-v2/util/stl"
 	"context"
 	"fmt"
 	"github.com/docker/docker/api/types"

@@ -2,7 +2,7 @@ package service_workflow
 
 import (
 	"collab-net-v2/api"
-	"collab-net-v2/package/util/util_mq"
+	"collab-net-v2/util/util_mq"
 	repo "collab-net-v2/workflow/repo_workflow"
 	"log"
 	"sync"
