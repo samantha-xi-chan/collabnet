@@ -2,7 +2,7 @@ package docker_container
 
 import (
 	"collab-net-v2/api"
-	"collab-net-v2/pkg/message"
+	"collab-net-v2/pkg/external/message"
 	"collab-net-v2/util/procutil"
 	"collab-net-v2/workflow/config_workflow"
 	"context"

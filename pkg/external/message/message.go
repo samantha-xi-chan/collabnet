@@ -2,7 +2,7 @@ package message
 
 import (
 	"collab-net-v2/api"
-	pb "collab-net-v2/pkg/message/proto"
+	pb "collab-net-v2/pkg/external/message/proto"
 	"context"
 	"github.com/pkg/errors"
 	"time"

@@ -5,7 +5,7 @@ import (
 	"collab-net-v2/internal/config"
 	"collab-net-v2/link"
 	"collab-net-v2/link/service_link"
-	"collab-net-v2/pkg/message"
+	"collab-net-v2/pkg/external/message"
 	"collab-net-v2/sched/config_sched"
 	"collab-net-v2/sched/service_sched"
 	"collab-net-v2/util/grammar"
