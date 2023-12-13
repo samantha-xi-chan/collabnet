@@ -1,7 +1,7 @@
 
 set -e
 
-Ver=1.9-dev-R121318
+Ver=v1.9-dev-R04
 BuildT=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
 GitCommit=$(git rev-parse --short HEAD)
 echo "\$Ver:    "     $Ver        ;
@@ -13,7 +13,9 @@ CGO_ENABLED=0 GOOS=linux  GOARCH=amd64 go build -o node_manager/node_manager  -l
 cp config/app.yaml  node_manager/config
 cp deploy/service/node_manager.service node_manager
 
-tar -cvf node_manager.tar node_manager/
+tar -cvf release/node_manager_$(date "+%Y%m%d%H%M%S").tar node_manager/
+
+exit 0
 
 HOST=36110_root
 ssh $HOST "mkdir -p /opt/"
@@ -23,6 +25,6 @@ ssh $HOST "systemctl stop  node_manager.service || echo " stop service end "
 ssh $HOST "cp /opt/node_manager/node_manager.service /etc/systemd/system/"
 ssh $HOST "ls /opt/node_manager/"
 ssh $HOST "systemctl enable node_manager.service"
-ssh $HOST "systemctl start  node_manager.service"
+ssh $HOST "systemctl restart  node_manager.service"
 ssh $HOST "systemctl status  node_manager.service"
 ssh $HOST "journalctl -u node_manager -f  -n 100"
