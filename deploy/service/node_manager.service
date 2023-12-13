@@ -5,8 +5,8 @@ Description=node_manager Service
 After=network.target docker.service
 
 [Service]
-ExecStart=/opt/node/node_manager
-WorkingDirectory=/opt/node/
+ExecStart=/opt/node_manager/node_manager
+WorkingDirectory=/opt/node_manager/
 Restart=always
 RestartSec=10
 

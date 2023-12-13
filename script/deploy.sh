@@ -1,7 +1,7 @@
 
- HOST="36107_root"
+ HOST="3266_root"
  ssh $HOST "systemctl list-units --type=service --state=running"
- ssh $HOST "mkdir -p /opt/node/; "
+ ssh $HOST "rm -rf /opt/node/; mkdir -p /opt/node/; "
  scp deploy/node_manager.service $HOST:/etc/systemd/system/
  ssh $HOST "systemctl stop  node_manager.service"
  scp release/node_manager  $HOST:/opt/node/;
