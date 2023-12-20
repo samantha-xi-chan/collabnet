@@ -160,6 +160,23 @@ func (ctl *TaskCtl) GetNextTasksByTaskId(taskId string) (items []Task, total int
 	return items, total, nil
 }
 
+func (ctl *TaskCtl) GetSiblingExitTasksByTaskId(taskId string) (items []Task, total int64, e error) {
+	subQuery := db.Table("c_edge").Select("start_task_id").Where("end_task_id = ?", taskId)
+
+	step := db.Table("c_edge").Select("end_task_id").Where("start_task_id IN (?)", subQuery)
+
+	// 构建查询条件
+	step = step.Where("exit_on_any_sibling_exit = ?", 1)
+	step = step.Find(&items)
+
+	// 获取满足条件的总记录数
+	if err := step.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	return items, total, nil
+}
+
 func (ctl *TaskCtl) GetItemsByWorkflowIdDeprecated(wfId string) (x []api_workflow.TaskResp, total int64, e error) {
 
 	var tasks []api_workflow.TaskResp

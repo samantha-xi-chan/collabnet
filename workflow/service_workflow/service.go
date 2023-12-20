@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 	"log"
 	"math/rand"
 	"time"
@@ -215,6 +216,19 @@ func OnTaskStatusChange(ctx context.Context, taskId string, status int, exitCode
 	if status != api.TASK_STATUS_END {
 		log.Println("status != api.TASK_STATUS_END, taskId", taskId)
 		return nil
+	}
+
+	// find all sibling with attribute 'exit_on_any_sibling_exit' and stop then
+	items, cnt, e := repo_workflow.GetTaskCtl().GetSiblingExitTasksByTaskId(taskId)
+	if e != nil {
+		ee = errors.Wrap(e, "repo_workflow.GetTaskCtl().GetSiblingExitTasksByTaskId : ")
+		return
+	}
+	debugInfo := fmt.Sprintf("GetSiblingExitTasksByTaskId: taskId = %s , cnt = %d,  items = %#v", taskId, cnt, items)
+	logrus.Debug(debugInfo)
+	message.GetMsgCtl().UpdateTaskWrapper(item.WorkflowId, api.SESSION_DEBUG, debugInfo)
+	for _, val := range items {
+		StopTaskByBiz(val.ID)
 	}
 
 	if exitCode == 0 || (exitCode != 0 && item.CheckExitCode == api.FALSE) { // 任务成功 或 任务虽不成功 但是不介意
