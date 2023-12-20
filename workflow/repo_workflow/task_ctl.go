@@ -39,7 +39,8 @@ type Task struct {
 	ExpExitCode int   `json:"exp_exit_code"`
 	ExitCode    int   `json:"exit_code" gorm:"default:1000"` // EXIT_CODE_INIT    = 1000
 
-	CheckExitCode int `json:"check_exit_code"` /* 1 as true, 0 as false */
+	CheckExitCode        int `json:"check_exit_code"`          /* 1 as true, 0 as false */
+	ExitOnAnySiblingExit int `json:"exit_on_any_sibling_exit"` /* 1 as true, 0 as false */
 
 	Define string `json:"define" `
 	Status int    `json:"status" gorm:"index:idx_status"   gorm:"default:60021001"` // TASK_STATUS_INIT     = 60021001

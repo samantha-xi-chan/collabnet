@@ -24,7 +24,8 @@ type TaskInput struct {
 	Timeout int      `json:"timeout"`
 	Remain  bool     `json:"remain"` /* 1 as true, 0 as false */
 
-	CheckExitCode bool `json:"check_exit_code"` /* 1 as true, 0 as false */
+	CheckExitCode        bool `json:"check_exit_code"`          /* 1 as true, 0 as false */
+	ExitOnAnySiblingExit bool `json:"exit_on_any_sibling_exit"` /* 1 as true, 0 as false */
 
 	ExpExitCode   int           `json:"exp_exit_code"`
 	ResourceQuota ResourceQuota `json:"resource_quota"`

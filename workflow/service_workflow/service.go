@@ -57,15 +57,18 @@ func PostWorkflow(ctx context.Context, req api_workflow.PostWorkflowReq) (api_wo
 			Image:  task.Image,
 			CmdStr: string(jsonData),
 
-			StartAt:       0,
-			EndAt:         0,
-			Timeout:       task.Timeout,
-			ExpExitCode:   task.ExpExitCode,
-			ExitCode:      api.EXIT_CODE_INIT,
-			Remain:        task.Remain,
-			CheckExitCode: grammar.GetCodeFromBool(task.CheckExitCode),
-			Define:        "",
-			Status:        api.TASK_STATUS_INIT,
+			StartAt:     0,
+			EndAt:       0,
+			Timeout:     task.Timeout,
+			ExpExitCode: task.ExpExitCode,
+			ExitCode:    api.EXIT_CODE_INIT,
+			Remain:      task.Remain,
+
+			CheckExitCode:        grammar.GetCodeFromBool(task.CheckExitCode),
+			ExitOnAnySiblingExit: grammar.GetCodeFromBool(task.ExitOnAnySiblingExit),
+
+			Define: "",
+			Status: api.TASK_STATUS_INIT,
 
 			ImportObjId: task.ImportObjId,
 			ImportObjAs: task.ImportObjAs,
