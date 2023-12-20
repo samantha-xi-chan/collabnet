@@ -1,0 +1,54 @@
+{
+  "task": [{
+    "name": "task_prepare",
+    "image": "badouralix/curl-jq:latest",
+    "cmd_str": ["http://192.168.31.8:2080/a.sh", "para01","para0N"],
+    "timeout": 800,
+    "remain": false,
+    "check_exit_code": true
+  }, {
+    "name": "task_test",
+    "image": "badouralix/curl-jq:latest",
+    "cmd_str": ["http://192.168.31.8:2080/b.sh", "para01","para0N"],
+    "timeout": 6000,
+    "remain": false,
+    "check_exit_code": false
+  }, {
+    "name": "task_coverage",
+    "image": "badouralix/curl-jq:latest",
+    "cmd_str": ["http://192.168.31.8:2080/c.sh", "para01","para0N"],
+    "timeout": 6000,
+    "remain": false,
+    "exit_on_any_sibling_exit": true,
+    "check_exit_code": false
+  }, {
+    "name": "task_close",
+    "image": "badouralix/curl-jq:latest",
+    "cmd_str": ["http://192.168.31.8:2080/d.sh", "para01","para0N"],
+    "timeout": 60,
+    "remain": false,
+    "check_exit_code": true
+  }],
+  "edge": [{
+    "start": "task_prepare",
+    "end": "task_test",
+    "resc": "/docker/a/"
+  }, {
+    "start": "task_prepare",
+    "end": "task_coverage",
+    "resc": "/docker/a/"
+  }, {
+    "start": "task_test",
+    "end": "task_close",
+    "resc": "/docker/b/"
+  }, {
+    "start": "task_coverage",
+    "end": "task_close",
+    "resc": "/docker/c/"
+  }, {
+    "start": "task_close",
+    "resc": "/docker/d/"
+  }],
+  "share_dir": ["/docker/share_dir_a/"],
+  "ver": 2
+}
