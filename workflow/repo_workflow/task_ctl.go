@@ -161,11 +161,17 @@ func (ctl *TaskCtl) GetNextTasksByTaskId(taskId string) (items []Task, total int
 }
 
 func (ctl *TaskCtl) GetSiblingExitTasksByTaskId(taskId string) (items []Task, total int64, e error) {
+	// 使用预设的表名（假设 Task 结构体对应的表名为 "c_task"）
 	subQuery := db.Table("c_edge").Select("start_task_id").Where("end_task_id = ?", taskId)
-	subQuery = db.Table("c_edge").Select("end_task_id").Where("start_task_id IN (?)", subQuery)
-	step := db.Table("c_task").Where("exit_on_any_sibling_exit = ?", 1).Where("id IN (?)", subQuery)
-	step = step.Find(&items)
 
+	step := db.Table("c_edge").Select("end_task_id").Where("start_task_id IN (?)", subQuery)
+
+	// 使用正确的表名 "c_task" 和字段名 "exit_on_any_sibling_exit"
+	step = step.Joins("JOIN c_task ON c_edge.end_task_id = c_task.task_id").
+		Where("c_task.exit_on_any_sibling_exit = ?", 1).
+		Find(&items)
+
+	// 获取满足条件的总记录数
 	if err := step.Count(&total).Error; err != nil {
 		return nil, 0, err
 	}
