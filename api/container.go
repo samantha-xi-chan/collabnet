@@ -17,7 +17,8 @@ type PostContainerReq struct {
 	Image  string   `json:"image"`
 	CmdStr []string `json:"cmd_str"`
 
-	BindIn  []Bind `json:"bind_in"`
-	BindOut []Bind `json:"bind_out"`
-	Share   []Bind `json:"share"`
+	BindIn    []Bind `json:"bind_in"`
+	BindOut   []Bind `json:"bind_out"`
+	GroupPath string `json:"group_path"`
+	ShareDir  string `json:"share_dir"`
 }

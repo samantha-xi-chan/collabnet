@@ -24,7 +24,7 @@ import (
 	"time"
 )
 
-func PostWorkflow(ctx context.Context, req api_workflow.PostWorkflowReq) (api_workflow.PostWorkflowResp, error) {
+func PostWorkflow(ctx context.Context, req api_workflow.PostWorkflowDagReq) (api_workflow.PostWorkflowResp, error) {
 	log.Println("PostWorkflowReq: ", req)
 	localTaskId := ""
 
@@ -38,6 +38,7 @@ func PostWorkflow(ctx context.Context, req api_workflow.PostWorkflowReq) (api_wo
 		CreateAt: time.Now().UnixMilli(),
 		CreateBy: 0,
 		Define:   string(jsonStr),
+		ShareDir: req.ShareDir,
 	})
 
 	for idx, task := range req.Task {
@@ -496,23 +497,26 @@ func PlayAsConsumerBlock(mqUrl string, consumerCnt int) {
 					return false
 				}
 
+				itemWorkflow, e := repo_workflow.GetWorkflowCtl().GetItemByID(itemTask.WorkflowId)
+				if e != nil {
+					fmt.Println("itemTask.WorkflowId = ", itemTask.WorkflowId, ", 😭 Error:", e)
+					return false
+				}
+				DockerGroupPref := "/mnt"
+				groupPath := fmt.Sprintf("%s/%s", DockerGroupPref, itemTask.WorkflowId)
+
 				newContainer := api.PostContainerReq{
 					TaskId:         taskId,
 					BucketName:     config_workflow.BUCKET_NAME,
 					CbAddr:         "",
 					LogRt:          true,
 					CleanContainer: !itemTask.Remain,
-					//Name:           fmt.Sprintf("%s_%d", taskId, time.Now().UnixMilli()),
-					Image:   itemTask.Image,
-					CmdStr:  stringArray,
-					BindIn:  bindIn,
-					BindOut: bindOut,
-					Share: []api.Bind{
-						api.Bind{
-							VolPath: "/mnt/sss",
-							VolId:   "/share",
-						},
-					},
+					Image:          itemTask.Image,
+					CmdStr:         stringArray,
+					BindIn:         bindIn,
+					BindOut:        bindOut,
+					GroupPath:      groupPath,
+					ShareDir:       itemWorkflow.ShareDir,
 				}
 				log.Println("newContainer: ", newContainer)
 

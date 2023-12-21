@@ -196,7 +196,7 @@ func DeleteWorkflow(c *gin.Context) {
 }
 
 func PostWorkflow(c *gin.Context) {
-	var dto api_workflow.PostWorkflowReq
+	var dto api_workflow.PostWorkflowDagReq
 	if err := c.BindJSON(&dto); err != nil {
 		logrus.Error("bad request in Post(): ", err)
 		c.JSON(http.StatusOK, api.HttpRespBody{

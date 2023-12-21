@@ -3,6 +3,7 @@ package docker_container
 import (
 	"collab-net-v2/api"
 	"collab-net-v2/pkg/external/message"
+	"collab-net-v2/util/filems"
 	"collab-net-v2/util/procutil"
 	"collab-net-v2/workflow/config_workflow"
 	"context"
@@ -103,7 +104,8 @@ func CreateContainer(ctx context.Context,
 	imageName string, cmdStringArr []string, memLimMb int64, cpuPercent int, cpuSetCpus string, containerName string,
 	bindIn []api.Bind,
 	bindOut []api.Bind,
-	share []api.Bind,
+	groupPath string,
+	shareDir string,
 ) (containerId_ string, e error) {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
@@ -130,6 +132,26 @@ func CreateContainer(ctx context.Context,
 
 	log.Println("taskId: ", taskId, "  cmdStringArr: ", cmdStringArr, "  binds: ", binds)
 
+	// debug mode
+	var mountMount []mount.Mount
+	if filems.IsLinuxPath(shareDir) {
+		e := filems.CreateFolderIfNotExists(groupPath)
+		if e != nil {
+			return "", errors.Wrap(e, "filems.CreateFolderIfNotExists")
+		}
+		mountMount = append(mountMount, mount.Mount{
+			Type:           mount.TypeBind,
+			Source:         groupPath,
+			Target:         shareDir,
+			ReadOnly:       false,
+			Consistency:    "",
+			BindOptions:    nil,
+			VolumeOptions:  nil,
+			TmpfsOptions:   nil,
+			ClusterOptions: nil,
+		})
+	}
+
 	resp, err := cli.ContainerCreate(
 		ctx,
 		&container.Config{
@@ -150,16 +172,8 @@ func CreateContainer(ctx context.Context,
 				Config: map[string]string{"max-file": "2", "max-size": "20m"},
 			},
 			ShmSize: 512 * 1024 * 1024, // in bytes
-
-			Binds: binds,
-
-			Mounts: []mount.Mount{
-				{
-					Type:   mount.TypeBind,
-					Source: share[0].VolId,   // 宿主机目录
-					Target: share[0].VolPath, // 容器内目录
-				},
-			},
+			Binds:   binds,
+			Mounts:  mountMount,
 		},
 		nil,
 		nil,

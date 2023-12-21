@@ -32,27 +32,19 @@ type TaskInput struct {
 }
 
 type PostWorkflowDagReq struct {
-	Task []TaskInput `json:"task"`
-	Edge []Edge      `json:"edge"`
+	Task     []TaskInput `json:"task"`
+	Edge     []Edge      `json:"edge"`
+	ShareDir string      `json:"share_dir"`
 }
 type PostWorkflowDagResp struct {
 	Id string `json:"id"`
 }
 
-type PostWorkflowReq struct {
-	Task []TaskInput `json:"task"`
-	Edge []Edge      `json:"edge"`
-}
 type PostWorkflowResp struct {
 	Id           string     `json:"id"`
 	QueryGetTask []TaskResp `json:"task"`
 }
 
-//type PatchTaskReq struct {
-//	TaskId   string `json:"task_id"`
-//	Status   int    `json:"status"`
-//	ExitCode int    `json:"exit_code"`
-//}
 type PatchTaskResp struct {
 }
 

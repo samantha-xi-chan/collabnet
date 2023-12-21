@@ -70,7 +70,8 @@ func CreateContainerWrapper(ctx context.Context, req api.PostContainerReq, conta
 
 		req.BindIn,
 		req.BindOut,
-		req.Share,
+		req.GroupPath,
+		req.ShareDir,
 	)
 	if err != nil {
 		return "", err
