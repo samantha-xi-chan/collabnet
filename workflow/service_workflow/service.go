@@ -495,6 +495,12 @@ func PlayAsConsumerBlock(mqUrl string, consumerCnt int) {
 					time.Sleep(time.Second * 1)
 					return false
 				}
+
+				bindIn = append(bindIn, api.Bind{
+					"/mnt/sss/",
+					"/share/",
+				})
+
 				newContainer := api.PostContainerReq{
 					TaskId:         taskId,
 					BucketName:     config_workflow.BUCKET_NAME,
