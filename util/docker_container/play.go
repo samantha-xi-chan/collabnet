@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/client"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -102,6 +103,7 @@ func CreateContainer(ctx context.Context,
 	imageName string, cmdStringArr []string, memLimMb int64, cpuPercent int, cpuSetCpus string, containerName string,
 	bindIn []api.Bind,
 	bindOut []api.Bind,
+	share []api.Bind,
 ) (containerId_ string, e error) {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
@@ -150,6 +152,14 @@ func CreateContainer(ctx context.Context,
 			ShmSize: 512 * 1024 * 1024, // in bytes
 
 			Binds: binds,
+
+			Mounts: []mount.Mount{
+				{
+					Type:   mount.TypeBind,
+					Source: share[0].VolId,   // 宿主机目录
+					Target: share[0].VolPath, // 容器内目录
+				},
+			},
 		},
 		nil,
 		nil,

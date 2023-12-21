@@ -507,6 +507,12 @@ func PlayAsConsumerBlock(mqUrl string, consumerCnt int) {
 					CmdStr:  stringArray,
 					BindIn:  bindIn,
 					BindOut: bindOut,
+					Share: []api.Bind{
+						api.Bind{
+							VolPath: "/mnt/sss",
+							VolId:   "/share",
+						},
+					},
 				}
 				log.Println("newContainer: ", newContainer)
 
