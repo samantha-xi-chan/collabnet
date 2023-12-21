@@ -19,4 +19,5 @@ type PostContainerReq struct {
 
 	BindIn  []Bind `json:"bind_in"`
 	BindOut []Bind `json:"bind_out"`
+	Share   []Bind `json:"share"`
 }
