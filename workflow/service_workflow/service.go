@@ -496,11 +496,6 @@ func PlayAsConsumerBlock(mqUrl string, consumerCnt int) {
 					return false
 				}
 
-				bindIn = append(bindIn, api.Bind{
-					"/mnt/sss/",
-					"/share/",
-				})
-
 				newContainer := api.PostContainerReq{
 					TaskId:         taskId,
 					BucketName:     config_workflow.BUCKET_NAME,
