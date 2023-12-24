@@ -447,7 +447,7 @@ func init() {
 			time.Sleep(time.Second)
 		}
 
-		e = util_minio.InitDistFileMs(context.Background(), address, username, password, config_workflow.MINIO_BUCKET_NAME, false)
+		e = util_minio.InitDistFileMs(context.Background(), address, username, password, config_workflow.MINIO_BUCKET_NAME_INTERTASK, false)
 		if e != nil {
 			log.Fatal("util_minio.InitDistFileMs: ", e)
 		}

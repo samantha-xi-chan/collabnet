@@ -11,6 +11,11 @@ import (
 
 var fileManager FileManager
 
+func CreateBucketIfNotExist(ctx context.Context, endpoint string, accessKeyID string, secretAccessKey string, bucketName string) (e error) {
+	useSSL := false
+	return CreateBucketIfNotExists(ctx, endpoint, accessKeyID, secretAccessKey, useSSL, bucketName)
+}
+
 func InitDistFileMs(ctx context.Context, endpoint string, accessKeyID string, secretAccessKey string, bucketName string, clean bool) (e error) {
 	useSSL := false
 	return fileManager.InitFM(ctx, endpoint, accessKeyID, secretAccessKey, useSSL, bucketName, clean)

@@ -506,7 +506,7 @@ func PlayAsConsumerBlock(mqUrl string, consumerCnt int) {
 
 				newContainer := api.PostContainerReq{
 					TaskId:         taskId,
-					BucketName:     config_workflow.MINIO_BUCKET_NAME,
+					BucketName:     config_workflow.MINIO_BUCKET_NAME_INTERTASK,
 					CbAddr:         "",
 					LogRt:          true,
 					CleanContainer: !itemTask.Remain,

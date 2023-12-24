@@ -55,7 +55,8 @@ func init() {
 	config.Init()
 
 	// init storage
-	e := util_minio.InitDistFileMs(context.Background(), config_workflow.MINIO_API_URL, config_workflow.MINIO_AK, config_workflow.MINIO_SK, config_workflow.MINIO_BUCKET_NAME, false)
+	util_minio.CreateBucketIfNotExist(context.Background(), config_workflow.MINIO_API_URL, config_workflow.MINIO_AK, config_workflow.MINIO_SK, config_workflow.MINIO_BUCKET_NAME_WF)
+	e := util_minio.InitDistFileMs(context.Background(), config_workflow.MINIO_API_URL, config_workflow.MINIO_AK, config_workflow.MINIO_SK, config_workflow.MINIO_BUCKET_NAME_INTERTASK, false)
 	if e != nil {
 		log.Fatal("util_minio.InitDistFileMs: ", e)
 	}

@@ -20,6 +20,38 @@ type FileManager struct {
 	err         error
 }
 
+func CreateBucketIfNotExists(ctx context.Context, endpoint string, accessKeyID string, secretAccessKey string, useSSL bool, bucketName string) (e error) {
+	minioClient, e := minio.New(endpoint, &minio.Options{
+		Creds:  credentials.NewStaticV4(accessKeyID, secretAccessKey, ""),
+		Secure: useSSL,
+	})
+	if e != nil {
+		log.Println("minio.New error: ", e)
+		return e
+	}
+
+	exists, err := minioClient.BucketExists(ctx, bucketName)
+	if err != nil {
+		log.Println("BucketExists error: ", e)
+		return err
+	}
+	if exists {
+		log.Printf("bucket %s exists already", bucketName)
+		return nil
+	}
+	e = minioClient.MakeBucket(ctx, bucketName, minio.MakeBucketOptions{
+		Region:        "",
+		ObjectLocking: false,
+	})
+	if e != nil {
+		log.Println("minio.MakeBucket error: ", e)
+		return e
+	}
+
+	log.Printf("bucket %s created", bucketName)
+	return nil
+}
+
 func (f *FileManager) InitFM(ctx context.Context, endpoint string, accessKeyID string, secretAccessKey string, useSSL bool, bucketName string, clean bool) (e error) {
 	// Initialize minio client object.
 	log.Println("InitFM()")
