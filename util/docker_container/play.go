@@ -130,7 +130,7 @@ func CreateContainer(ctx context.Context,
 		binds = append(binds, fmt.Sprintf("%s:%s", volName, val.VolPath))
 	}
 
-	log.Println("taskId: ", taskId, "  cmdStringArr: ", cmdStringArr, "  binds: ", binds)
+	log.Println("taskId: ", taskId, ",   cmdStringArr: ", cmdStringArr, ",   binds: ", binds, ", groupPath: ", groupPath, ", shareDir: ", shareDir)
 
 	// debug mode
 	var mountMount []mount.Mount
@@ -150,6 +150,8 @@ func CreateContainer(ctx context.Context,
 			TmpfsOptions:   nil,
 			ClusterOptions: nil,
 		})
+	} else {
+		log.Println("filems.IsLinuxPath not, shareDir = ", shareDir)
 	}
 
 	resp, err := cli.ContainerCreate(

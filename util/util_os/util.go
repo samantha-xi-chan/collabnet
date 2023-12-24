@@ -5,6 +5,7 @@ import (
 	"github.com/shirou/gopsutil/cpu"
 	"github.com/shirou/gopsutil/mem"
 	"os/exec"
+	"os/user"
 	"runtime"
 	"strconv"
 	"strings"
@@ -55,14 +56,12 @@ func PrintCpuMemUsage() {
 	}
 }
 
-/*
-func main() {
-	maxOpenFiles, err := GetMaxOpenFiles()
+func IsCurrentUserRoot() bool {
+	currentUser, err := user.Current()
 	if err != nil {
 		fmt.Println("Error:", err)
-		os.Exit(1)
+		return false
 	}
 
-	fmt.Println("Max open files:", maxOpenFiles)
+	return currentUser.Uid == "0" || currentUser.Username == "root"
 }
-*/

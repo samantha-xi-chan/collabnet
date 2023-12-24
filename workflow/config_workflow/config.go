@@ -10,7 +10,10 @@ const (
 	LISTEN_PORT = ":8081"
 )
 
-const BUCKET_NAME = "bucket001"
+const MINIO_API_URL = "minio-service:9000"
+const MINIO_AK = "admin"
+const MINIO_SK = "password"
+const MINIO_BUCKET_NAME = "bucket001"
 
 const (
 	VOL_TOOL         = "base_tool"

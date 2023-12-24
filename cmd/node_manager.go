@@ -359,6 +359,10 @@ func SendBizData2Platform(bytes []byte) {
 }
 
 func init() {
+	if !util_os.IsCurrentUserRoot() {
+		log.Fatal("currentRunning User not Root")
+	}
+
 	maxOpenFiles, err := util_os.GetMaxOpenFiles()
 	if err != nil {
 		fmt.Println("Error:", err)
@@ -443,9 +447,9 @@ func init() {
 			time.Sleep(time.Second)
 		}
 
-		e = util_minio.Init(context.Background(), address, username, password, config_workflow.BUCKET_NAME, false)
+		e = util_minio.InitDistFileMs(context.Background(), address, username, password, config_workflow.MINIO_BUCKET_NAME, false)
 		if e != nil {
-			log.Fatal("util_minio.Init: ", e)
+			log.Fatal("util_minio.InitDistFileMs: ", e)
 		}
 	}
 }

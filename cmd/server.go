@@ -10,8 +10,10 @@ import (
 	"collab-net-v2/task/config_task"
 	"collab-net-v2/task/control_task"
 	"collab-net-v2/task/service_task"
+	"collab-net-v2/util/util_minio"
 	"collab-net-v2/util/util_net"
 	"collab-net-v2/workflow"
+	"collab-net-v2/workflow/config_workflow"
 	"context"
 	"fmt"
 	"log"
@@ -36,7 +38,7 @@ func init() {
 				"go-message-waiter:10051", // todo: coding style
 				"go-message-notify:9102",
 				"mysql-collabnet:3306",
-				"minio-service:9000",
+				config_workflow.MINIO_API_URL,
 				"redis-service:6379",
 				"rmq-cluster:5672",
 			},
@@ -51,6 +53,12 @@ func init() {
 	}
 
 	config.Init()
+
+	// init storage
+	e := util_minio.InitDistFileMs(context.Background(), config_workflow.MINIO_API_URL, config_workflow.MINIO_AK, config_workflow.MINIO_SK, config_workflow.MINIO_BUCKET_NAME, false)
+	if e != nil {
+		log.Fatal("util_minio.InitDistFileMs: ", e)
+	}
 }
 
 func main() {

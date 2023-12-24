@@ -16,13 +16,6 @@ func IsLinuxPath(path string) bool {
 		return false
 	}
 
-	// 确保路径中包含斜杠（至少有一个斜杠）
-	if strings.Count(path, "/") < 2 {
-		return false
-	}
-
-	// 其他条件根据实际情况添加
-
 	// 如果所有条件都通过，认为是Linux路径
 	return true
 }
