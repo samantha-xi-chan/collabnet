@@ -502,8 +502,7 @@ func PlayAsConsumerBlock(mqUrl string, consumerCnt int) {
 					fmt.Println("itemTask.WorkflowId = ", itemTask.WorkflowId, ", 😭 Error:", e)
 					return false
 				}
-				DockerGroupPref := "/mnt"
-				groupPath := fmt.Sprintf("%s/%s", DockerGroupPref, itemTask.WorkflowId)
+				groupPath := fmt.Sprintf("%s/%s", config_workflow.DockerGroupPref, itemTask.WorkflowId)
 
 				newContainer := api.PostContainerReq{
 					TaskId:         taskId,

@@ -15,6 +15,8 @@ const MINIO_AK = "admin"
 const MINIO_SK = "password"
 const MINIO_BUCKET_NAME = "bucket001"
 
+const DockerGroupPref = "/mnt/sss"
+
 const (
 	VOL_TOOL         = "base_tool"
 	SCRIPT_FILENAME  = "cmd.sh"
