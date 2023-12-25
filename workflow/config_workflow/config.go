@@ -14,7 +14,7 @@ const MINIO_API_URL = "minio-service:9000"
 const MINIO_AK = "admin"
 const MINIO_SK = "password"
 
-const MINIO_BUCKET_NAME_INTERTASK = "inter_task"
+const MINIO_BUCKET_NAME_INTERTASK = "intertask"
 const MINIO_BUCKET_NAME_WF = "share"
 
 const DockerGroupPref = "/mnt/sss"
