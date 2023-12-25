@@ -457,13 +457,17 @@ func PlayAsConsumerBlock(mqUrl string, consumerCnt int) {
 				}
 				log.Println("taskId = ", taskId, ", itemsIn: ", itemsIn)
 				for _, val := range itemsIn {
+					if val.Resc == "" {
+						log.Println("skip Resc: val.ObjId = ", val.ObjId)
+						continue
+					}
 					bindIn = append(bindIn, api.Bind{
 						VolPath: val.Resc,
 						VolId:   val.ObjId,
 					})
 				}
 				log.Println("taskId = ", taskId, ", bindIn: ", bindIn)
-				if itemTask.ImportObjId != "" {
+				if itemTask.ImportObjId != "" { // todo: check invalid input
 					bindIn = append(bindIn, api.Bind{
 						VolPath: itemTask.ImportObjAs,
 						VolId:   itemTask.ImportObjId,
@@ -480,6 +484,10 @@ func PlayAsConsumerBlock(mqUrl string, consumerCnt int) {
 				for idx, val := range itemsOut {
 					if idx >= 1 {
 						break // feature: 当前仅仅支持一路 任务的文件夹输出
+					}
+					if val.Resc == "" {
+						log.Println("skip Resc: val.ObjId = ", val.ObjId)
+						continue
 					}
 					bindOut = append(bindOut, api.Bind{
 						VolPath: val.Resc,
@@ -517,7 +525,7 @@ func PlayAsConsumerBlock(mqUrl string, consumerCnt int) {
 					GroupPath:      groupPath,
 					ShareDir:       itemWorkflow.ShareDir,
 				}
-				log.Println("newContainer: ", newContainer)
+				log.Printf("newContainer: #%v\n", newContainer)
 
 				// 将结构体序列化为JSON
 				jsonData, err := json.Marshal(newContainer)

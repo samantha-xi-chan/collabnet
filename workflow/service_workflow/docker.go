@@ -14,7 +14,7 @@ import (
 )
 
 func CreateContainerWrapper(ctx context.Context, req api.PostContainerReq, containerName string) (containerId string, err error) {
-	log.Println("PostContainer req: ", req)
+	log.Printf("PostContainer req: %#v \n", req)
 
 	taskId := req.TaskId
 
@@ -41,7 +41,7 @@ func CreateContainerWrapper(ctx context.Context, req api.PostContainerReq, conta
 	}
 
 	for idx, val := range req.BindIn {
-		log.Printf("for idx, val := range req.BindIn idx= %d  containerName: %s \n", idx, containerName)
+		log.Printf("for idx, val := range req.BindIn idx= %d  containerName: %s,  \n", idx, containerName)
 		if val.VolId != "" {
 			volName := fmt.Sprintf("%s_%s", containerName, val.VolId)
 			ee := docker_vol.CreateVolumeFromObjId(ctx, req.BucketName, volName, val.VolId, false)
