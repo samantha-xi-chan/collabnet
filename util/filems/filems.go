@@ -1,6 +1,7 @@
 package filems
 
 import (
+	"github.com/pkg/errors"
 	"os"
 	"strings"
 )
@@ -26,4 +27,15 @@ func CreateFolderIfNotExists(folderPath string) error {
 		return err
 	}
 	return nil
+}
+
+func CheckFileReady(absPath string) (e error) {
+	_, err := os.Stat(absPath)
+	if err == nil {
+		return nil
+	} else if os.IsNotExist(err) {
+		return errors.Wrap(err, "os.IsNotExist: ")
+	} else {
+		return errors.Wrap(err, "other: ")
+	}
 }

@@ -1,7 +1,7 @@
 
 set -e
 
-Ver=v1.9-dev-R04
+Ver=v2.0
 BuildT=$(date "+%Y%m%d%H%M%S")
 GitCommit=$(git rev-parse --short HEAD)
 echo "\$Ver:    "     $Ver        ;
@@ -26,6 +26,7 @@ scp release/$Tar $HOST:/opt/node_manager.tar
 
 cat << 'EOF' > deploy.sh
 set -e
+echo "DefaultLimitNOFILE=1048576" >> /etc/systemd/system.conf
 systemctl stop  node_manager.service || echo 'stop service end' && \
 cd /opt/ && tar -xvf node_manager.tar && \
 cp /opt/node_manager/node_manager.service /etc/systemd/system/ && \
@@ -58,7 +59,7 @@ ssh $HOST "systemctl status   node_manager.service"
 # -rw-r--r-- 1 root root  272 Dec 19 06:16 node_manager.service
 
 # 系统优化与服务部署
-echo "DefaultLimitNOFILE=1048576" >> /etc/systemd/system.conf
+
 systemctl stop  node_manager.service || echo 'stop service end'
 cp /opt/node_manager/node_manager.service /etc/systemd/system/
 ls /opt/node_manager/

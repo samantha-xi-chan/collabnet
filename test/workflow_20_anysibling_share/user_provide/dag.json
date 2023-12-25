@@ -1,58 +1,58 @@
 {
   "task": [{
-    "name": "task_prepare",
+    "name": "task_a",
     "image": "badouralix/curl-jq:latest",
     "cmd_str": ["http://192.168.31.8:2080/a.sh", "para01","para0N"],
     "timeout": 800,
     "debug": false,
-    "remain": false,
+    "remain": true,
     "check_exit_code": true
   }, {
-    "name": "task_test",
+    "name": "task_b",
     "image": "badouralix/curl-jq:latest",
     "cmd_str": ["http://192.168.31.8:2080/b.sh", "para01","para0N"],
     "timeout": 6000,
     "debug": false,
-    "remain": false,
+    "remain": true,
     "check_exit_code": false
   }, {
-    "name": "task_coverage",
+    "name": "task_c",
     "image": "badouralix/curl-jq:latest",
     "cmd_str": ["http://192.168.31.8:2080/c.sh", "para01","para0N"],
     "timeout": 6000,
     "debug": false,
-    "remain": false,
+    "remain": true,
     "exit_on_any_sibling_exit": true,
     "check_exit_code": false
   }, {
-    "name": "task_close",
+    "name": "task_d",
     "image": "badouralix/curl-jq:latest",
     "cmd_str": ["http://192.168.31.8:2080/d.sh", "para01","para0N"],
     "timeout": 60,
     "debug": false,
-    "remain": false,
+    "remain": true,
     "check_exit_code": true
   }],
   "edge": [{
-    "start": "task_prepare",
-    "end": "task_test",
-    "resc": "/docker/a/"
+    "start": "task_a",
+    "end": "task_b",
+    "resc": "/docker/a"
   }, {
-    "start": "task_prepare",
-    "end": "task_coverage",
-    "resc": "/docker/a/"
+    "start": "task_a",
+    "end": "task_c",
+    "resc": "/docker/a"
   }, {
-    "start": "task_test",
-    "end": "task_close",
-    "resc": "/docker/b/"
+    "start": "task_b",
+    "end": "task_d",
+    "resc": "/docker/b"
   }, {
-    "start": "task_coverage",
-    "end": "task_close",
-    "resc": "/docker/c/"
+    "start": "task_c",
+    "end": "task_d",
+    "resc": "/docker/c"
   }, {
-    "start": "task_close",
-    "resc": "/docker/d/"
+    "start": "task_d",
+    "resc": "/docker/d"
   }],
-  "share_dir": ["/docker/share_dir_a/"],
+  "share_dir": "/test_dir",
   "ver": 2
 }

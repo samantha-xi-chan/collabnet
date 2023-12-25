@@ -8,6 +8,7 @@ import (
 	"collab-net-v2/sched/config_sched"
 	"collab-net-v2/util/docker_container"
 	"collab-net-v2/util/docker_vol"
+	"collab-net-v2/util/filems"
 	"collab-net-v2/util/stl"
 	"collab-net-v2/util/util_minio"
 	"collab-net-v2/util/util_net"
@@ -19,9 +20,11 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
+	"os/exec"
 	"os/signal"
 	"strings"
 	"time"
@@ -358,7 +361,72 @@ func SendBizData2Platform(bytes []byte) {
 	writeChanEx <- bytes
 }
 
+func checkS3fsCmd() {
+	cmd := exec.Command("s3fs", "--version")
+	output, err := cmd.CombinedOutput()
+
+	if err != nil {
+		fmt.Println("s3fs command is not available or encountered an error:", err)
+		os.Exit(1)
+	}
+
+	fmt.Println("s3fs command is available.")
+	fmt.Println("s3fs version information:")
+	fmt.Println(string(output))
+}
+
+func mountFS(ak string, sk string, ipAndPort string) (e error) {
+	content := fmt.Sprintf("%s:%s\n", ak, sk) // "admin:password\n"
+	err := ioutil.WriteFile("/etc/passwd-s3fs", []byte(content), 0600)
+	if err != nil {
+		fmt.Println("Error writing to file:", err)
+		os.Exit(1)
+	}
+
+	fmt.Println("File /etc/passwd-s3fs written successfully.")
+
+	err = os.Chmod("/etc/passwd-s3fs", 0600)
+	if err != nil {
+		fmt.Println("Error changing file permissions:", err)
+		os.Exit(1)
+	}
+
+	fmt.Println("File permissions changed successfully.")
+
+	urlString := fmt.Sprintf("url=http://%s", ipAndPort)
+	cmd := exec.Command("s3fs",
+		"-o", "passwd_file=/etc/passwd-s3fs",
+		"-o", urlString,
+		"-o", "use_path_request_style",
+		"-o", "nonempty",
+		"-o", "kernel_cache",
+		"-o", "max_background=1000",
+		"-o", "max_stat_cache_size=100000",
+		"-o", "multipart_size=64",
+		"-o", "parallel_count=30",
+		"-o", "multireq_max=30",
+		"-o", "dbglevel=warn",
+		config_workflow.MINIO_BUCKET_NAME_WF,
+		config_workflow.DockerGroupPref)
+
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		fmt.Println("Error running s3fs command:", err)
+		os.Exit(1)
+	}
+
+	fmt.Println("s3fs command output:", string(output))
+
+	// echo "admin:password" > /etc/passwd-s3fs
+	// chmod 600 /etc/passwd-s3fs
+	// s3fs -o passwd_file=/etc/passwd-s3fs -o url=http://192.168.31.45:32000 -o use_path_request_style -o nonempty workflowshare /mnt/sss
+
+	return nil
+}
+
 func init() {
+	checkS3fsCmd()
+
 	if !util_os.IsCurrentUserRoot() {
 		log.Fatal("currentRunning User not Root")
 	}
@@ -431,6 +499,17 @@ func init() {
 		password := parts[1][:lastIndex]
 		address := parts[1][lastIndex+1:]
 		log.Printf("username: %s , password: %s, address: %s\n", username, password, address)
+
+		// check
+		for true {
+			mountFS(username, password, address)
+
+			if filems.CheckFileReady(config_workflow.DefaultServerSignPath) == nil {
+				break
+			}
+
+			time.Sleep(time.Second)
+		}
 
 		for true {
 			bAllOK, _ := util_net.CheckTcpService(
