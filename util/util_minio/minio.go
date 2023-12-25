@@ -2,9 +2,11 @@ package util_minio
 
 import (
 	"context"
+	"fmt"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 	"log"
+	"strings"
 )
 
 type FileManager struct {
@@ -20,7 +22,7 @@ type FileManager struct {
 	err         error
 }
 
-func CreateBucketIfNotExists(ctx context.Context, endpoint string, accessKeyID string, secretAccessKey string, useSSL bool, bucketName string) (e error) {
+func CreateBucketIfNotExistsWithDefaultSign(ctx context.Context, endpoint string, accessKeyID string, secretAccessKey string, useSSL bool, bucketName string) (e error) {
 	minioClient, e := minio.New(endpoint, &minio.Options{
 		Creds:  credentials.NewStaticV4(accessKeyID, secretAccessKey, ""),
 		Secure: useSSL,
@@ -49,6 +51,17 @@ func CreateBucketIfNotExists(ctx context.Context, endpoint string, accessKeyID s
 	}
 
 	log.Printf("bucket %s created", bucketName)
+
+	defaultObjectName := "server"
+	reader := strings.NewReader("sign")
+	_, err = minioClient.PutObject(ctx, bucketName, defaultObjectName, reader, int64(reader.Len()), minio.PutObjectOptions{ContentType: "application/text"})
+	if err != nil {
+		log.Println("FPutObject err: ", err)
+		return err
+	}
+
+	fmt.Printf("Successfully created object '%s' in bucket '%s'\n", defaultObjectName, bucketName)
+
 	return nil
 }
 
