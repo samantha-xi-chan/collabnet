@@ -17,4 +17,4 @@ ln -s Deep01_y/Deep02_y/not_exists.txt date_fail.txt
 free -h
 tree
 
-echo -e "_   _   _   _   _   _   _   _   _   _   _   _    end $Current   _   _   _   _   _   _   _   _   _   _   _   _ " | tee -a $OUTPUT
+echo -e "_   _   _   _   _   _   _   _   _   _   _   _    end $Current   _   _   _   _   _   _   _   _   _   _   _   _ " | tee -a $CurrentFile
