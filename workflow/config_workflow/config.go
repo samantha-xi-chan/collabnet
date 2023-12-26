@@ -1,5 +1,7 @@
 package config_workflow
 
+import "fmt"
+
 const (
 	//RepoMySQLDsn = "root:gzn%zkTJ8x!gGZO6@tcp(192.168.31.6:3306)/biz?charset=utf8mb4&parseTime=True&loc=Local"
 	RepoLogLevel = 2
@@ -21,11 +23,16 @@ const DockerGroupPref = "/mnt/sss"
 const DefaultServerSignPath = "/mnt/sss/server"
 
 const (
-	VOL_TOOL         = "base_tool"
-	SCRIPT_FILENAME  = "cmd.sh"
-	DOCKER_PATH_BIND = "base_tool:/path/in/docker:ro"
-	HOSTS_BIND       = "/etc/hosts:/etc/hosts:ro"
-	SCRIPT_CONTENT   = `#/bin/sh
+	VOL_TOOL        = "base_tool"
+	CMD_DIR         = "/in_docker"
+	SCRIPT_FILENAME = "cmd.sh"
+	HOSTS_BIND      = "/etc/hosts:/etc/hosts:ro"
+)
+
+var DockerPathBind = fmt.Sprintf("base_tool:%s:ro", CMD_DIR)
+
+const (
+	SCRIPT_CONTENT = `#/bin/sh
 
 cleanup() {
     rm -r "$temp_dir"

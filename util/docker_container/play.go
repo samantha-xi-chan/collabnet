@@ -5,6 +5,7 @@ import (
 	"collab-net-v2/pkg/external/message"
 	"collab-net-v2/util/filems"
 	"collab-net-v2/util/procutil"
+	"collab-net-v2/util/stringutil"
 	"collab-net-v2/workflow/config_workflow"
 	"context"
 	"fmt"
@@ -105,7 +106,7 @@ func CreateContainer(ctx context.Context,
 	bindIn []api.Bind,
 	bindOut []api.Bind,
 	groupPath string,
-	shareDir string,
+	shareDir []string,
 ) (containerId_ string, e error) {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
@@ -118,7 +119,7 @@ func CreateContainer(ctx context.Context,
 		}
 	}()
 
-	var binds = []string{config_workflow.DOCKER_PATH_BIND}
+	var binds = []string{config_workflow.DockerPathBind}
 	binds = append(binds, config_workflow.HOSTS_BIND)
 
 	for _, val := range bindIn {
@@ -134,24 +135,33 @@ func CreateContainer(ctx context.Context,
 
 	// debug mode
 	var mountMount []mount.Mount
-	if filems.IsLinuxPath(shareDir) {
-		e := filems.CreateFolderIfNotExists(groupPath)
-		if e != nil {
-			return "", errors.Wrap(e, "filems.CreateFolderIfNotExists")
+	for idx, val := range shareDir {
+		log.Printf("idx = %d, val = %s\n ", idx, val)
+
+		if filems.IsLinuxPath(val) {
+			e := filems.CreateFolderIfNotExists(groupPath)
+			if e != nil {
+				return "", errors.Wrap(e, "filems.CreateFolderIfNotExists")
+			}
+			source := fmt.Sprintf("%s/%s", groupPath, stringutil.CalculateMD5(val))
+			e = filems.CreateFolderIfNotExists(source)
+			if e != nil {
+				return "", errors.Wrap(e, "filems.CreateFolderIfNotExists")
+			}
+			mountMount = append(mountMount, mount.Mount{
+				Type:           mount.TypeBind,
+				Source:         source,
+				Target:         val,
+				ReadOnly:       false,
+				Consistency:    "",
+				BindOptions:    nil,
+				VolumeOptions:  nil,
+				TmpfsOptions:   nil,
+				ClusterOptions: nil,
+			})
+		} else {
+			log.Println("filems.IsLinuxPath not, shareDir = ", shareDir)
 		}
-		mountMount = append(mountMount, mount.Mount{
-			Type:           mount.TypeBind,
-			Source:         groupPath,
-			Target:         shareDir,
-			ReadOnly:       false,
-			Consistency:    "",
-			BindOptions:    nil,
-			VolumeOptions:  nil,
-			TmpfsOptions:   nil,
-			ClusterOptions: nil,
-		})
-	} else {
-		log.Println("filems.IsLinuxPath not, shareDir = ", shareDir)
 	}
 
 	resp, err := cli.ContainerCreate(
@@ -159,6 +169,7 @@ func CreateContainer(ctx context.Context,
 		&container.Config{
 			Image: imageName,
 			Cmd:   cmdStringArr,
+			//Env:   env, // []string{"MY_ENV_VARIABLE=example_value"}, // 设置环境变量
 		},
 		&container.HostConfig{
 			Resources: container.Resources{

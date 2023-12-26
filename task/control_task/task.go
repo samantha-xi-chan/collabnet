@@ -71,13 +71,13 @@ func PatchTask(c *gin.Context) {
 
 	// 判断 id 是否有效
 
-	// 判断是否真实在运行
+	// todo: 判断是否真实在运行
 
 	e := service_task.PatchTask(id)
 	if e != nil {
 		c.JSON(http.StatusOK, api.HttpRespBody{
 			Code: api.ERR_OTHER,
-			Msg:  "service_task.NewTask:  " + e.Error(),
+			Msg:  "service_task.PatchTask:  " + e.Error(),
 		})
 		return
 	}
@@ -94,7 +94,7 @@ func GetTask(c *gin.Context) {
 	if e != nil {
 		c.JSON(http.StatusOK, api.HttpRespBody{
 			Code: api.ERR_OTHER,
-			Msg:  "service_task.NewTask:  " + e.Error(),
+			Msg:  "service_task.GetTask:  " + e.Error(),
 		})
 		return
 	}

@@ -20,5 +20,6 @@ type PostContainerReq struct {
 	BindIn    []Bind `json:"bind_in"`
 	BindOut   []Bind `json:"bind_out"`
 	GroupPath string `json:"group_path"`
-	ShareDir  string `json:"share_dir"`
+
+	ShareDir []string `json:"share_dir"`
 }

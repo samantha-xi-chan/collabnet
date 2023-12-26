@@ -31,7 +31,8 @@ type Workflow struct {
 	ExitCode int    `json:"exit_code"`
 	Define   string `json:"define"`
 	Error    string `json:"error" `
-	ShareDir string `json:"share_dir"`
+
+	ShareDirArrStr string `json:"share_dir_arr_str"`
 }
 
 func (ctl *WorkflowCtl) CreateItem(item Workflow) (err error) {

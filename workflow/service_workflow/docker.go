@@ -6,6 +6,7 @@ import (
 	"collab-net-v2/util/docker_image"
 	"collab-net-v2/util/docker_vol"
 	"collab-net-v2/util/util_minio"
+	"collab-net-v2/workflow/config_workflow"
 	"context"
 	"fmt"
 	"github.com/pkg/errors"
@@ -21,7 +22,7 @@ func CreateContainerWrapper(ctx context.Context, req api.PostContainerReq, conta
 	arrayB := make([]string, len(req.CmdStr)+2)
 
 	arrayB[0] = "/bin/sh"
-	arrayB[1] = "/path/in/docker/cmd.sh"
+	arrayB[1] = fmt.Sprintf("%s/%s", config_workflow.CMD_DIR, config_workflow.SCRIPT_FILENAME) //arrayB[1] = "/path/in/docker/cmd.sh"
 	copy(arrayB[2:], req.CmdStr[0:])
 
 	// check if image ready

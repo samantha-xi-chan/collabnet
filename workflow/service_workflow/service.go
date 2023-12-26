@@ -10,6 +10,7 @@ import (
 	"collab-net-v2/sched/service_sched"
 	"collab-net-v2/util/grammar"
 	"collab-net-v2/util/idgen"
+	"collab-net-v2/util/stringutil"
 	"collab-net-v2/util/util_mq"
 	"collab-net-v2/workflow/api_workflow"
 	"collab-net-v2/workflow/config_workflow"
@@ -38,7 +39,8 @@ func PostWorkflow(ctx context.Context, req api_workflow.PostWorkflowDagReq) (api
 		CreateAt: time.Now().UnixMilli(),
 		CreateBy: 0,
 		Define:   string(jsonStr),
-		ShareDir: req.ShareDir,
+
+		ShareDirArrStr: stringutil.StringArrayToString(req.ShareDir, ", "), //req.ShareDir,
 	})
 
 	for idx, task := range req.Task {
@@ -523,7 +525,7 @@ func PlayAsConsumerBlock(mqUrl string, consumerCnt int) {
 					BindIn:         bindIn,
 					BindOut:        bindOut,
 					GroupPath:      groupPath,
-					ShareDir:       itemWorkflow.ShareDir,
+					ShareDir:       stringutil.StringToStringArray(itemWorkflow.ShareDirArrStr, ", "),
 				}
 				log.Printf("newContainer: #%v\n", newContainer)
 
