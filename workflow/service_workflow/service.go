@@ -29,7 +29,7 @@ func PostWorkflow(ctx context.Context, req api_workflow.PostWorkflowDagReq) (api
 	log.Println("PostWorkflowReq: ", req)
 	localTaskId := ""
 
-	workflowId := idgen.GetIdWithPref("wf_")
+	workflowId := idgen.GetIdWithPref("wf")
 	jsonStr, _ := json.Marshal(req)
 	repo_workflow.GetWorkflowCtl().CreateItem(repo_workflow.Workflow{
 		ID:       workflowId,
@@ -84,7 +84,7 @@ func PostWorkflow(ctx context.Context, req api_workflow.PostWorkflowDagReq) (api
 	}
 
 	for idx, edge := range req.Edge {
-		id := idgen.GetIdWithPref("edge")
+		id := idgen.GetIdWithPref("e")
 		log.Println("idx: ", idx, ", edge: ", edge)
 
 		startTask, e := repo_workflow.GetTaskCtl().GetItemFromWorkflowAndName(workflowId, edge.Start)
