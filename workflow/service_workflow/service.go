@@ -25,28 +25,8 @@ import (
 	"time"
 )
 
-func PostWorkflow(ctx context.Context, req api_workflow.PostWorkflowDagReq) (api_workflow.PostWorkflowResp, error) {
-	log.Println("PostWorkflowReq: ", req)
+func createNewWorkflowIterate(ctx context.Context, workflowId string, currentIterate int, req api_workflow.PostWorkflowDagReq) (ee error) {
 	localTaskId := ""
-
-	currentIterate := 0
-
-	workflowId := idgen.GetIdWithPref("wf")
-	jsonStr, _ := json.Marshal(req)
-	repo_workflow.GetWorkflowCtl().CreateItem(repo_workflow.Workflow{
-		ID:       workflowId,
-		Name:     workflowId,
-		Enabled:  api.TRUE,
-		Desc:     "",
-		CreateAt: time.Now().UnixMilli(),
-		CreateBy: 0,
-		Define:   string(jsonStr),
-
-		ShareDirArrStr: stringutil.StringArrayToString(req.ShareDir, stringutil.DEFAULT_SEPARATOR), //req.ShareDir,
-		Timeout:        req.Timeout,
-		Infinite:       req.Infinite,
-		Iterate:        currentIterate,
-	})
 
 	for idx, task := range req.Task {
 		log.Println("idx: ", idx, ", val: ", task)
@@ -131,16 +111,6 @@ func PostWorkflow(ctx context.Context, req api_workflow.PostWorkflowDagReq) (api
 			}
 		}
 
-		//repo_workflow.GetEdgeCtl().CreateItem(repo_workflow.Edge{
-		//	ID:          id,
-		//	CreateAt:    time.Now().UnixMilli(),
-		//	Name:        fmt.Sprintf("%s -> %s", edge.Start, edge.End),
-		//	StartTaskId: startTask.ID,
-		//	EndTaskId:   endTaskId,
-		//	Resc:        edge.Resc,
-		//	ObjId:       startTask.ID,
-		//	Status:      0,
-		//})
 	}
 
 	if localTaskId != "" {
@@ -148,13 +118,51 @@ func PostWorkflow(ctx context.Context, req api_workflow.PostWorkflowDagReq) (api
 		message.GetMsgCtl().UpdateTaskWrapper(workflowId, api.SESSION_STATUS_INIT, fmt.Sprintf(" - Queueing TaskId: %s ", localTaskId)) // for debug only
 	}
 
+	return nil
+}
+
+func checkIfWorkflowIterateEnd(ctx context.Context, workflowId string, iterate int) (ifEnded bool, ee error) {
+
+	return true, nil
+}
+
+func PostWorkflow(ctx context.Context, req api_workflow.PostWorkflowDagReq) (api_workflow.PostWorkflowResp, error) {
+	log.Println("PostWorkflowReq: ", req)
+
+	currentIterate := 1
+
+	workflowId := idgen.GetIdWithPref("wf")
+	jsonStr, _ := json.Marshal(req)
+
+	record := repo_workflow.Workflow{
+		ID:       workflowId,
+		Name:     workflowId,
+		Enabled:  api.TRUE,
+		Desc:     "",
+		CreateAt: time.Now().UnixMilli(),
+		CreateBy: 0,
+		Define:   string(jsonStr),
+
+		ShareDirArrStr: stringutil.StringArrayToString(req.ShareDir, stringutil.DEFAULT_SEPARATOR), //req.ShareDir,
+		Timeout:        req.Timeout,
+		Infinite:       req.Infinite,
+		Iterate:        currentIterate,
+	}
+
+	repo_workflow.GetWorkflowCtl().CreateItem(record)
+
+	e := createNewWorkflowIterate(ctx, workflowId, currentIterate, req)
+	if e != nil {
+		return api_workflow.PostWorkflowResp{}, errors.Wrap(e, "CreateNewWorkflowIterate: ")
+	}
+
+	// check
 	items, total, e := repo_workflow.GetTaskCtl().GetItemsByWorkflowIdV18(
 		workflowId,
 	)
 	if e != nil {
 		return api_workflow.PostWorkflowResp{}, errors.Wrap(e, "repo.GetTaskCtl().GetItemsByWorkflowId: ")
 	}
-
 	log.Println("items, total: ", items, total)
 	return api_workflow.PostWorkflowResp{
 		Id:           workflowId,
@@ -543,7 +551,7 @@ func PlayAsConsumerBlock(mqUrl string, consumerCnt int) {
 				env := []string{
 					fmt.Sprintf("TASK_ID=%s", taskId),
 					fmt.Sprintf("TASK_ID_IN_WORKFLOW=%s", taskId),
-					fmt.Sprintf("IMAGE=%s", itemTask.Image),
+					fmt.Sprintf("IMAGE_IN_WORKFLOW=%s", itemTask.Image),
 				}
 				newContainer := api.PostContainerReq{
 					TaskId:         taskId,
