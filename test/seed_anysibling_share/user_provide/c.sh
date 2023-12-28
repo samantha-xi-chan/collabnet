@@ -1,8 +1,12 @@
 
-Current=b
+Current=c
 CurrentDir=/docker/$Current
 CurrentFile=$CurrentDir/out.txt
+echo $CurrentFile
 echo -e "_   _   _   _   _   _   _   _   _   _   _   _   start $Current  _   _   _   _   _   _   _   _   _   _   _   _ " | tee -a $CurrentFile
+
+
+sleep 1
 
 Prev=a
 PrevDir=/docker/$Prev
@@ -22,8 +26,9 @@ mkdir -p Deep01_y/Deep02_y; date >   Deep01_y/Deep02_y/date.txt
 echo $Current  >> /test_dir/date.txt
 date >> /test_dir/date.txt
 
+ls /docker/c
 
-timeout=200
+timeout=120
 echo  $Current "going to sleep " $timeout " seconds"
 sleep $timeout
 echo  $Current "end of sleep " $timeout " seconds"

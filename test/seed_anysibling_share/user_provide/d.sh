@@ -1,15 +1,24 @@
 
-Current=b
+Current=d
 CurrentDir=/docker/$Current
 CurrentFile=$CurrentDir/out.txt
 echo -e "_   _   _   _   _   _   _   _   _   _   _   _   start $Current  _   _   _   _   _   _   _   _   _   _   _   _ " | tee -a $CurrentFile
 
-Prev=a
-PrevDir=/docker/$Prev
-PrevFile=$PrevDir/out.txt
+Prev01=b
+PrevDir01=/docker/$Prev01
+PrevFile01=$PrevDir01/out.txt
+Prev02=c
+PrevDir02=/docker/$Prev02
+PrevFile02=$PrevDir02/out.txt
+echo $PrevFile01
+echo $PrevFile02
 
-cat $PrevFile >>  $CurrentFile
-cp -rf $PrevDir $CurrentDir
+
+cat $PrevFile01 >>  $CurrentFile
+cat $PrevFile02 >>  $CurrentFile
+cp -rf $PrevDir01 $CurrentDir
+cp -rf $PrevDir02 $CurrentDir
+
 echo "created by Current: "$Current  | tee -a $CurrentFile
 
 cd $CurrentDir
@@ -22,10 +31,8 @@ mkdir -p Deep01_y/Deep02_y; date >   Deep01_y/Deep02_y/date.txt
 echo $Current  >> /test_dir/date.txt
 date >> /test_dir/date.txt
 
+ls -alh /test_dir
 
-timeout=200
-echo  $Current "going to sleep " $timeout " seconds"
-sleep $timeout
-echo  $Current "end of sleep " $timeout " seconds"
+sleep 1
 
 echo -e "_   _   _   _   _   _   _   _   _   _   _   _    end $Current   _   _   _   _   _   _   _   _   _   _   _   _ " | tee -a $CurrentFile

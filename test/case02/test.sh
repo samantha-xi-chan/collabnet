@@ -18,7 +18,7 @@ cleanup() {
     rm -rf $instanceFile
 }
 
-Host="192.168.31.6"
+Host="192.168.31.45"
 
 linkEndpoint=$Host:31080
 taskEndpoint=$Host:32080
@@ -65,9 +65,9 @@ taskId=$(echo "$postTaskResp" | jq -r '.data.id')
 echo "taskId: "$taskId
 
 sleep 3
-#patchTaskResp=$(curl -X PATCH "http://$taskEndpoint/api/v1/task/$taskId" )
-#echo $patchTaskResp
-#echo "patchTaskResp: "$patchTaskResp
+patchTaskResp=$(curl -X PATCH "http://$taskEndpoint/api/v1/task/$taskId" )
+echo $patchTaskResp
+echo "patchTaskResp: "$patchTaskResp
 
 sleep 5; echo "get task: "
 curl -X GET "http://$taskEndpoint/api/v1/task/$taskId"; echo ;

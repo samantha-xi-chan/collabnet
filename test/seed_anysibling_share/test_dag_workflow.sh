@@ -3,8 +3,11 @@
 #API_IP="192.168.31.6"
 API_IP="192.168.36.102"
 API_IP="192.168.34.179"
-API_IP="192.168.31.45"
 API_IP="192.168.36.5"
+API_IP="192.168.31.45"
+
+echo $API_IP
+
 API_PORT="30181"
 DOWNLOAD_HOST="8_root"
 
@@ -61,10 +64,16 @@ fi
 echo $resultGetTask
 
 # 测试业务角度故意杀灭某个任务
-secondTaskId=$(echo $resultGetTask | jq -r '.data.task[1].id')
+secondTaskId=$(echo $resultGetTask | jq -r '.data.task[0].id')
 echo $secondTaskId
-sleep 30
-#curl -X PATCH "http://192.168.31.45:32080/api/v1/task/$secondTaskId"
+sleep 3
+
+curl -X GET "http://$API_IP:$API_PORT/api/v1/task/$secondTaskId"
+
+
+#curl -X GET "http://192.168.31.45:32080/api/v1/task/$secondTaskId"
+
+
 
 # 关闭其中的某个 task
 #patchTaskResp=$(curl -X PATCH "http://localhost:8081/api/v1/task/$taskId" )

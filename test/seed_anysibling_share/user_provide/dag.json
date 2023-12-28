@@ -11,10 +11,11 @@
     "name": "task_b",
     "image": "badouralix/curl-jq:latest",
     "cmd_str": ["http://192.168.31.8:2080/b.sh", "para01","para0N"],
-    "timeout": 400,
+    "timeout": 5,
     "debug": false,
     "remain": true,
-    "check_exit_code": false
+    "check_exit_code": false,
+    "concurrent": 3
   }, {
     "name": "task_c",
     "image": "badouralix/curl-jq:latest",
@@ -44,7 +45,7 @@
   }, {
     "start": "task_b",
     "end": "task_d",
-    "resc": "/docker/b"
+    "resc": ""
   }, {
     "start": "task_c",
     "end": "task_d",
@@ -54,5 +55,7 @@
     "resc": "/docker/d"
   }],
   "share_dir": ["/test_dir","/test_01dir","/test_02dir"],
+  "infinite": true,
+  "timeout": 120,
   "ver": 2
 }
