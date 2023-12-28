@@ -6,6 +6,8 @@ import (
 	"strings"
 )
 
+const DEFAULT_SEPARATOR = ", "
+
 // StringArrayToString 将字符串数组连接成一个字符串，使用指定的分隔符
 func StringArrayToString(arr []string, separator string) string {
 	return strings.Join(arr, separator)

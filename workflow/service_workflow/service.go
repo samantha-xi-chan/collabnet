@@ -29,6 +29,8 @@ func PostWorkflow(ctx context.Context, req api_workflow.PostWorkflowDagReq) (api
 	log.Println("PostWorkflowReq: ", req)
 	localTaskId := ""
 
+	currentIterate := 0
+
 	workflowId := idgen.GetIdWithPref("wf")
 	jsonStr, _ := json.Marshal(req)
 	repo_workflow.GetWorkflowCtl().CreateItem(repo_workflow.Workflow{
@@ -40,9 +42,10 @@ func PostWorkflow(ctx context.Context, req api_workflow.PostWorkflowDagReq) (api
 		CreateBy: 0,
 		Define:   string(jsonStr),
 
-		ShareDirArrStr: stringutil.StringArrayToString(req.ShareDir, ", "), //req.ShareDir,
+		ShareDirArrStr: stringutil.StringArrayToString(req.ShareDir, stringutil.DEFAULT_SEPARATOR), //req.ShareDir,
 		Timeout:        req.Timeout,
 		Infinite:       req.Infinite,
+		Iterate:        currentIterate,
 	})
 
 	for idx, task := range req.Task {
@@ -69,6 +72,7 @@ func PostWorkflow(ctx context.Context, req api_workflow.PostWorkflowDagReq) (api
 				CreateAt:   time.Now().UnixMilli(),
 				CreateBy:   0,
 				WorkflowId: workflowId,
+				Iterate:    currentIterate,
 
 				Image:  task.Image,
 				CmdStr: string(jsonData),
@@ -536,7 +540,11 @@ func PlayAsConsumerBlock(mqUrl string, consumerCnt int) {
 				}
 				groupPath := fmt.Sprintf("%s/%s", config_workflow.DockerGroupPref, itemTask.WorkflowId)
 
-				env := []string{fmt.Sprintf("TASK_ID=%s", taskId), fmt.Sprintf("IMAGE=%s", itemTask.Image)}
+				env := []string{
+					fmt.Sprintf("TASK_ID=%s", taskId),
+					fmt.Sprintf("TASK_ID_IN_WORKFLOW=%s", taskId),
+					fmt.Sprintf("IMAGE=%s", itemTask.Image),
+				}
 				newContainer := api.PostContainerReq{
 					TaskId:         taskId,
 					BucketName:     config_workflow.MINIO_BUCKET_NAME_INTERTASK,
@@ -548,7 +556,7 @@ func PlayAsConsumerBlock(mqUrl string, consumerCnt int) {
 					BindIn:         bindIn,
 					BindOut:        bindOut,
 					GroupPath:      groupPath,
-					ShareDir:       stringutil.StringToStringArray(itemWorkflow.ShareDirArrStr, ", "),
+					ShareDir:       stringutil.StringToStringArray(itemWorkflow.ShareDirArrStr, stringutil.DEFAULT_SEPARATOR),
 					Env:            env,
 				}
 				log.Printf("newContainer: #%v\n", newContainer)

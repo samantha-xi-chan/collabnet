@@ -27,7 +27,9 @@ type Task struct {
 	Name       string `json:"name"`
 	CreateAt   int64  `json:"create_at"`
 	CreateBy   int64  `json:"create_by"`
-	WorkflowId string `json:"workflow_id" gorm:"index:idx_workflow_id"  `
+	WorkflowId string `json:"workflow_id" gorm:"index:idx_workflow_id" `
+
+	Iterate int `json:"iterate" `
 
 	Image  string `json:"image"`
 	CmdStr string `json:"cmd_str"`

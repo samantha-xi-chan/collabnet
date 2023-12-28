@@ -31,6 +31,7 @@ type Workflow struct {
 	ExitCode int    `json:"exit_code"`
 	Define   string `json:"define"`
 	Error    string `json:"error" `
+	Iterate  int    `json:"iterate" `
 
 	ShareDirArrStr string `json:"share_dir_arr_str"`
 	Timeout        int    `json:"timeout"`  // - "timeout" 可以不填写, 默认为 0,  值 0 表示不设置超时
