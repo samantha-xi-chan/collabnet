@@ -41,6 +41,8 @@ func PostWorkflow(ctx context.Context, req api_workflow.PostWorkflowDagReq) (api
 		Define:   string(jsonStr),
 
 		ShareDirArrStr: stringutil.StringArrayToString(req.ShareDir, ", "), //req.ShareDir,
+		Timeout:        req.Timeout,
+		Infinite:       req.Infinite,
 	})
 
 	for idx, task := range req.Task {
@@ -50,71 +52,91 @@ func PostWorkflow(ctx context.Context, req api_workflow.PostWorkflowDagReq) (api
 			fmt.Println("Error:", err)
 		}
 
-		taskId := idgen.GetIdWithPref("t")
-		repo_workflow.GetTaskCtl().CreateItem(repo_workflow.Task{
-			ID:         taskId,
-			Name:       task.Name,
-			CreateAt:   time.Now().UnixMilli(),
-			CreateBy:   0,
-			WorkflowId: workflowId,
-
-			Image:  task.Image,
-			CmdStr: string(jsonData),
-
-			StartAt:     0,
-			EndAt:       0,
-			Timeout:     task.Timeout,
-			ExpExitCode: task.ExpExitCode,
-			ExitCode:    api.EXIT_CODE_INIT,
-			Remain:      task.Remain,
-
-			CheckExitCode:        grammar.GetCodeFromBool(task.CheckExitCode),
-			ExitOnAnySiblingExit: grammar.GetCodeFromBool(task.ExitOnAnySiblingExit),
-
-			Define: "",
-			Status: api.TASK_STATUS_INIT,
-
-			ImportObjId: task.ImportObjId,
-			ImportObjAs: task.ImportObjAs,
-		})
-
-		if idx == 0 {
-			localTaskId = taskId
+		if task.Concurrent == 0 { // 如果不设置 则默认为 1
+			task.Concurrent = 1
 		}
+
+		for i := 0; i < task.Concurrent; i++ {
+			taskId := idgen.GetIdWithPref("t")
+
+			if idx == 0 && task.Concurrent == 1 && i == 0 { // waiting to queue
+				localTaskId = taskId
+			}
+
+			repo_workflow.GetTaskCtl().CreateItem(repo_workflow.Task{
+				ID:         taskId,
+				Name:       task.Name,
+				CreateAt:   time.Now().UnixMilli(),
+				CreateBy:   0,
+				WorkflowId: workflowId,
+
+				Image:  task.Image,
+				CmdStr: string(jsonData),
+
+				StartAt:     0,
+				EndAt:       0,
+				Timeout:     task.Timeout,
+				ExpExitCode: task.ExpExitCode,
+				ExitCode:    api.EXIT_CODE_INIT,
+				Remain:      task.Remain,
+
+				CheckExitCode:        grammar.GetCodeFromBool(task.CheckExitCode),
+				ExitOnAnySiblingExit: grammar.GetCodeFromBool(task.ExitOnAnySiblingExit),
+
+				Define: "",
+				Status: api.TASK_STATUS_INIT,
+
+				ImportObjId: task.ImportObjId,
+				ImportObjAs: task.ImportObjAs,
+			})
+		}
+
 	}
 
 	for idx, edge := range req.Edge {
-		id := idgen.GetIdWithPref("e")
 		log.Println("idx: ", idx, ", edge: ", edge)
 
-		startTask, e := repo_workflow.GetTaskCtl().GetItemFromWorkflowAndName(workflowId, edge.Start)
+		startTaskArr, e := repo_workflow.GetTaskCtl().GetItemsFromWorkflowAndName(workflowId, edge.Start)
 		if e != nil {
-			log.Println("GetItemFromWorkflowAndName err: ", e)
+			log.Println("GetItemsFromWorkflowAndName err: ", e)
 			continue
 		}
 
-		var endTaskId string
+		endTaskArr := []string{api.RAMDOM_NAME_TASK_END}
 		if edge.End != "" {
-			endTask, e := repo_workflow.GetTaskCtl().GetItemFromWorkflowAndName(workflowId, edge.End)
+			endTaskArr, e = repo_workflow.GetTaskCtl().GetItemIdsFromWorkflowAndName(workflowId, edge.End)
 			if e != nil {
-				log.Println("GetItemFromWorkflowAndName err: ", e)
+				log.Println("GetItemIdsFromWorkflowAndName err: ", e)
 				continue
 			}
-			endTaskId = endTask.ID
-		} else {
-			endTaskId = api.RAMDOM_NAME_TASK_END
 		}
 
-		repo_workflow.GetEdgeCtl().CreateItem(repo_workflow.Edge{
-			ID:          id,
-			CreateAt:    time.Now().UnixMilli(),
-			Name:        fmt.Sprintf("%s -> %s", edge.Start, edge.End),
-			StartTaskId: startTask.ID,
-			EndTaskId:   endTaskId,
-			Resc:        edge.Resc,
-			ObjId:       startTask.ID,
-			Status:      0,
-		})
+		for i := 0; i < len(startTaskArr); i++ {
+			for j := 0; j < len(endTaskArr); j++ {
+				id := idgen.GetIdWithPref("e")
+				repo_workflow.GetEdgeCtl().CreateItem(repo_workflow.Edge{
+					ID:          id,
+					CreateAt:    time.Now().UnixMilli(),
+					Name:        fmt.Sprintf("%s -> %s", edge.Start, edge.End),
+					StartTaskId: startTaskArr[i].ID,
+					EndTaskId:   endTaskArr[j],
+					Resc:        edge.Resc,
+					ObjId:       startTaskArr[i].ID,
+					Status:      0,
+				})
+			}
+		}
+
+		//repo_workflow.GetEdgeCtl().CreateItem(repo_workflow.Edge{
+		//	ID:          id,
+		//	CreateAt:    time.Now().UnixMilli(),
+		//	Name:        fmt.Sprintf("%s -> %s", edge.Start, edge.End),
+		//	StartTaskId: startTask.ID,
+		//	EndTaskId:   endTaskId,
+		//	Resc:        edge.Resc,
+		//	ObjId:       startTask.ID,
+		//	Status:      0,
+		//})
 	}
 
 	if localTaskId != "" {

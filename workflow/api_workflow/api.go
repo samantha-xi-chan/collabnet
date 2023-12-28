@@ -16,25 +16,32 @@ type TaskInput struct {
 	ImportObjId string `json:"import_obj_id"`
 	ImportObjAs string `json:"import_obj_as"`
 
-	Name    string   `json:"name"`
-	Image   string   `json:"image"`
-	CmdStr  []string `json:"cmd_str"`
-	SrcDir  string   `json:"src_dir,omitempty"`
-	SinkDir string   `json:"sink_dir,omitempty"`
-	Timeout int      `json:"timeout"`
-	Remain  bool     `json:"remain"` /* 1 as true, 0 as false */
+	Name   string   `json:"name"`
+	Image  string   `json:"image"`
+	CmdStr []string `json:"cmd_str"`
 
-	CheckExitCode        bool `json:"check_exit_code"`          /* 1 as true, 0 as false */
-	ExitOnAnySiblingExit bool `json:"exit_on_any_sibling_exit"` /* 1 as true, 0 as false */
+	SrcDir  string `json:"src_dir,omitempty"`
+	SinkDir string `json:"sink_dir,omitempty"`
+
+	Timeout int  `json:"timeout"`
+	Remain  bool `json:"remain"`
+
+	CheckExitCode        bool `json:"check_exit_code"`
+	ExitOnAnySiblingExit bool `json:"exit_on_any_sibling_exit"`
 
 	ExpExitCode   int           `json:"exp_exit_code"`
 	ResourceQuota ResourceQuota `json:"resource_quota"`
+
+	Concurrent int `json:"concurrent"`
 }
 
 type PostWorkflowDagReq struct {
 	Task     []TaskInput `json:"task"`
 	Edge     []Edge      `json:"edge"`
 	ShareDir []string    `json:"share_dir"`
+
+	Timeout  int  `json:"timeout"`
+	Infinite bool `json:"infinite"`
 }
 type PostWorkflowDagResp struct {
 	Id string `json:"id"`
@@ -92,8 +99,12 @@ type TaskResp struct {
 }
 
 type QueryGetTaskResp struct {
-	QueryGetTask []TaskResp `json:"task"`
-	Total        int64      `json:"total"` // 分页之前的总数
+	QueryGetTask TaskResp `json:"task"`
+}
+
+type QueryGetTasksResp struct {
+	QueryGetTasks []TaskResp `json:"task"`
+	Total         int64      `json:"total"` // 分页之前的总数
 }
 
 type VolItem struct {

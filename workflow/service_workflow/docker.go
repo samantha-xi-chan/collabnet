@@ -21,8 +21,8 @@ func CreateContainerWrapper(ctx context.Context, req api.PostContainerReq, conta
 
 	arrayB := make([]string, len(req.CmdStr)+2)
 
-	arrayB[0] = "/bin/sh"
-	arrayB[1] = fmt.Sprintf("%s/%s", config_workflow.CMD_DIR, config_workflow.SCRIPT_FILENAME) //arrayB[1] = "/path/in/docker/cmd.sh"
+	arrayB[0] = config_workflow.SHELL_PATH
+	arrayB[1] = fmt.Sprintf("%s/%s", config_workflow.CMD_DIR, config_workflow.SCRIPT_FILENAME)
 	copy(arrayB[2:], req.CmdStr[0:])
 
 	// check if image ready
@@ -101,7 +101,7 @@ func StartContainerAndWait(ctx context.Context, containerId string, req api.Post
 	log.Println("exitCode: ", exitCode, " , containerId: ", containerId)
 
 	for idx, val := range req.BindOut {
-		log.Printf("BindOut, idx: %d, val:%s", idx, val)
+		log.Printf(" containerId: %s  :  BindOut, idx: %d, val:%s,", containerId, idx, val)
 
 		volName := fmt.Sprintf("%s_%s", containerName, val.VolId)
 		objId := val.VolId

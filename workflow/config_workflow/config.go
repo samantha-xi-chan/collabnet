@@ -23,6 +23,7 @@ const DockerGroupPref = "/mnt/sss"
 const DefaultServerSignPath = "/mnt/sss/server"
 
 const (
+	SHELL_PATH      = "/bin/sh"
 	VOL_TOOL        = "base_tool"
 	CMD_DIR         = "/in_docker"
 	SCRIPT_FILENAME = "cmd.sh"

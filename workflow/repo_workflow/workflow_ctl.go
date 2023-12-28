@@ -33,6 +33,8 @@ type Workflow struct {
 	Error    string `json:"error" `
 
 	ShareDirArrStr string `json:"share_dir_arr_str"`
+	Timeout        int    `json:"timeout"`  // - "timeout" 可以不填写, 默认为 0,  值 0 表示不设置超时
+	Infinite       bool   `json:"infinite"` // - "infinite" 可以不填写, 默认为false , false 表示workflow 内部 不会无限循环执行
 }
 
 func (ctl *WorkflowCtl) CreateItem(item Workflow) (err error) {

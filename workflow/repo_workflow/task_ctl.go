@@ -106,6 +106,30 @@ func (ctl *TaskCtl) GetItemFromWorkflowAndName(wfId string, name string) (i Task
 	return item, nil
 }
 
+func (ctl *TaskCtl) GetItemsFromWorkflowAndName(wfId string, name string) (items []Task, e error) {
+	//var item Task
+	err := db.Model(&Task{}).Where("workflow_id = ? AND name = ?", wfId, name).Find(&items).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, errors.Wrap(err, "TaskCtl GetItemByID ErrRecordNotFound: ")
+	} else if err != nil {
+		return nil, errors.Wrap(err, "TaskCtl GetItemByID err not nil: ")
+	}
+
+	return items, nil
+}
+
+func (ctl *TaskCtl) GetItemIdsFromWorkflowAndName(wfId string, name string) (ids []string, e error) {
+	//var item Task
+	err := db.Model(&Task{}).Where("workflow_id = ? AND name = ?", wfId, name).Select("id").Find(&ids).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, errors.Wrap(err, "TaskCtl GetItemByID ErrRecordNotFound: ")
+	} else if err != nil {
+		return nil, errors.Wrap(err, "TaskCtl GetItemByID err not nil: ")
+	}
+
+	return ids, nil
+}
+
 func (ctl *TaskCtl) GetWorkflowObjIdsFromTaskId(taskID string) (_ []api_workflow.VolItem, e error) { // todo: optimize
 	var result []api_workflow.VolItem
 
@@ -200,6 +224,20 @@ func (ctl *TaskCtl) GetItemsByWorkflowIdV18(wfId string) (x []api_workflow.TaskR
 		Count(&total)
 
 	return tasks, total, nil
+}
+
+func (ctl *TaskCtl) GetTaskRespItemByTaskId(taskId string) (x api_workflow.TaskResp, total int64, e error) {
+	var task api_workflow.TaskResp
+
+	db.Table("(SELECT DISTINCT ct.id, ct.name, ct.create_at,ct.start_at, ct.end_at, ct.status, ct.exit_code, ce.obj_id FROM c_task AS ct JOIN c_edge AS ce ON ct.id = ce.start_task_id WHERE ct.id = ?) AS task_sub", taskId).
+		Select("task_sub.*, link.host_name, link.from AS host_ip, sched.carrier, sched.error ").
+		Joins("LEFT JOIN sched ON sched.task_id = task_sub.id").
+		Joins("LEFT JOIN link ON link.id = sched.link_id").
+		Order("task_sub.create_at ASC").
+		Find(&task).
+		Count(&total)
+
+	return task, total, nil
 }
 
 func (ctl *TaskCtl) GetItemsBySearch(

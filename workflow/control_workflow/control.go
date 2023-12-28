@@ -19,15 +19,16 @@ func StartHttpServer(listenAddr string) {
 
 	task := r.Group("/api/v1/task")
 	{
-		task.GET("", GetTask)
+		task.GET("", GetTasks)
+		task.GET("/:id", GetTaskById)
 		//task.PATCH("", PatchTask)
 	}
 	workflow := r.Group("/api/v1/workflow")
 	{
-		workflow.GET("/:id", GetWorkflow)
-		workflow.PATCH("/:id", PatchWorkflow)
+		workflow.GET("/:id", GetWorkflowById)
+		workflow.PATCH("/:id", PatchWorkflowById)
 		workflow.POST("", PostWorkflow)
-		workflow.DELETE("/:id", DeleteWorkflow)
+		workflow.DELETE("/:id", DeleteWorkflowById)
 	}
 
 	log.Println("listenAddr : ", listenAddr)
@@ -36,7 +37,7 @@ func StartHttpServer(listenAddr string) {
 	}
 }
 
-func GetTask(c *gin.Context) {
+func GetTasks(c *gin.Context) {
 	var query api_workflow.QueryGetTaskReq
 	if err := c.ShouldBindQuery(&query); err != nil {
 		c.JSON(http.StatusOK, api.HttpRespBody{
@@ -63,9 +64,50 @@ func GetTask(c *gin.Context) {
 	c.JSON(http.StatusOK, api.HttpRespBody{
 		Code: 0,
 		Msg:  "",
+		Data: api_workflow.QueryGetTasksResp{
+			QueryGetTasks: items,
+			Total:         total,
+		},
+	})
+	return
+}
+
+func GetTaskById(c *gin.Context) {
+	taskId := c.Param("id")
+	if taskId == "" {
+		c.JSON(http.StatusBadRequest, api.HttpRespBody{
+			Code: api.ERR_URL_ID,
+			Msg:  "ERR_URL_ID",
+		})
+		return
+	}
+
+	item, count, e := repo.GetTaskCtl().GetTaskRespItemByTaskId(taskId)
+	if e != nil {
+		log.Println("GetItemsByWorkflowId e: ", e)
+		c.JSON(http.StatusOK, api.HttpRespBody{
+			Code: api.ERR_INTERNAL,
+			Msg:  "ERR_INTERNAL",
+		})
+		return
+	}
+
+	if count != 1 {
+		log.Println("count != 1 ")
+		c.JSON(http.StatusOK, api.HttpRespBody{
+			Code: api.ERR_INTERNAL,
+			Msg:  "count != 1",
+		})
+		return
+	}
+
+	log.Println(".GetTaskCtl().GetItemByID ", item)
+
+	c.JSON(http.StatusOK, api.HttpRespBody{
+		Code: 0,
+		Msg:  "",
 		Data: api_workflow.QueryGetTaskResp{
-			QueryGetTask: items,
-			Total:        total,
+			QueryGetTask: item,
 		},
 	})
 	return
@@ -105,7 +147,7 @@ func GetTask(c *gin.Context) {
 //	return
 //}
 
-func PatchWorkflow(c *gin.Context) {
+func PatchWorkflowById(c *gin.Context) {
 	workflowId := c.Param("id")
 	if workflowId == "" {
 		c.JSON(http.StatusBadRequest, api.HttpRespBody{
@@ -132,7 +174,7 @@ func PatchWorkflow(c *gin.Context) {
 	return
 }
 
-func GetWorkflow(c *gin.Context) {
+func GetWorkflowById(c *gin.Context) {
 	workflowId := c.Param("id")
 	if workflowId == "" {
 		c.JSON(http.StatusBadRequest, api.HttpRespBody{
@@ -168,15 +210,15 @@ func GetWorkflow(c *gin.Context) {
 	c.JSON(http.StatusOK, api.HttpRespBody{
 		Code: 0,
 		Msg:  "",
-		Data: api_workflow.QueryGetTaskResp{
-			QueryGetTask: items,
-			Total:        total,
+		Data: api_workflow.QueryGetTasksResp{
+			QueryGetTasks: items,
+			Total:         total,
 		},
 	})
 	return
 }
 
-func DeleteWorkflow(c *gin.Context) {
+func DeleteWorkflowById(c *gin.Context) {
 	workflowId := c.Param("id")
 	if workflowId == "" {
 		c.JSON(http.StatusBadRequest, api.HttpRespBody{
