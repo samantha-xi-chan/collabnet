@@ -20,6 +20,7 @@ const MINIO_BUCKET_NAME_INTERTASK = "workflowintertask"
 const MINIO_BUCKET_NAME_WF = "workflowshare"
 
 const DockerGroupPref = "/mnt/sss"
+const SSSDefaultObjectName = "server"
 const DefaultServerSignPath = "/mnt/sss/server"
 
 const (

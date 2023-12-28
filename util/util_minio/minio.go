@@ -22,7 +22,7 @@ type FileManager struct {
 	err         error
 }
 
-func CreateBucketIfNotExistsWithDefaultSign(ctx context.Context, endpoint string, accessKeyID string, secretAccessKey string, useSSL bool, bucketName string) (e error) {
+func CreateBucketIfNotExistsWithDefaultSign(ctx context.Context, endpoint string, accessKeyID string, secretAccessKey string, useSSL bool, bucketName string, defaultObjectName string) (e error) {
 	minioClient, e := minio.New(endpoint, &minio.Options{
 		Creds:  credentials.NewStaticV4(accessKeyID, secretAccessKey, ""),
 		Secure: useSSL,
@@ -52,7 +52,6 @@ func CreateBucketIfNotExistsWithDefaultSign(ctx context.Context, endpoint string
 
 	log.Printf("bucket %s created", bucketName)
 
-	defaultObjectName := "server"
 	reader := strings.NewReader("sign")
 	_, err = minioClient.PutObject(ctx, bucketName, defaultObjectName, reader, int64(reader.Len()), minio.PutObjectOptions{ContentType: "application/text"})
 	if err != nil {

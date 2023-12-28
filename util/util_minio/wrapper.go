@@ -11,9 +11,9 @@ import (
 
 var fileManager FileManager
 
-func CreateBucketIfNotExist(ctx context.Context, endpoint string, accessKeyID string, secretAccessKey string, bucketName string) (e error) {
+func CreateBucketIfNotExist(ctx context.Context, endpoint string, accessKeyID string, secretAccessKey string, bucketName string, objName string) (e error) {
 	useSSL := false
-	return CreateBucketIfNotExistsWithDefaultSign(ctx, endpoint, accessKeyID, secretAccessKey, useSSL, bucketName)
+	return CreateBucketIfNotExistsWithDefaultSign(ctx, endpoint, accessKeyID, secretAccessKey, useSSL, bucketName, objName)
 }
 
 func InitDistFileMs(ctx context.Context, endpoint string, accessKeyID string, secretAccessKey string, bucketName string, clean bool) (e error) {
