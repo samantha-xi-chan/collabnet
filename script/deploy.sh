@@ -10,7 +10,3 @@
  ssh $HOST "systemctl start  node_manager.service"
  ssh $HOST "systemctl status  node_manager.service"
  ssh $HOST "journalctl -u node_manager -f  -n 100"
-
-# ssh $HOST "killall node_manager"
-# ssh $HOST "md5sum node_manager"
-# scp -r ./config           $HOST:/root/ ;

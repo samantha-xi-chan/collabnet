@@ -1,6 +1,9 @@
 
 set -e
 
+HOST=36107_root
+echo $HOST && sleep 2
+
 Ver=v2.0
 BuildT=$(date "+%Y%m%d%H%M%S")
 GitCommit=$(git rev-parse --short HEAD)
@@ -20,7 +23,6 @@ tar -cvf release/$Tar node_manager/
 
 #exit 0
 
-HOST=36107_root
 ssh $HOST "mkdir -p /opt/"
 scp release/$Tar $HOST:/opt/node_manager.tar
 
@@ -33,40 +35,9 @@ cp /opt/node_manager/node_manager.service /etc/systemd/system/ && \
 systemctl enable node_manager.service && \
 systemctl restart  node_manager.service && \
 systemctl status  node_manager.service
+# journalctl -u node_manager -f  -n 100
 EOF
 scp deploy.sh $HOST:/root/
 ssh $HOST "sh /root/deploy.sh"
 
 exit 0
-
-ssh $HOST "cd /opt/; tar -xvf node_manager.tar"
-ssh $HOST "systemctl stop  node_manager.service || echo 'stop service end' "
-ssh $HOST "cp /opt/node_manager/node_manager.service /etc/systemd/system/"
-ssh $HOST "ls /opt/node_manager/"
-ssh $HOST "systemctl enable   node_manager.service"
-ssh $HOST "systemctl restart  node_manager.service"
-ssh $HOST "systemctl status   node_manager.service"
-#ssh $HOST "journalctl -u node_manager -f  -n 100"
-
-# 前置条件 (注意 config/app.yaml 文件中的IP必须是准确的 K8S地址 )
-# root@node-013:/opt/node_manager# ls -alh
-# total 25M
-# drwxr-xr-x 3 root root 4.0K Dec 19 06:16 .
-# drwxr-xr-x 4 root root 4.0K Dec 19 06:16 ..
-# drwxr-xr-x 2 root root 4.0K Dec 19 06:16 config
-# -rwxr-xr-x 1 root root  25M Dec 19 06:16 node_manager
-# -rw-r--r-- 1 root root   60 Dec 19 06:16 node_manager.md5sum
-# -rw-r--r-- 1 root root  272 Dec 19 06:16 node_manager.service
-
-# 系统优化与服务部署
-
-systemctl stop  node_manager.service || echo 'stop service end'
-cp /opt/node_manager/node_manager.service /etc/systemd/system/
-ls /opt/node_manager/
-systemctl enable   node_manager.service
-systemctl restart  node_manager.service
-systemctl status   node_manager.service
-
-# 查看最近日志
-journalctl -u node_manager -f  -n 100
-

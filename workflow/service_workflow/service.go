@@ -536,6 +536,7 @@ func PlayAsConsumerBlock(mqUrl string, consumerCnt int) {
 				}
 				groupPath := fmt.Sprintf("%s/%s", config_workflow.DockerGroupPref, itemTask.WorkflowId)
 
+				env := []string{fmt.Sprintf("TASK_ID=%s", taskId), fmt.Sprintf("IMAGE=%s", itemTask.Image)}
 				newContainer := api.PostContainerReq{
 					TaskId:         taskId,
 					BucketName:     config_workflow.MINIO_BUCKET_NAME_INTERTASK,
@@ -548,6 +549,7 @@ func PlayAsConsumerBlock(mqUrl string, consumerCnt int) {
 					BindOut:        bindOut,
 					GroupPath:      groupPath,
 					ShareDir:       stringutil.StringToStringArray(itemWorkflow.ShareDirArrStr, ", "),
+					Env:            env,
 				}
 				log.Printf("newContainer: #%v\n", newContainer)
 

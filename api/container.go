@@ -22,4 +22,5 @@ type PostContainerReq struct {
 	GroupPath string `json:"group_path"`
 
 	ShareDir []string `json:"share_dir"`
+	Env      []string `json:"env"`
 }

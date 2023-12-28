@@ -1,0 +1,6 @@
+rm -rf node_manager && rm -rf release/* && sh script/build.sh && \
+    md5sum release/node_manager > other/deploy_k8s/node_manager/node_manager.md5sum && \
+    cp release/node_manager other/deploy_k8s/node_manager/node_manager
+    ssh 36107_root "rm -rf /opt/node_manager/node_manager" && \
+    scp release/node_manager 36107_root:/opt/node_manager/  && \
+    scp release/plugin 36107_root:/opt/node_manager/

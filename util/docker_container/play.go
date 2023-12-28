@@ -107,6 +107,7 @@ func CreateContainer(ctx context.Context,
 	bindOut []api.Bind,
 	groupPath string,
 	shareDir []string,
+	env []string,
 ) (containerId_ string, e error) {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
@@ -169,7 +170,7 @@ func CreateContainer(ctx context.Context,
 		&container.Config{
 			Image: imageName,
 			Cmd:   cmdStringArr,
-			//Env:   env, // []string{"MY_ENV_VARIABLE=example_value"}, // 设置环境变量
+			Env:   env,
 		},
 		&container.HostConfig{
 			Resources: container.Resources{

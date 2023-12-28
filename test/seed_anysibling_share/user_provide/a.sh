@@ -3,6 +3,7 @@ Current=a
 CurrentDir=/docker/$Current
 CurrentFile=$CurrentDir/out.txt
 echo -e "_   _   _   _   _   _   _   _   _   _   _   _   start $Current  _   _   _   _   _   _   _   _   _   _   _   _ " | tee -a $CurrentFile
+env
 
 echo " 😄 created by Current: "$Current  | tee -a $CurrentFile
 
