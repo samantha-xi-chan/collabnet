@@ -288,6 +288,7 @@ func OnNewBizDataFromPlatform(bytes []byte) {
 			Id:     schedId,
 			TaskId: taskId,
 			Msg:    "stopTtask",
+			Cmd:    body.Para11, //v2.0
 			Valid:  false,
 		}
 		pluginChan <- stopTask

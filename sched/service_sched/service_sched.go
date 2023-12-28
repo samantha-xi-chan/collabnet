@@ -6,16 +6,13 @@ import (
 	"collab-net-v2/link"
 	"collab-net-v2/sched/config_sched"
 	repo_sched "collab-net-v2/sched/repo_sched"
+	"collab-net-v2/task/repo_task"
 	"collab-net-v2/time/service_time"
 	"collab-net-v2/util/idgen"
 	"encoding/json"
 	"github.com/pkg/errors"
 	"log"
 	"time"
-)
-
-var (
-//map
 )
 
 // 对上层
@@ -269,6 +266,15 @@ func StopSchedByTaskId(taskId string) (ee error) { // todo: send stop cmd to exc
 		"enabled",
 		api.TRUE,
 	})
+
+	itemTask, e := repo_task.GetTaskCtl().GetItemById(taskId)
+	if e != nil {
+		log.Println("repo_task.GetTaskCtl().GetItemById, e=", e)
+		return
+	}
+
+	log.Println("[StopSchedByTaskId]  itemTask", itemTask)
+
 	item, e := repo_sched.GetSchedCtl().GetItemByKeyValueArr(arr)
 	if e != nil {
 		log.Println("repo_sched.GetSchedCtl().GetItemById, e=", e)
@@ -289,6 +295,7 @@ func StopSchedByTaskId(taskId string) (ee error) { // todo: send stop cmd to exc
 				TaskType:   item.TaskType,
 				SchedId:    item.Id,
 				TaskId:     taskId,
+				Para11:     itemTask.Cmd, //v2.0
 			}))
 	if e != nil {
 		// 记录关键错误
@@ -394,7 +401,7 @@ func NewSched(taskId string, actionType int, taskType int, cmd string, linkId st
 				Para01:     config_sched.SCHED_HEARTBEAT_INTERVAL,
 				Para02:     preTimeoutSecond,
 				Para03:     runTimeoutSecond,
-				Para11:     cmd,
+				Para11:     cmd, //v2.0
 			}))
 	if e != nil || code != 0 {
 		log.Println("link.SendDataToEndpoint failed ")
