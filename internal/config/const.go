@@ -11,6 +11,8 @@ const (
 	PRIORITY_9   = 9
 	PRIORITY_4   = 4
 
+	SettingCallback = "callback"
+
 	VerLink  = "Link-1.0"
 	VerSched = "Sched-1.0"
 )

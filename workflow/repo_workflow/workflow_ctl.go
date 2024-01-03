@@ -24,11 +24,12 @@ type Workflow struct {
 	ID       string `json:"id" gorm:"primaryKey"`
 	Name     string `json:"name" gorm:"unique"`
 	CreateAt int64  `json:"create_at"`
+	StartAt  int64  `json:"start_at"`
 	EndAt    int64  `json:"end_at"` // 包含 正常结束 异常结束
 	CreateBy int64  `json:"create_by"`
 	Desc     string `json:"desc"`
 	//Enabled  int    `json:"enabled"` // 上层业务角度希望 有效/无效
-	//Status   int    `json:"status"  gorm:"default:60021001"`
+	Status   int    `json:"status"  gorm:"default:60041001"`
 	ExitCode int    `json:"exit_code"`
 	Define   string `json:"define"`
 	Error    string `json:"error" `

@@ -8,6 +8,7 @@ import (
 	"collab-net-v2/pkg/external/message"
 	"collab-net-v2/sched/config_sched"
 	"collab-net-v2/sched/service_sched"
+	"collab-net-v2/setting/service_setting"
 	"collab-net-v2/time/service_time"
 	"collab-net-v2/util/grammar"
 	"collab-net-v2/util/idgen"
@@ -193,6 +194,25 @@ func PostWorkflow(ctx context.Context, req api_workflow.PostWorkflowDagReq) (api
 }
 
 func StopWorkflowWrapper(ctx context.Context, workflowId string, exitCode int) (ee error) {
+	go func() {
+		evt := api.Event{
+			ObjType: api.OBJ_TYPE_WORKFLOW,
+			ObjID:   workflowId,
+			Data: struct {
+				Status   int `json:"status"`
+				ExitCode int `json:"exit_code"`
+			}{
+				Status:   api.WORKFLOW_STATUS_END,
+				ExitCode: exitCode,
+			},
+		}
+
+		url, e := service_setting.GetSettingUrl(config.SettingCallback)
+		if url != "" && e == nil {
+			api.SendObjEvtRequest(url, evt)
+		}
+	}()
+
 	if exitCode == api_workflow.ExitCodeWorkflowStoppedByBizTimeout {
 		return stopWorkflow(ctx, workflowId, exitCode)
 	} else if exitCode == api_workflow.ExitCodeWorkflowStoppedByDagEnd {
@@ -220,8 +240,8 @@ func stopWorkflow(ctx context.Context, workflowId string, exitCode int) (ee erro
 	}
 
 	e := repo_workflow.GetWorkflowCtl().UpdateItemByID(workflowId, map[string]interface{}{
-		//"enabled": api.FALSE,
-		"finish_at": time.Now().UnixMilli(),
+		"status":    api.WORKFLOW_STATUS_END,
+		"end_at":    time.Now().UnixMilli(),
 		"exit_code": exitCode,
 	})
 	if e != nil {
@@ -665,6 +685,26 @@ func PlayAsConsumerBlock(mqUrl string, consumerCnt int) {
 					"end_at":    time.Now().UnixMilli(),
 					"status":    api.TASK_STATUS_END,
 				})
+
+				// v2.0
+				go func() {
+					evt := api.Event{
+						ObjType: api.OBJ_TYPE_CONTAINER_TASK,
+						ObjID:   taskId,
+						Data: struct {
+							Status   int `json:"status"`
+							ExitCode int `json:"exit_code"`
+						}{
+							Status:   api.TASK_STATUS_END,
+							ExitCode: itemSched.BizCode,
+						},
+					}
+
+					url, e := service_setting.GetSettingUrl(config.SettingCallback)
+					if url != "" && e == nil {
+						api.SendObjEvtRequest(url, evt)
+					}
+				}()
 
 				ee := OnTaskStatusChange(context.Background(), taskId, api.TASK_STATUS_END, itemSched.BizCode)
 				if ee != nil {

@@ -98,6 +98,18 @@ type TaskResp struct {
 	Error    string `json:"error"`
 }
 
+type WorkflowResp struct {
+	Id       string `json:"id"`
+	Name     string `json:"name"`
+	CreateAt int64  `json:"create_at"`
+	StartAt  int64  `json:"start_at"`
+	EndAt    int64  `json:"end_at"`
+
+	Status   int    `json:"status"`
+	ExitCode int    `json:"exit_code"`
+	Error    string `json:"error"`
+}
+
 type QueryGetTaskResp struct {
 	QueryGetTask TaskResp `json:"task"`
 }
@@ -108,8 +120,8 @@ type QueryGetTasksResp struct {
 }
 
 type QueryGetWorkflowResp struct {
-	QueryGetTasks []TaskResp `json:"task"`
-	Total         int64      `json:"total"` // 分页之前的总数
+	WorkflowResp      WorkflowResp      `json:"workflow"`
+	QueryGetTasksResp QueryGetTasksResp `json:"task"`
 }
 
 type VolItem struct {

@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 func InitGinService(ctx context.Context, addr string) (ee error) {
@@ -59,6 +60,38 @@ func InitGinService(ctx context.Context, addr string) (ee error) {
 			})
 			return
 		})
+	}
+
+	node := r.Group("/api/v1/node")
+	{
+		node.GET("", func(c *gin.Context) {
+			firstPartyStr := c.Query("first_party")
+			firstParty, err := strconv.Atoi(firstPartyStr)
+			if err != nil {
+				c.JSON(http.StatusOK, api.HttpRespBody{
+					Code: api.ERR_VALUE,
+					Msg:  "ERR_VALUE: " + err.Error(),
+				})
+				return
+			}
+
+			items, e := service_link.GetNodes(ctx, firstParty, api.TRUE)
+			if e != nil {
+				c.JSON(http.StatusOK, api.HttpRespBody{
+					Code: api.ERR_OTHER,
+					Msg:  "ERR_OTHER: " + e.Error(),
+				})
+				return
+			}
+
+			c.JSON(http.StatusOK, api.HttpRespBody{
+				Code: 0,
+				Msg:  "ok",
+				Data: items,
+			})
+			return
+		})
+
 	}
 
 	log.Println("going to listen on : ", addr)

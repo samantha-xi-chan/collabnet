@@ -3,11 +3,13 @@ package service_task
 // raw task only , in v1.8
 
 import (
+	"collab-net-v2/api"
 	"collab-net-v2/internal/config"
 	"collab-net-v2/link"
 	"collab-net-v2/link/service_link"
 	"collab-net-v2/sched/repo_sched"
 	"collab-net-v2/sched/service_sched"
+	"collab-net-v2/setting/service_setting"
 	"collab-net-v2/task/config_task"
 	"collab-net-v2/task/repo_task"
 	"collab-net-v2/util/idgen"
@@ -39,6 +41,24 @@ func Init() {
 		}
 
 		callbackFunc(itemSched.TaskId, evt, nil)
+
+		// v2.0
+		go func() {
+			event := api.RawTaskEvent{
+				ObjType: api.OBJ_TYPE_RAW_TASK,
+				ObjID:   itemSched.TaskId,
+				Data: struct {
+					Evt int `json:"evt"`
+				}{
+					Evt: evt,
+				},
+			}
+
+			url, e := service_setting.GetSettingUrl(config.SettingCallback)
+			if url != "" && e == nil {
+				api.SendObjEvtRequest(url, event)
+			}
+		}()
 
 		return nil
 	})

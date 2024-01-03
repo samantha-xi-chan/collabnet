@@ -47,6 +47,8 @@ func Init(dsn string, logLevel int, slowThresholdMs int) {
 		&Workflow{},
 		&Task{},
 		&Edge{},
+
+		&Setting{}, // todo: move
 	)
 	if err != nil {
 		log.Println("gorm.AutoMigrate: ", err)

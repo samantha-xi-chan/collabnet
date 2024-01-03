@@ -11,8 +11,11 @@ const (
 const (
 	LISTEN_PORT = ":8081"
 
-	UrlPathWorkflow = "/api/v1/workflow"
+	UrlPathSetting  = "/api/v1/setting"
 	UrlPathTask     = "/api/v1/task"
+	UrlPathWorkflow = "/api/v1/workflow"
+
+	UrlPathWorkflowV2 = "/api/v2/workflow"
 )
 
 const (

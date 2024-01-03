@@ -2,6 +2,7 @@ package service_link
 
 import (
 	"collab-net-v2/api"
+	"collab-net-v2/link/api_link"
 	"collab-net-v2/link/repo_link"
 	"context"
 	"github.com/pkg/errors"
@@ -35,7 +36,6 @@ func GetFirstPartyNodeLinks(ctx context.Context) (links []repo_link.Link, ee err
 		"online",
 		api.TRUE,
 	})
-	//links, e := repo_link.GetLinkCtl().GetItemsByKeyValue("first_party", api.TRUE)
 	links, e := repo_link.GetLinkCtl().GetItemByKeyValueArr(arr)
 	if e != nil {
 		return nil, errors.Wrap(e, "repo_link.GetLinkCtl().GetItemByKeyValue : ")
@@ -54,11 +54,40 @@ func GetNonFirstPartyNodeLinks(ctx context.Context) (links []repo_link.Link, ee 
 		"online",
 		api.TRUE,
 	})
-	//links, e := repo_link.GetLinkCtl().GetItemsByKeyValue("first_party", api.TRUE)
 	links, e := repo_link.GetLinkCtl().GetItemByKeyValueArr(arr)
 	if e != nil {
 		return nil, errors.Wrap(e, "repo_link.GetLinkCtl().GetItemByKeyValue : ")
 	}
 
 	return links, nil
+}
+
+func GetNodes(ctx context.Context, firstParty int, online int) ([]api_link.ApiNode, error) {
+	var arr []repo_link.QueryKeyValue
+	arr = append(arr, repo_link.QueryKeyValue{
+		"first_party",
+		interface{}(firstParty), //api.FALSE,
+	})
+	arr = append(arr, repo_link.QueryKeyValue{
+		"online",
+		interface{}(online), //api.FALSE,
+	})
+
+	links, e := repo_link.GetLinkCtl().GetItemByKeyValueArr(arr)
+	if e != nil {
+		return nil, errors.Wrap(e, "repo_link.GetLinkCtl().GetItemByKeyValue : ")
+	}
+
+	var nodes []api_link.ApiNode
+	for _, v := range links {
+		nodes = append(nodes, api_link.ApiNode{
+			LinkId:     v.Id,
+			HostName:   v.HostName,
+			FirstParty: v.FirstParty,
+			From:       v.From,
+			Online:     v.Online,
+		})
+	}
+
+	return nodes, nil
 }
