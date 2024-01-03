@@ -14,3 +14,7 @@ const (
 	VerLink  = "Link-1.0"
 	VerSched = "Sched-1.0"
 )
+
+const (
+	ServiceName = "collabnet"
+)

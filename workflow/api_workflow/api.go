@@ -40,8 +40,8 @@ type PostWorkflowDagReq struct {
 	Edge     []Edge      `json:"edge"`
 	ShareDir []string    `json:"share_dir"`
 
-	Timeout  int  `json:"timeout"`
-	Infinite bool `json:"infinite"`
+	AutoIterate bool `json:"auto_iterate"`
+	Timeout     int  `json:"timeout"`
 }
 type PostWorkflowDagResp struct {
 	Id string `json:"id"`
@@ -103,6 +103,11 @@ type QueryGetTaskResp struct {
 }
 
 type QueryGetTasksResp struct {
+	QueryGetTasks []TaskResp `json:"task"`
+	Total         int64      `json:"total"` // 分页之前的总数
+}
+
+type QueryGetWorkflowResp struct {
 	QueryGetTasks []TaskResp `json:"task"`
 	Total         int64      `json:"total"` // 分页之前的总数
 }

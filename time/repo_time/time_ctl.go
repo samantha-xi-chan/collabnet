@@ -52,6 +52,16 @@ func (ctl *TimeCtl) UpdateItemById(id string, fieldsToUpdate map[string]interfac
 	return nil
 }
 
+func (ctl *TimeCtl) UpdateItemByHolder(id string, fieldsToUpdate map[string]interface{}) (e error) {
+
+	result := db.Model(&Time{}).Where("`holder` = ?", id).Updates(fieldsToUpdate)
+	if result.Error != nil {
+		log.Println("UpdateItemByHolder e: ", e)
+	}
+
+	return nil
+}
+
 func (ctl *TimeCtl) DeleteItemById(id string) (err error) {
 	result := db.Where("id = ?", id).Delete(&Time{})
 	if result.Error != nil {

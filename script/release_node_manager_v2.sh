@@ -1,7 +1,7 @@
 
 set -e
 
-HOST=36107_root
+HOST=36108_root
 echo $HOST && sleep 2
 
 Ver=v2.0

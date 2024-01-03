@@ -1,4 +1,6 @@
-FROM golang:1.18.10 AS builder
+FROM rd.clouditera.com/infra/golang_bizcache:1.18.10 AS builder
+# FROM golang:1.18.10 AS builder
+
 WORKDIR /app
 COPY . /app/src
 RUN cd /app/src && \

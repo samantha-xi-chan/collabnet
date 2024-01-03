@@ -6,7 +6,6 @@ import (
 	"collab-net-v2/link"
 	"collab-net-v2/sched/config_sched"
 	repo_sched "collab-net-v2/sched/repo_sched"
-	"collab-net-v2/task/repo_task"
 	"collab-net-v2/time/service_time"
 	"collab-net-v2/util/idgen"
 	"encoding/json"
@@ -256,7 +255,7 @@ func OnBizDataFromRegisterEndpoint(endpoint string, bytes []byte) (e error) { //
 	return
 }
 
-func StopSchedByTaskId(taskId string) (ee error) { // todo: send stop cmd to excutors
+func StopSchedByTaskId(taskId string, strCmdStopOptional string) (ee error) { // todo: send stop cmd to excutors
 	var arr []repo_sched.QueryKeyValue
 	arr = append(arr, repo_sched.QueryKeyValue{
 		"task_id",
@@ -267,13 +266,13 @@ func StopSchedByTaskId(taskId string) (ee error) { // todo: send stop cmd to exc
 		api.TRUE,
 	})
 
-	itemTask, e := repo_task.GetTaskCtl().GetItemById(taskId)
-	if e != nil {
-		log.Println("repo_task.GetTaskCtl().GetItemById, e=", e)
-		return
-	}
-
-	log.Println("[StopSchedByTaskId]  itemTask", itemTask)
+	//itemTask, e := repo_task.GetTaskCtl().GetItemById(taskId)
+	//if e != nil {
+	//	log.Println("repo_task.GetTaskCtl().GetItemById, e=", e)
+	//	return
+	//}
+	//
+	//log.Println("[StopSchedByTaskId]  itemTask", itemTask)
 
 	item, e := repo_sched.GetSchedCtl().GetItemByKeyValueArr(arr)
 	if e != nil {
@@ -295,7 +294,7 @@ func StopSchedByTaskId(taskId string) (ee error) { // todo: send stop cmd to exc
 				TaskType:   item.TaskType,
 				SchedId:    item.Id,
 				TaskId:     taskId,
-				Para11:     itemTask.Cmd, //v2.0
+				Para11:     strCmdStopOptional, //v2.0
 			}))
 	if e != nil {
 		// 记录关键错误
@@ -448,7 +447,7 @@ func WaitSchedEnd(idSched string) (repo_sched.Sched, error) { // 临时用轮询
 	for true {
 		loop++
 		log.Println("WaitSchedEnd loop: ", loop)
-		time.Sleep(time.Second * 1)
+		time.Sleep(time.Second * 5)
 		item, e := repo_sched.GetSchedCtl().GetItemById(idSched)
 		if e != nil {
 			return repo_sched.Sched{}, errors.Wrap(e, "repo_sched.GetSchedCtl().GetItemById: ")

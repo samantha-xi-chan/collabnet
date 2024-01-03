@@ -2,6 +2,7 @@
   "name": "build",
   "link_id": "co",
   "cmd": "date; sleep 2; date; sleep 2; date; ",
+  "cmd_stop": " ps aux; kill -9 1 ",
   "timeout_pre": 5,
   "timeout_run": 20
 }

@@ -10,6 +10,13 @@ const (
 
 const (
 	LISTEN_PORT = ":8081"
+
+	UrlPathWorkflow = "/api/v1/workflow"
+	UrlPathTask     = "/api/v1/task"
+)
+
+const (
+	EVT_TIMEOUT_WORKFLOW = 70017759
 )
 
 const MINIO_API_URL = "minio-service:9000"

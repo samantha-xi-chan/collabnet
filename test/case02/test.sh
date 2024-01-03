@@ -18,6 +18,7 @@ cleanup() {
     rm -rf $instanceFile
 }
 
+Host="192.168.36.104"
 Host="192.168.31.45"
 
 linkEndpoint=$Host:31080

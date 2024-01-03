@@ -31,7 +31,7 @@ func InitGinService(ctx context.Context, addr string) (ee error) {
 	}
 
 	log.Println("going to listen on : ", addr)
-	return r.Run(addr)
+	return r.Run(addr) //v2.0
 }
 
 func PostTask(c *gin.Context) {
@@ -47,7 +47,7 @@ func PostTask(c *gin.Context) {
 
 	log.Println("PostTask:  ", dto)
 
-	id, e := service_task.NewTask(dto.Name, dto.Cmd, dto.LinkId, config_sched.CMD_ACK_TIMEOUT, dto.TimeoutPre, dto.TimeoutRun)
+	id, e := service_task.NewTask(dto.Name, dto.Cmd, dto.CmdStop, dto.LinkId, config_sched.CMD_ACK_TIMEOUT, dto.TimeoutPre, dto.TimeoutRun)
 	if e != nil {
 		c.JSON(http.StatusOK, api.HttpRespBody{
 			Code: api.ERR_OTHER,
@@ -73,6 +73,11 @@ func PatchTask(c *gin.Context) {
 
 	// todo: 判断是否真实在运行
 
+	//cmdString := ""
+	//var dto api_task.PatchTaskReq
+	//if err := c.BindJSON(&dto); err != nil {
+	//	logrus.Error("empty request in PatchTask(): ", err)
+	//}
 	e := service_task.PatchTask(id)
 	if e != nil {
 		c.JSON(http.StatusOK, api.HttpRespBody{

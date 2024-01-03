@@ -23,7 +23,7 @@ echo $Current  >> /test_dir/date.txt
 date >> /test_dir/date.txt
 
 
-timeout=5
+timeout=2
 echo  $Current "going to sleep " $timeout " seconds"
 sleep $timeout
 echo  $Current "end of sleep " $timeout " seconds"

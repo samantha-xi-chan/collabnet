@@ -10,7 +10,7 @@ import (
 )
 
 func StopTaskByBiz(idTask string) (ee error) {
-	service_sched.StopSchedByTaskId(idTask)
+	service_sched.StopSchedByTaskId(idTask, "")
 
 	repo_sched.GetSchedCtl().UpdateItemById(
 		idTask,

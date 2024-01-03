@@ -22,9 +22,10 @@ func (Task) TableName() string {
 }
 
 type Task struct {
-	Id   string `json:"id" gorm:"primaryKey"`
-	Name string `json:"name"`
-	Cmd  string `json:"cmd"`
+	Id      string `json:"id" gorm:"primaryKey"`
+	Name    string `json:"name"`
+	Cmd     string `json:"cmd"`
+	CmdStop string `json:"cmd_stop"`
 	//Enabled int    `json:"enabled"` /* 是否被上层业务需要 */
 	//Code     int    `json:"code"`
 	CreateAt int64 `json:"create_at"`

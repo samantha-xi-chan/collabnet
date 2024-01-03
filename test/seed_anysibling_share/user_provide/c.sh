@@ -28,7 +28,7 @@ date >> /test_dir/date.txt
 
 ls /docker/c
 
-timeout=120
+timeout=1
 echo  $Current "going to sleep " $timeout " seconds"
 sleep $timeout
 echo  $Current "end of sleep " $timeout " seconds"

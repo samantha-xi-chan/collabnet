@@ -1,0 +1,10 @@
+FROM golang:1.18.10 AS builder
+WORKDIR /app
+COPY . /app/src
+RUN cd /app/src && \
+    go env -w GO111MODULE=on && \
+    go env && \
+    go env -w GOPROXY=https://goproxy.cn,direct && \
+    go mod tidy && \
+    sh script/build.sh && \
+    rm -rf /app/src/*

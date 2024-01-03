@@ -4,7 +4,8 @@ import (
 	"collab-net-v2/api"
 	"collab-net-v2/link/middleware"
 	"collab-net-v2/workflow/api_workflow"
-	repo "collab-net-v2/workflow/repo_workflow"
+	"collab-net-v2/workflow/config_workflow"
+	"collab-net-v2/workflow/repo_workflow"
 	"collab-net-v2/workflow/service_workflow"
 	"context"
 	"github.com/gin-gonic/gin"
@@ -17,18 +18,21 @@ func StartHttpServer(listenAddr string) {
 	r := gin.Default()
 	r.Use(middleware.GetLoggerMiddleware())
 
-	task := r.Group("/api/v1/task")
+	task := r.Group(config_workflow.UrlPathTask)
 	{
 		task.GET("", GetTasks)
 		task.GET("/:id", GetTaskById)
+		task.PATCH("/:id", PatchWfTaskById) //v2.0
 		//task.PATCH("", PatchTask)
 	}
-	workflow := r.Group("/api/v1/workflow")
+	workflow := r.Group(config_workflow.UrlPathWorkflow)
 	{
 		workflow.GET("/:id", GetWorkflowById)
 		workflow.PATCH("/:id", PatchWorkflowById)
 		workflow.POST("", PostWorkflow)
 		workflow.DELETE("/:id", DeleteWorkflowById)
+
+		workflow.PATCH("/:id/timer", PatchWorkflowTimer)
 	}
 
 	log.Println("listenAddr : ", listenAddr)
@@ -47,7 +51,7 @@ func GetTasks(c *gin.Context) {
 		return
 	}
 
-	items, total, e := repo.GetTaskCtl().GetItemsByWorkflowIdV18(
+	items, total, e := repo_workflow.GetTaskCtl().GetItemsByWorkflowIdV18(
 		query.WorkflowId,
 	)
 	if e != nil {
@@ -72,6 +76,35 @@ func GetTasks(c *gin.Context) {
 	return
 }
 
+func PatchWfTaskById(c *gin.Context) {
+	taskId := c.Param("id")
+	if taskId == "" {
+		c.JSON(http.StatusBadRequest, api.HttpRespBody{
+			Code: api.ERR_URL_ID,
+			Msg:  "ERR_URL_ID",
+		})
+		return
+	}
+
+	log.Println("PatchWfTaskById : ", taskId, "")
+
+	ctx := context.Background()
+	e := service_workflow.StopWfTaskById(ctx, taskId)
+	if e != nil {
+		c.JSON(http.StatusOK, api.HttpRespBody{
+			Code: api.ERR_OTHER,
+			Msg:  "error: " + e.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, api.HttpRespBody{
+		Code: 0,
+		Msg:  "",
+	})
+	return
+}
+
 func GetTaskById(c *gin.Context) {
 	taskId := c.Param("id")
 	if taskId == "" {
@@ -82,7 +115,7 @@ func GetTaskById(c *gin.Context) {
 		return
 	}
 
-	item, count, e := repo.GetTaskCtl().GetTaskRespItemByTaskId(taskId)
+	item, count, e := repo_workflow.GetTaskCtl().GetTaskRespItemByTaskId(taskId)
 	if e != nil {
 		log.Println("GetItemsByWorkflowId e: ", e)
 		c.JSON(http.StatusOK, api.HttpRespBody{
@@ -113,40 +146,6 @@ func GetTaskById(c *gin.Context) {
 	return
 }
 
-//func PatchTask(c *gin.Context) {
-//	ctx := context.Background()
-//
-//	var dto api_workflow.PatchTaskReq
-//	if err := c.BindJSON(&dto); err != nil {
-//		logrus.Error("bad request in Post(): ", err)
-//		c.JSON(http.StatusOK, api.HttpRespBody{
-//			Code: api.ERR_FORMAT,
-//			Msg:  "ERR_FORMAT",
-//		})
-//		return
-//	}
-//
-//	log.Println("PatchTaskReq: ", dto)
-//
-//	e := service_workflow.OnTaskStatusChange(ctx, dto.TaskId, dto.Status, dto.ExitCode)
-//	if e != nil {
-//		logrus.Error("bad request in Post(): ", e)
-//		c.JSON(http.StatusOK, api.HttpRespBody{
-//			Code: api.ERR_INTERNAL,
-//			Msg:  "ERR_INTERNAL",
-//		})
-//		return
-//	}
-//
-//	//
-//	c.JSON(http.StatusOK, api.HttpRespBody{
-//		Code: 0,
-//		Msg:  "ok",
-//		Data: api_workflow.PatchTaskResp{},
-//	})
-//	return
-//}
-
 func PatchWorkflowById(c *gin.Context) {
 	workflowId := c.Param("id")
 	if workflowId == "" {
@@ -157,19 +156,19 @@ func PatchWorkflowById(c *gin.Context) {
 		return
 	}
 
-	e := service_workflow.StopWorkflow(context.Background(), workflowId)
+	e := service_workflow.StopWorkflowWrapper(context.Background(), workflowId, api_workflow.ExitCodeWorkflowStoppedByBizCmd)
 	if e != nil {
-		logrus.Error("ervice.StopWorkflow(context.Background(): ", e)
+		logrus.Error("service.StopWorkflow(context.Background(): ", e)
 		c.JSON(http.StatusOK, api.HttpRespBody{
-			Code: api.ERR_INTERNAL,
-			Msg:  "ERR_INTERNAL",
+			Code: api.ERR_OTHER,
+			Msg:  "ERR_OTHER: " + e.Error(),
 		})
 		return
 	}
 
 	c.JSON(http.StatusOK, api.HttpRespBody{
 		Code: 0,
-		Msg:  "",
+		Msg:  "ok",
 	})
 	return
 }
@@ -184,7 +183,7 @@ func GetWorkflowById(c *gin.Context) {
 		return
 	}
 
-	items, total, e := repo.GetTaskCtl().GetItemsByWorkflowIdV18(
+	items, total, e := repo_workflow.GetTaskCtl().GetItemsByWorkflowIdV18(
 		workflowId,
 	)
 	if e != nil {
@@ -263,6 +262,38 @@ func PostWorkflow(c *gin.Context) {
 		Code: 0,
 		Msg:  "ok",
 		Data: postWorkflowResp,
+	})
+	return
+}
+
+func PatchWorkflowTimer(c *gin.Context) { // todo: change to RPC
+	workflowId := c.Param("id")
+	log.Printf("PatchWorkflowTimer: workflowId = %s \n", workflowId)
+	//var dto api_time.CallbackReq
+	//if err := c.BindJSON(&dto); err != nil {
+	//	logrus.Error("bad request in Post(): ", err)
+	//	c.JSON(http.StatusOK, api.HttpRespBody{
+	//		Code: api.ERR_FORMAT,
+	//		Msg:  "ERR_FORMAT: " + err.Error(),
+	//	})
+	//	return
+	//}
+	//log.Printf("PatchTimer: %#v \n", dto)
+
+	e := service_workflow.StopWorkflowWrapper(context.Background(), workflowId, api_workflow.ExitCodeWorkflowStoppedByBizTimeout)
+	if e != nil {
+		logrus.Error("service_workflow.StopWorkflowWrapper , e:  ", e)
+		c.JSON(http.StatusOK, api.HttpRespBody{
+			Code: api.ERR_INTERNAL,
+			Msg:  "ERR_INTERNAL: " + e.Error(),
+		})
+		return
+	}
+
+	//log.Printf("PatchTimer: %#v \n", dto)
+	c.JSON(http.StatusOK, api.HttpRespBody{
+		Code: 0,
+		Msg:  "ok",
 	})
 	return
 }

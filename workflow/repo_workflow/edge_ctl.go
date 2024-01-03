@@ -31,6 +31,7 @@ type Edge struct {
 	ObjId       string `json:"obj_id"`
 	Status      int    `json:"status"`
 	//WorkflowId  string `json:"workflow_id" gorm:"index:idx_workflow_id"  `
+	Iterate int `json:"iterate" `
 }
 
 func (ctl *EdgeCtl) CreateItem(item Edge) (err error) {
@@ -50,6 +51,18 @@ func (ctl *EdgeCtl) GetItemsByStartTaskId(taskId string) ([]Edge, error) {
 
 	//log.Println("In GetItemsByStartTaskId x: ", items)
 	return items, nil
+}
+
+func (ctl *EdgeCtl) GetItemsByStartTaskIdAndIterate(taskId string, iterate int) ([]Edge, int64, error) {
+	var items []Edge
+	var cnt int64
+	e := db.Where("`start_task_id` = ? AND `iterate` = ? ", taskId, iterate).Find(&items).Count(&cnt).Error
+	if e != nil {
+		return nil, cnt, errors.Wrap(e, "EdgeCtl.GetItemsByStartTaskId")
+	}
+
+	//log.Println("In GetItemsByStartTaskId x: ", items)
+	return items, cnt, nil
 }
 
 func (ctl *EdgeCtl) GetItemsByEndTaskId(taskId string) ([]Edge, error) {

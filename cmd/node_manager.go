@@ -380,12 +380,12 @@ func mountFS(ak string, sk string, ipAndPort string) (e error) {
 	if _, err := os.Stat(config_workflow.DockerGroupPref); os.IsNotExist(err) {
 		err := os.MkdirAll(config_workflow.DockerGroupPref, 0755)
 		if err != nil {
-			fmt.Println("创建文件夹失败:", err)
+			fmt.Println("dir create fail :", err)
 			return
 		}
-		fmt.Println("文件夹创建成功:", config_workflow.DockerGroupPref)
+		fmt.Println("dir create ok:", config_workflow.DockerGroupPref)
 	} else {
-		fmt.Println("文件夹已经存在:", config_workflow.DockerGroupPref)
+		fmt.Println("exists already:", config_workflow.DockerGroupPref)
 	}
 
 	content := fmt.Sprintf("%s:%s\n", ak, sk) // "admin:password\n"

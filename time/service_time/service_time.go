@@ -1,18 +1,15 @@
 package service_time
 
 import (
-	"bytes"
 	"collab-net-v2/sched/config_sched"
 	"collab-net-v2/time/api_time"
 	"collab-net-v2/time/repo_time"
 	"collab-net-v2/time/util/rmq_util"
 	"collab-net-v2/util/idgen"
-	"encoding/json"
 	"fmt"
 	"github.com/pkg/errors"
 	"log"
 	"net/http"
-
 	"time"
 	//"github.com/apex/log"
 	//"github.com/apex/log/handlers/cli"
@@ -22,6 +19,47 @@ import (
 const (
 	DEBUG = false
 )
+
+func callHook(hookAddr string) (x error) {
+
+	go func() {
+		//data := api_time.CallbackReq{
+		//	Id:      item.Id,
+		//	Type:    item.Type,
+		//	Holder:  item.Holder,
+		//	Desc:    item.Desc,
+		//	Timeout: item.Timeout,
+		//}
+		//
+		//jsonData, err := json.Marshal(data)
+		//if err != nil {
+		//	log.Println("json.Marshal err:", err)
+		//	return
+		//}
+
+		//response, err := http.Post(item.CallbackAddr, "application/json", bytes.NewBuffer(jsonData)) // todo: PATCH
+		//if err != nil {
+		//	log.Println("http.Post err:", err)
+		//	return
+		//}
+		request, err := http.NewRequest(http.MethodPatch, hookAddr /**/, nil /* bytes.NewBuffer(jsonData)*/)
+		if err != nil {
+			log.Println("callHook http.NewRequest: ", err)
+			return
+		}
+		request.Header.Set("Content-Type", "application/json")
+		response, err := http.DefaultClient.Do(request)
+		if err != nil {
+			log.Println("callHook http.DefaultClient.Do err:", err)
+			return
+		}
+
+		log.Println("callHook response: ", response)
+		defer response.Body.Close()
+	}()
+
+	return nil
+}
 
 func shouldAck(x []byte) bool {
 	go func() {
@@ -47,32 +85,17 @@ func shouldAck(x []byte) bool {
 			log.Println("item: ", item)
 		}
 
-		if callbackFunc != nil {
-			callbackFunc(item.Id, item.Type, item.Holder, item.Desc, nil)
-		}
 		if item.CallbackAddr != "" {
-			go func() {
-				data := api_time.CallbackReq{
-					Id:      item.Id,
-					Type:    item.Type,
-					Holder:  item.Holder,
-					Desc:    item.Desc,
-					Timeout: item.Timeout,
-				}
-
-				jsonData, err := json.Marshal(data)
-				if err != nil {
-					log.Println("json.Marshal err:", err)
-					return
-				}
-				response, err := http.Post(item.CallbackAddr, "application/json", bytes.NewBuffer(jsonData))
-				if err != nil {
-					log.Println("http.Post err:", err)
-					return
-				}
-				defer response.Body.Close()
-			}()
+			callHook(item.CallbackAddr)
 		}
+
+		if callbackFunc != nil {
+			e := callbackFunc(item.Id, item.Type, item.Holder, item.Desc, nil)
+			if e != nil {
+				log.Println("callbackFunc e: ", e)
+			}
+		}
+
 	}()
 
 	return true
@@ -129,7 +152,7 @@ func NewTimer(timeoutSecond int, _type int, holder string, desc string, callback
 		log.Printf("run: failed to publish into rabbitmq: %v", err)
 	}
 
-	repo_time.GetTimeCtl().UpdateItemById(id, map[string]interface{}{
+	repo_time.GetTimeCtl().UpdateItemById(idTimer, map[string]interface{}{
 		"status": api_time.STATUS_TIMER_RUNNING,
 	})
 
@@ -146,6 +169,16 @@ func DisableTimer(id string) (e error) {
 
 	log.Printf("    [DisableTimer]  id = %s, type =  %d , desc = %s\n", id, item.Type, item.Desc)
 	repo_time.GetTimeCtl().UpdateItemById(id, map[string]interface{}{
+		"status": api_time.STATUS_TIMER_DISABLED,
+	})
+
+	return nil
+}
+
+func DisableTimerByHolder(holder string) (e error) {
+	log.Printf("[DisableTimerByHolder]  holder=%s \n", holder)
+
+	repo_time.GetTimeCtl().UpdateItemByHolder(holder, map[string]interface{}{
 		"status": api_time.STATUS_TIMER_DISABLED,
 	})
 

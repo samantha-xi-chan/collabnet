@@ -120,9 +120,47 @@ func (ctl *TaskCtl) GetItemsFromWorkflowAndName(wfId string, name string) (items
 	return items, nil
 }
 
+func (ctl *TaskCtl) GetItemsFromWorkflowAndNameAndIterate(wfId string, name string, iterate int) (items []Task, e error) {
+	//var item Task
+	err := db.Model(&Task{}).Where("`workflow_id` = ? AND `name` = ? AND `iterate` = ?", wfId, name, iterate).Find(&items).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, errors.Wrap(err, "TaskCtl GetItemByID ErrRecordNotFound: ")
+	} else if err != nil {
+		return nil, errors.Wrap(err, "TaskCtl GetItemByID err not nil: ")
+	}
+
+	return items, nil
+}
+
+func (ctl *TaskCtl) GetItemsStatusNotEndByWfIdAndIterate(wfId string, iterate int) (items []Task, e error) { // bugfix: todo check_exit_code
+	//var item Task
+	err := db.Model(&Task{}).Where("`workflow_id` = ? AND `iterate` = ? AND `status` <> ?", wfId, iterate, api.TASK_STATUS_END).Find(&items).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, errors.Wrap(err, "TaskCtl GetItemByID ErrRecordNotFound: ")
+	} else if err != nil {
+		return nil, errors.Wrap(err, "TaskCtl GetItemByID err not nil: ")
+	}
+
+	return items, nil
+}
+
+// SELECT * FROM c_task ct WHERE ct.workflow_id = 'wf1703761143222sgtq' AND `iterate` = 1 AND status != 60021999
+
 func (ctl *TaskCtl) GetItemIdsFromWorkflowAndName(wfId string, name string) (ids []string, e error) {
 	//var item Task
 	err := db.Model(&Task{}).Where("workflow_id = ? AND name = ?", wfId, name).Select("id").Find(&ids).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, errors.Wrap(err, "TaskCtl GetItemByID ErrRecordNotFound: ")
+	} else if err != nil {
+		return nil, errors.Wrap(err, "TaskCtl GetItemByID err not nil: ")
+	}
+
+	return ids, nil
+}
+
+func (ctl *TaskCtl) GetItemIdsFromWorkflowAndNameAndIterate(wfId string, name string, iterate int) (ids []string, e error) {
+	//var item Task
+	err := db.Model(&Task{}).Where("`workflow_id` = ? AND `name` = ? AND `iterate` = ? ", wfId, name, iterate).Select("id").Find(&ids).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, errors.Wrap(err, "TaskCtl GetItemByID ErrRecordNotFound: ")
 	} else if err != nil {

@@ -24,18 +24,19 @@ type Workflow struct {
 	ID       string `json:"id" gorm:"primaryKey"`
 	Name     string `json:"name" gorm:"unique"`
 	CreateAt int64  `json:"create_at"`
+	EndAt    int64  `json:"end_at"` // 包含 正常结束 异常结束
 	CreateBy int64  `json:"create_by"`
 	Desc     string `json:"desc"`
-	Enabled  int    `json:"enabled"` // 上层业务角度希望 有效/无效
-	Status   int    `json:"status"  gorm:"default:60021001"`
+	//Enabled  int    `json:"enabled"` // 上层业务角度希望 有效/无效
+	//Status   int    `json:"status"  gorm:"default:60021001"`
 	ExitCode int    `json:"exit_code"`
 	Define   string `json:"define"`
 	Error    string `json:"error" `
 	Iterate  int    `json:"iterate" `
 
 	ShareDirArrStr string `json:"share_dir_arr_str"`
-	Timeout        int    `json:"timeout"`  // - "timeout" 可以不填写, 默认为 0,  值 0 表示不设置超时
-	Infinite       bool   `json:"infinite"` // - "infinite" 可以不填写, 默认为false , false 表示workflow 内部 不会无限循环执行
+	Timeout        int    `json:"timeout"`      // - "timeout" 可以不填写, 默认为 0,  值 0 表示不设置超时
+	AutoIterate    bool   `json:"auto_iterate"` // - "auto_iterate" 可以不填写, 默认为false , false 表示workflow 内部 不会无限循环执行
 }
 
 func (ctl *WorkflowCtl) CreateItem(item Workflow) (err error) {
@@ -71,6 +72,25 @@ func (ctl *WorkflowCtl) UpdateItemByID(id string, fieldsToUpdate map[string]inte
 	result := db.Model(&Workflow{}).Where("id = ?", id).Updates(fieldsToUpdate)
 	if result.Error != nil {
 		log.Println("UpdateItemByID e: ", e)
+	}
+
+	return nil
+}
+
+func (ctl *WorkflowCtl) UpdateItemByIDAndIterate(id string, iterate int, fieldsToUpdate map[string]interface{}) (e error) {
+
+	result := db.Model(&Workflow{}).Where("`id` = ? AND `iterate` = ?", id, iterate).Updates(fieldsToUpdate)
+	if result.Error != nil {
+		log.Println("UpdateItemByID e: ", e)
+	}
+
+	return nil
+}
+
+func (ctl *WorkflowCtl) IncreaseIterate(id string) (e error) {
+	err = db.Model(&Workflow{}).Where("id = ?", id).Update("iterate", gorm.Expr("iterate + ?", 1)).Error
+	if err != nil {
+		return errors.Wrap(err, "db.Model(&Workflow{}).Where(\"id = ?\", id).Update(\"iterate\", gorm.Expr(\"iterate + ?\", 1)).Error: ")
 	}
 
 	return nil

@@ -54,8 +54,8 @@ func SetTaskCallback(tmp CALLBACK) {
 }
 
 // 对上 接口
-func NewTask(name string, cmd string, linkId string, cmdackTimeoutSecond int, preTimeoutSecond int, runTimeoutSecond int) (id string, ee error) {
-	idTask := idgen.GetIdWithPref("task") // "NewTask" //
+func NewTask(name string, cmd string, cmdStop string, linkId string, cmdackTimeoutSecond int, preTimeoutSecond int, runTimeoutSecond int) (id string, ee error) {
+	idTask := idgen.GetIdWithPref("ta")
 
 	item, e := service_link.GetLinkItemFromId(context.Background(), linkId)
 	if e != nil {
@@ -75,9 +75,10 @@ func NewTask(name string, cmd string, linkId string, cmdackTimeoutSecond int, pr
 	log.Println("[NewTask] idSched=", idSched)
 
 	repo_task.GetTaskCtl().CreateItem(repo_task.Task{
-		Id:   idTask,
-		Name: name,
-		Cmd:  cmd,
+		Id:      idTask,
+		Name:    name,
+		Cmd:     cmd,
+		CmdStop: cmdStop,
 		//Status:   api_task.TASK_STATUS_INIT,
 		CreateAt: time.Now().UnixMilli(),
 		//Enabled:  api_sched.INT_ENABLED,
@@ -87,7 +88,12 @@ func NewTask(name string, cmd string, linkId string, cmdackTimeoutSecond int, pr
 }
 
 func PatchTask(idTask string) (ee error) {
-	service_sched.StopSchedByTaskId(idTask)
+	itemTask, e := repo_task.GetTaskCtl().GetItemById(idTask)
+	if e != nil {
+		return errors.Wrap(e, "repo_task.GetTaskCtl().GetItemById")
+	}
+
+	service_sched.StopSchedByTaskId(idTask, itemTask.CmdStop)
 
 	return nil
 }
