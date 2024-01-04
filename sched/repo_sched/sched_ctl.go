@@ -50,6 +50,8 @@ type Sched struct {
 	HbTimer     string `json:"hb_timer"`
 	RunTimer    string `json:"run_timer"`
 	Error       string `json:"error" `
+
+	Withdraw string `json:"withdraw" `
 }
 
 func (ctl *SchedCtl) CreateItem(item Sched) (err error) {

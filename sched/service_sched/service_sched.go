@@ -341,6 +341,7 @@ func StopSchedById(id string) (ee error) {
 				TaskType:   item.TaskType,
 				SchedId:    item.Id,
 				TaskId:     item.TaskId,
+				Para11:     item.Withdraw,
 			}))
 	if e != nil {
 		// 记录关键错误
@@ -366,7 +367,7 @@ func StopSchedById(id string) (ee error) {
 	return
 }
 
-func NewSched(taskId string, actionType int, taskType int, cmd string, linkId string, cmdackTimeoutSecond int, preTimeoutSecond int, runTimeoutSecond int) (_id string, e error) {
+func NewSched(taskId string, actionType int, taskType int, cmd string, linkId string, cmdackTimeoutSecond int, preTimeoutSecond int, runTimeoutSecond int, withdraw string) (_id string, e error) {
 	idSched := idgen.GetIdWithPref("sc")
 	repo_sched.GetSchedCtl().CreateItem(repo_sched.Sched{
 		Id:            idSched,
@@ -384,6 +385,8 @@ func NewSched(taskId string, actionType int, taskType int, cmd string, linkId st
 		RunTimeout:    runTimeoutSecond,
 		BizCode:       api.BIZ_CODE_INVALID,
 		FwkCode:       api.FWK_CODE_ERR_DEFAULT,
+
+		Withdraw: withdraw,
 	})
 
 	code, e := link.SendDataToLinkId(

@@ -36,6 +36,9 @@ type TaskInput struct {
 }
 
 type PostWorkflowDagReq struct {
+	Name string `json:"name"`
+	Desc string `json:"desc"`
+
 	Task     []TaskInput `json:"task"`
 	Edge     []Edge      `json:"edge"`
 	ShareDir []string    `json:"share_dir"`
@@ -101,6 +104,7 @@ type TaskResp struct {
 type WorkflowResp struct {
 	Id       string `json:"id"`
 	Name     string `json:"name"`
+	Desc     string `json:"desc"`
 	CreateAt int64  `json:"create_at"`
 	StartAt  int64  `json:"start_at"`
 	EndAt    int64  `json:"end_at"`

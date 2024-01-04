@@ -335,6 +335,7 @@ func GetWorkflowByIdV2(c *gin.Context) {
 	dto := api_workflow.WorkflowResp{
 		Id:       workflowId,
 		Name:     itemWorkflow.Name,
+		Desc:     itemWorkflow.Desc,
 		CreateAt: itemWorkflow.CreateAt,
 		StartAt:  itemWorkflow.StartAt,
 		EndAt:    itemWorkflow.EndAt,

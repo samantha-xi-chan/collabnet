@@ -16,18 +16,20 @@ const (
 
 // Event represents the structure of the event data
 type Event struct {
-	ObjType int    `json:"obj_type"`
-	ObjID   string `json:"obj_id"`
-	Data    struct {
+	ObjType   int    `json:"obj_type"`
+	ObjID     string `json:"obj_id"`
+	Timestamp int64  `json:"ts"` // ms
+	Data      struct {
 		Status   int `json:"status"`
 		ExitCode int `json:"exit_code"`
 	} `json:"data"`
 }
 
 type RawTaskEvent struct {
-	ObjType int    `json:"obj_type"`
-	ObjID   string `json:"obj_id"`
-	Data    struct {
+	ObjType   int    `json:"obj_type"`
+	ObjID     string `json:"obj_id"`
+	Timestamp int64  `json:"ts"` // ms
+	Data      struct {
 		Evt int `json:"evt"`
 	} `json:"data"`
 }

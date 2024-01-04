@@ -149,11 +149,11 @@ func PostWorkflow(ctx context.Context, req api_workflow.PostWorkflowDagReq) (api
 	jsonStr, _ := json.Marshal(req)
 
 	record := repo_workflow.Workflow{
-		ID:   workflowId,
-		Name: workflowId,
-		//Enabled:  api.TRUE,
-		Desc:     "",
+		ID:       workflowId,
+		Name:     req.Name,
+		Desc:     req.Desc,
 		CreateAt: time.Now().UnixMilli(),
+		StartAt:  time.Now().UnixMilli(),
 		CreateBy: 0,
 		Define:   string(jsonStr),
 
@@ -196,8 +196,9 @@ func PostWorkflow(ctx context.Context, req api_workflow.PostWorkflowDagReq) (api
 func StopWorkflowWrapper(ctx context.Context, workflowId string, exitCode int) (ee error) {
 	go func() {
 		evt := api.Event{
-			ObjType: api.OBJ_TYPE_WORKFLOW,
-			ObjID:   workflowId,
+			ObjType:   api.OBJ_TYPE_WORKFLOW,
+			ObjID:     workflowId,
+			Timestamp: time.Now().UnixMilli(),
 			Data: struct {
 				Status   int `json:"status"`
 				ExitCode int `json:"exit_code"`
@@ -670,7 +671,7 @@ func PlayAsConsumerBlock(mqUrl string, consumerCnt int) {
 					string(jsonData), itemLink.Id,
 					config_sched.DEFAULT_CMDACK_TIMEOUT,
 					config_sched.DEFAULT_PREACK_TIMEOUT,
-					itemTask.Timeout)
+					itemTask.Timeout, "")
 				if e != nil {
 					log.Printf("service_sched.NewTask: e=", e)
 					time.Sleep(time.Second * 1)
@@ -689,8 +690,9 @@ func PlayAsConsumerBlock(mqUrl string, consumerCnt int) {
 				// v2.0
 				go func() {
 					evt := api.Event{
-						ObjType: api.OBJ_TYPE_CONTAINER_TASK,
-						ObjID:   taskId,
+						ObjType:   api.OBJ_TYPE_CONTAINER_TASK,
+						ObjID:     taskId,
+						Timestamp: time.Now().UnixMilli(),
 						Data: struct {
 							Status   int `json:"status"`
 							ExitCode int `json:"exit_code"`

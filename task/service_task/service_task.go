@@ -45,8 +45,9 @@ func Init() {
 		// v2.0
 		go func() {
 			event := api.RawTaskEvent{
-				ObjType: api.OBJ_TYPE_RAW_TASK,
-				ObjID:   itemSched.TaskId,
+				ObjType:   api.OBJ_TYPE_RAW_TASK,
+				ObjID:     itemSched.TaskId,
+				Timestamp: time.Now().UnixMilli(),
 				Data: struct {
 					Evt int `json:"evt"`
 				}{
@@ -87,7 +88,7 @@ func NewTask(name string, cmd string, cmdStop string, linkId string, cmdackTimeo
 
 	idSched, e := service_sched.NewSched(idTask,
 		link.ACTION_TYPE_NEWTASK, link.TASK_TYPE_RAW,
-		cmd, linkId, cmdackTimeoutSecond, preTimeoutSecond, runTimeoutSecond)
+		cmd, linkId, cmdackTimeoutSecond, preTimeoutSecond, runTimeoutSecond, cmdStop)
 	if e != nil {
 		log.Printf("service_sched.NewTask: e=", e)
 		return "", e

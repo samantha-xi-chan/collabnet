@@ -1,4 +1,10 @@
 {
+  "name":"wf_seed_parall",
+  "desc":"desc01",
+  "timeout": 50400,
+  "auto_iterate": true,
+  "share_dir": ["/test_dir","/test_01dir","/test_02dir"],
+  "ver": 2,
   "task": [{
     "name": "task_a",
     "image": "badouralix/curl-jq:latest",
@@ -15,7 +21,7 @@
     "debug": false,
     "remain": true,
     "check_exit_code": false,
-    "concurrent": 1
+    "concurrent": 3
   }, {
     "name": "task_c",
     "image": "badouralix/curl-jq:latest",
@@ -53,9 +59,5 @@
   }, {
     "start": "task_d",
     "resc": "/docker/d"
-  }],
-  "share_dir": ["/test_dir","/test_01dir","/test_02dir"],
-  "auto_iterate": true,
-  "timeout": 14400,
-  "ver": 2
+  }]
 }
