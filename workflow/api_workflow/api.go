@@ -29,7 +29,7 @@ type TaskInput struct {
 	CheckExitCode        bool `json:"check_exit_code"`
 	ExitOnAnySiblingExit bool `json:"exit_on_any_sibling_exit"`
 
-	ExpExitCode   int           `json:"exp_exit_code"`
+	//ExpExitCode   int           `json:"exp_exit_code"`
 	ResourceQuota ResourceQuota `json:"resource_quota"`
 
 	Concurrent int `json:"concurrent"`

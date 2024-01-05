@@ -28,6 +28,7 @@ scp release/$Tar $HOST:/opt/node_manager.tar
 
 cat << 'EOF' > deploy.sh
 set -e
+apt update && apt install s3fs -y && mkdir -p /mnt/sss
 echo "DefaultLimitNOFILE=1048576" >> /etc/systemd/system.conf
 systemctl stop  node_manager.service || echo 'stop service end' && \
 cd /opt/ && tar -xvf node_manager.tar && \

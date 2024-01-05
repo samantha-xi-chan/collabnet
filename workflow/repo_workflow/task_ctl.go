@@ -34,12 +34,12 @@ type Task struct {
 	Image  string `json:"image"`
 	CmdStr string `json:"cmd_str"`
 
-	StartAt     int64 `json:"start_at"`
-	EndAt       int64 `json:"end_at"`
-	Timeout     int   `json:"timeout"` // Second
-	Remain      bool  `json:"remain"`  // remain the task environment context
-	ExpExitCode int   `json:"exp_exit_code"`
-	ExitCode    int   `json:"exit_code" gorm:"default:1000"` // EXIT_CODE_INIT    = 1000
+	StartAt int64 `json:"start_at"`
+	EndAt   int64 `json:"end_at"`
+	Timeout int   `json:"timeout"` // Second
+	Remain  bool  `json:"remain"`  // remain the task environment context
+	//ExpExitCode int   `json:"exp_exit_code"`
+	ExitCode int `json:"exit_code" gorm:"default:1000"` // EXIT_CODE_INIT    = 1000
 
 	CheckExitCode        int `json:"check_exit_code"`          /* 1 as true, 0 as false */
 	ExitOnAnySiblingExit int `json:"exit_on_any_sibling_exit"` /* 1 as true, 0 as false */

@@ -60,12 +60,12 @@ func createNewWorkflowIterate(ctx context.Context, workflowId string, latestIter
 				Image:  task.Image,
 				CmdStr: string(jsonData),
 
-				StartAt:     0,
-				EndAt:       0,
-				Timeout:     task.Timeout,
-				ExpExitCode: task.ExpExitCode,
-				ExitCode:    api.EXIT_CODE_INIT,
-				Remain:      task.Remain,
+				StartAt: 0,
+				EndAt:   0,
+				Timeout: task.Timeout,
+				//ExpExitCode: task.ExpExitCode,
+				ExitCode: api.EXIT_CODE_INIT,
+				Remain:   task.Remain,
 
 				CheckExitCode:        grammar.GetCodeFromBool(task.CheckExitCode),
 				ExitOnAnySiblingExit: grammar.GetCodeFromBool(task.ExitOnAnySiblingExit),
@@ -164,7 +164,10 @@ func PostWorkflow(ctx context.Context, req api_workflow.PostWorkflowDagReq) (api
 
 		ExitCode: api_workflow.ExitCodeWorkflowDefault,
 	}
-	repo_workflow.GetWorkflowCtl().CreateItem(record)
+	ee := repo_workflow.GetWorkflowCtl().CreateItem(record)
+	if ee != nil {
+		return api_workflow.PostWorkflowResp{}, errors.Wrap(ee, "repo_workflow.GetWorkflowCtl().CreateItem: ")
+	}
 
 	e := createNewWorkflowIterate(ctx, workflowId, currentIterate, req)
 	if e != nil {
@@ -360,9 +363,14 @@ func OnTaskStatusChange(ctx context.Context, taskId string, status int, exitCode
 			itemWf, e := repo_workflow.GetWorkflowCtl().GetItemByID(itemWorkflow.ID)
 			log.Printf("start itemWorkflow.ID: %s,  itemWf: %#v\n", itemWorkflow.ID, itemWf)
 
-			repo_workflow.GetWorkflowCtl().UpdateItemByID(itemWorkflow.ID, map[string]interface{}{
+			e = repo_workflow.GetWorkflowCtl().UpdateItemByID(itemWorkflow.ID, map[string]interface{}{
 				"iterate": itemWf.Iterate + 1,
 			})
+			if e != nil {
+				ee = errors.Wrap(e, "repo_workflow.GetWorkflowCtl().UpdateItemByID: ")
+				return
+			}
+
 			//e = repo_workflow.GetWorkflowCtl().IncreaseIterate(itemWorkflow.ID)
 			//if e != nil {
 			//	fmt.Println("repo_workflow.GetWorkflowCtl().IncreaseIterate:", e)

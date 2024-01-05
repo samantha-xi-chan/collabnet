@@ -22,7 +22,7 @@ func (Workflow) TableName() string {
 
 type Workflow struct {
 	ID       string `json:"id" gorm:"primaryKey"`
-	Name     string `json:"name" gorm:"unique"`
+	Name     string `json:"name" ` // gorm:"unique"
 	CreateAt int64  `json:"create_at"`
 	StartAt  int64  `json:"start_at"`
 	EndAt    int64  `json:"end_at"` // 包含 正常结束 异常结束
