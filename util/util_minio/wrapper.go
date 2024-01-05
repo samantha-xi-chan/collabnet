@@ -21,6 +21,16 @@ func InitDistFileMs(ctx context.Context, endpoint string, accessKeyID string, se
 	return fileManager.InitFM(ctx, endpoint, accessKeyID, secretAccessKey, useSSL, bucketName, clean)
 }
 
+func DeleteObjFromBucket(ctx context.Context, endpoint string, accessKeyID string, secretAccessKey string, bucketName string, objs []string) (e error) {
+	useSSL := false
+	return DeleteObjsFromBucket(ctx, endpoint, accessKeyID, secretAccessKey, useSSL, bucketName, objs)
+}
+
+func DeleteObjPrefixFromBucket(ctx context.Context, endpoint string, accessKeyID string, secretAccessKey string, bucketName string, objprefix string) (e error) {
+	useSSL := false
+	return DeleteObjPrefixsFromBucket(ctx, endpoint, accessKeyID, secretAccessKey, useSSL, bucketName, objprefix)
+}
+
 func IsConnected(ctx context.Context) (bool, error) {
 
 	if fileManager.minioClient == nil {

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
+	"github.com/pkg/errors"
 	"log"
 	"strings"
 )
@@ -60,6 +61,67 @@ func CreateBucketIfNotExistsWithDefaultSign(ctx context.Context, endpoint string
 	}
 
 	fmt.Printf("Successfully created object '%s' in bucket '%s'\n", defaultObjectName, bucketName)
+
+	return nil
+}
+
+func DeleteObjsFromBucket(ctx context.Context, endpoint string, accessKeyID string, secretAccessKey string, useSSL bool, bucketName string, objs []string) (e error) {
+	minioClient, e := minio.New(endpoint, &minio.Options{
+		Creds:  credentials.NewStaticV4(accessKeyID, secretAccessKey, ""),
+		Secure: useSSL,
+	})
+	if e != nil {
+		log.Println("minio.New error: ", e)
+		return e
+	}
+	exists, err := minioClient.BucketExists(ctx, bucketName)
+	if err != nil {
+		log.Println("BucketExists error: ", err)
+		return err
+	}
+	if !exists {
+		log.Println("Bucket does not exist: ", bucketName)
+		return err
+	}
+
+	for _, obj := range objs {
+		err := minioClient.RemoveObject(ctx, bucketName, obj, minio.RemoveObjectOptions{})
+		if err != nil {
+			log.Println("RemoveObject error: ", err)
+		} else {
+			log.Println("Object deleted successfully:", obj)
+		}
+	}
+
+	return nil
+}
+
+func DeleteObjPrefixsFromBucket(ctx context.Context, endpoint string, accessKeyID string, secretAccessKey string, useSSL bool, bucketName string, objectPrefix string) (e error) {
+	minioClient, e := minio.New(endpoint, &minio.Options{
+		Creds:  credentials.NewStaticV4(accessKeyID, secretAccessKey, ""),
+		Secure: useSSL,
+	})
+	if e != nil {
+		return errors.Wrap(e, "minio.New: ")
+	}
+
+	objectCh := minioClient.ListObjects(context.Background(), bucketName, minio.ListObjectsOptions{
+		Prefix:    objectPrefix,
+		Recursive: true,
+	})
+
+	for object := range objectCh {
+		if object.Err != nil {
+			return errors.Wrap(object.Err, "for object := range objectCh: ")
+		}
+
+		err := minioClient.RemoveObject(context.Background(), bucketName, object.Key, minio.RemoveObjectOptions{})
+		if err != nil {
+			return errors.Wrap(err, "minioClient.RemoveObject: ")
+		} else {
+			fmt.Printf("Object %s deleted successfully\n", object.Key)
+		}
+	}
 
 	return nil
 }

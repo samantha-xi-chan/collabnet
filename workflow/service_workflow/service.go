@@ -13,6 +13,7 @@ import (
 	"collab-net-v2/util/grammar"
 	"collab-net-v2/util/idgen"
 	"collab-net-v2/util/stringutil"
+	"collab-net-v2/util/util_minio"
 	"collab-net-v2/util/util_mq"
 	"collab-net-v2/workflow/api_workflow"
 	"collab-net-v2/workflow/config_workflow"
@@ -197,39 +198,49 @@ func PostWorkflow(ctx context.Context, req api_workflow.PostWorkflowDagReq) (api
 }
 
 func StopWorkflowWrapper(ctx context.Context, workflowId string, exitCode int) (ee error) {
-	go func() {
-		evt := api.Event{
-			ObjType:   api.OBJ_TYPE_WORKFLOW,
-			ObjID:     workflowId,
-			Timestamp: time.Now().UnixMilli(),
-			Data: struct {
-				Status   int `json:"status"`
-				ExitCode int `json:"exit_code"`
-			}{
-				Status:   api.WORKFLOW_STATUS_END,
-				ExitCode: exitCode,
-			},
-		}
-
-		url, e := service_setting.GetSettingUrl(config.SettingCallback)
-		if url != "" && e == nil {
-			api.SendObjEvtRequest(url, evt)
-		}
-	}()
-
+	var e error
 	if exitCode == api_workflow.ExitCodeWorkflowStoppedByBizTimeout {
 		return stopWorkflow(ctx, workflowId, exitCode)
 	} else if exitCode == api_workflow.ExitCodeWorkflowStoppedByDagEnd {
 		service_time.DisableTimerByHolder(workflowId) // todo: add error handler
-		return stopWorkflow(ctx, workflowId, exitCode)
+		e = stopWorkflow(ctx, workflowId, exitCode)
 	} else if exitCode == api_workflow.ExitCodeWorkflowStoppedByBizCmd {
 		service_time.DisableTimerByHolder(workflowId) // todo: add error handler
-		return stopWorkflow(ctx, workflowId, exitCode)
+		e = stopWorkflow(ctx, workflowId, exitCode)
 	} else if exitCode == api_workflow.ExitCodeWorkflowStoppedByUnknown {
-		return stopWorkflow(ctx, workflowId, exitCode)
+		e = stopWorkflow(ctx, workflowId, exitCode)
 	} else {
-		return errors.New("StopWorkflowWrapper exitCode not expected ")
+		e = errors.New("StopWorkflowWrapper exitCode not expected ")
 	}
+
+	if e != nil {
+		return errors.Wrap(ee, "stopWorkflow: ")
+	}
+
+	// remove share
+	//itemWf, e := repo_workflow.GetWorkflowCtl().GetItemByID(workflowId)
+	util_minio.DeleteObjPrefixFromBucket(context.Background(), config_workflow.MINIO_API_URL, config_workflow.MINIO_AK, config_workflow.MINIO_SK, config_workflow.MINIO_BUCKET_NAME_WF, workflowId+"/")
+
+	// notify
+	evt := api.Event{
+		ObjType:   api.OBJ_TYPE_WORKFLOW,
+		ObjID:     workflowId,
+		Timestamp: time.Now().UnixMilli(),
+		Data: struct {
+			Status   int `json:"status"`
+			ExitCode int `json:"exit_code"`
+		}{
+			Status:   api.WORKFLOW_STATUS_END,
+			ExitCode: exitCode,
+		},
+	}
+
+	url, e := service_setting.GetSettingUrl(config.SettingCallback)
+	if url != "" && e == nil {
+		api.SendObjEvtRequest(url, evt)
+	}
+
+	return nil
 }
 
 func stopWorkflow(ctx context.Context, workflowId string, exitCode int) (ee error) { // only 1 task supported

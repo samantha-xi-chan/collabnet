@@ -13,7 +13,6 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
 	"log"
-	"net"
 	"net/http"
 	"os"
 	"time"
@@ -198,13 +197,13 @@ func OnMessageOfRegisterChan(endpoint string, conn *websocket.Conn, bytesPack []
 		idLink := idgen.GetIdWithPref("co")
 
 		// 源地址处理
-		remoteAddr := conn.RemoteAddr()
-		from := conn.RemoteAddr().String()
-		tcpAddr, ok := remoteAddr.(*net.TCPAddr)
-		if ok {
-			from = tcpAddr.IP.String()
-		}
-		log.Println("From : ", from)
+		//remoteAddr := conn.RemoteAddr()
+		//from := conn.RemoteAddr().String()
+		//tcpAddr, ok := remoteAddr.(*net.TCPAddr)
+		//if ok {
+		//	from = tcpAddr.IP.String()
+		//}
+		//log.Println("From : ", from)
 
 		repo_link.GetLinkCtl().CreateItem(repo_link.Link{
 			Id:         idLink,
