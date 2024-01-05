@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"github.com/pkg/errors"
 	"log"
+	"os"
 	"runtime"
 )
 
@@ -59,6 +60,10 @@ func CreateContainerWrapper(ctx context.Context, req api.PostContainerReq, conta
 		cpuSet = fmt.Sprintf("0-%d", numCPU/2-1)
 	}
 
+	hostName, _ := os.Hostname()
+	env := append(req.Env,
+		fmt.Sprintf("HOSTNAME_IN_WORKFLOW=%s", hostName),
+	)
 	id, err := docker_container.CreateContainer(ctx,
 		taskId, req.CbAddr,
 		false,
@@ -73,7 +78,7 @@ func CreateContainerWrapper(ctx context.Context, req api.PostContainerReq, conta
 		req.BindOut,
 		req.GroupPath,
 		req.ShareDir,
-		req.Env,
+		env,
 	)
 	if err != nil {
 		return "", err
